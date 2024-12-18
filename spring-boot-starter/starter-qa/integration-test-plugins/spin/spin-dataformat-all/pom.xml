@@ -30,18 +30,8 @@
       </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>org.operaton.spin</groupId>
-      <artifactId>operaton-spin-dataformat-all</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-
   </dependencies>
-  
+
   <profiles>
     <profile>
       <id>integration-test-spring-boot-starter</id>

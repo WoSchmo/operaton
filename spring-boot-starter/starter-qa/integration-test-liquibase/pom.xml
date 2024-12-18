@@ -12,23 +12,6 @@
   <artifactId>qa-liquibase</artifactId>
   <name>Operaton - Spring Boot Starter - QA - Liquibase</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.liquibase</groupId>
-      <artifactId>liquibase-core</artifactId>
-    </dependency>
-  </dependencies>
-
   <profiles>
     <profile>
       <id>integration-test-spring-boot-starter</id>

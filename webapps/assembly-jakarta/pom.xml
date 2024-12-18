@@ -84,28 +84,13 @@
     </dependency>
 
     <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jakarta.activation</groupId>
-      <artifactId>jakarta.activation-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>jakarta.ws.rs</groupId>
       <artifactId>jakarta.ws.rs-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -129,12 +114,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <version>${version.spring.framework}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -275,6 +254,7 @@
         <groupId>org.eclipse.transformer</groupId>
         <artifactId>transformer-maven-plugin</artifactId>
         <configuration>
+          <!--<skip>true</skip>-->
           <rules>
             <jakartaDefaults>true</jakartaDefaults>
             <renames combine.children="append">
@@ -514,14 +494,6 @@
         <dependency>
           <groupId>org.operaton.bpm.identity</groupId>
           <artifactId>operaton-identity-ldap</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>com.h2database</groupId>
-          <artifactId>h2</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>com.fasterxml.uuid</groupId>
-          <artifactId>java-uuid-generator</artifactId>
         </dependency>
         <dependency>
           <groupId>ch.qos.logback</groupId>

@@ -12,37 +12,6 @@
     <version>1.0.0-beta-3-SNAPSHOT</version>
   </parent>
 
-  <dependencies>
-    <!--
-      database drivers
-      we deploy all and only activate one with a *-ds.xml database deployment
-    -->
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.python</groupId>
-      <artifactId>jython</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jruby</groupId>
-      <artifactId>jruby-complete</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.operaton.bpm.qa</groupId>
-      <artifactId>operaton-qa-ensure-clean-db</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-
-  </dependencies>
-
   <build>
     <resources>
       <resource>

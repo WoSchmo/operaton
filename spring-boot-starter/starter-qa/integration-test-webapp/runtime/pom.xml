@@ -31,13 +31,6 @@
 
       <dependencies>
 
-        <!-- Web Applications -->
-        <dependency>
-          <groupId>org.operaton.bpm.springboot</groupId>
-          <artifactId>operaton-bpm-spring-boot-starter-webapp</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-
         <!-- REST API -->
         <dependency>
           <groupId>org.operaton.bpm.springboot</groupId>
