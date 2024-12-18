@@ -22,6 +22,7 @@
     <http.port>58080</http.port>
     <http.ctx-path.webapp>operaton/</http.ctx-path.webapp>
     <http.ctx-path.rest>engine-rest/</http.ctx-path.rest>
+    <install.skip>true</install.skip>
   </properties>
 
   <profiles>
@@ -29,13 +30,6 @@
       <id>integration-test-spring-boot-starter</id>
 
       <dependencies>
-
-        <!-- Web Applications -->
-        <dependency>
-          <groupId>org.operaton.bpm.springboot</groupId>
-          <artifactId>operaton-bpm-spring-boot-starter-webapp</artifactId>
-          <version>${project.version}</version>
-        </dependency>
 
         <!-- REST API -->
         <dependency>
@@ -207,20 +201,6 @@
       </build>
     </profile>
   </profiles>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 
   <description>${project.name}</description>
 </project>

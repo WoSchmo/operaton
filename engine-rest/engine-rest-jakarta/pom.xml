@@ -96,11 +96,6 @@
       <artifactId>jakarta.ws.rs-api</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
     <dependency>
       <groupId>org.operaton.bpm</groupId>
@@ -118,34 +113,6 @@
       <groupId>org.operaton.commons</groupId>
       <artifactId>operaton-commons-logging</artifactId>
       <scope>provided</scope>
-    </dependency>
-
-    <!--
-      needed for offline shrinkwrap (in particular CustomJacksonDateFormatTest),
-      BOMs must be installed before this module is built
-    -->
-    <dependency>
-      <groupId>org.operaton.bpm</groupId>
-      <artifactId>operaton-bom</artifactId>
-      <version>${project.version}</version>
-      <type>pom</type>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.operaton.bpm</groupId>
-      <artifactId>operaton-core-internal-dependencies</artifactId>
-      <version>${project.version}</version>
-      <type>pom</type>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>jakarta.platform</groupId>
-      <artifactId>jakarta.jakartaee-bom</artifactId>
-      <version>${version.jakarta-ee-spec}</version>
-      <type>pom</type>
-      <scope>test</scope>
     </dependency>
 
     <!-- test -->
@@ -349,6 +316,9 @@
       <plugin>
         <groupId>org.eclipse.transformer</groupId>
         <artifactId>transformer-maven-plugin</artifactId>
+        <!--<configuration>
+          <skip>true</skip>
+        </configuration>-->
         <!-- sources & test-sources -->
         <executions>
           <execution>

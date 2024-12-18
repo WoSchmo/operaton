@@ -26,10 +26,10 @@ import org.operaton.commons.utils.IoUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -103,9 +103,9 @@ class FileValueTypeImplTest {
   }
 
   @Test
-  void createValueFromBytes() throws IOException, URISyntaxException {
+  void createValueFromBytes() throws Exception {
     File file = new File(this.getClass().getClassLoader().getResource("org/operaton/bpm/engine/test/variables/simpleFile.txt").toURI());
-    TypedValue value = type.createValue(file, Collections.<String, Object> singletonMap(FileValueTypeImpl.VALUE_INFO_FILE_NAME, "simpleFile.txt"));
+    TypedValue value = type.createValue(Files.readAllBytes(file.toPath()), Collections.<String, Object> singletonMap(FileValueTypeImpl.VALUE_INFO_FILE_NAME, "simpleFile.txt"));
     assertThat(value).isInstanceOf(FileValue.class);
     assertThat(value.getType()).isInstanceOf(FileValueTypeImpl.class);
     checkStreamFromValue(value, "text");
@@ -228,7 +228,7 @@ class FileValueTypeImplTest {
   }
 
   @Test
-  void fileByteArrayIsEqualToFileValueContent() throws IOException {
+  void fileByteArrayIsEqualToFileValueContent() {
     InputStream file = this.getClass().getClassLoader().getResourceAsStream("org/operaton/bpm/engine/test/variables/simpleFile.txt");
     String fileName = "simpleFile.txt";
 
@@ -238,7 +238,7 @@ class FileValueTypeImplTest {
   }
 
   @Test
-  void fileByteArrayIsEqualToFileValueContentCase2() throws IOException {
+  void fileByteArrayIsEqualToFileValueContentCase2() {
 
     byte[] bytes = new byte[]{ -16, -128, -128, -128 };
     InputStream byteStream = new ByteArrayInputStream(bytes);

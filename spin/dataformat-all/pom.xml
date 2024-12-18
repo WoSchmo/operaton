@@ -11,36 +11,12 @@
   <name>Operaton - Spin - All data formats in one</name>
 
   <properties>
-    <!-- We shade artifacts into the jar, so we need to generate 
+    <!-- We shade artifacts into the jar, so we need to generate
     a dependency BOM for the license book -->
     <skip-third-party-bom>false</skip-third-party-bom>
     <!-- json-smart and accessors-smart are runtime dependencies of json-path -->
     <third-party-bom-scopes>compile|runtime</third-party-bom-scopes>
   </properties>
-  
-  <dependencies>
-
-    <dependency>
-      <groupId>org.operaton.spin</groupId>
-      <artifactId>operaton-spin-dataformat-json-jackson</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.operaton.spin</groupId>
-      <artifactId>operaton-spin-dataformat-xml-dom</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-    </dependency>
-
-  </dependencies>
 
   <build>
     <plugins>

@@ -20,30 +20,6 @@
       <version>${version.spring-boot}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.operaton.bpm.springboot</groupId>
-      <artifactId>operaton-bpm-spring-boot-starter</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.graalvm.js</groupId>
-      <artifactId>js</artifactId>
-      <version>${version.graal.js}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.graalvm.js</groupId>
-      <artifactId>js-scriptengine</artifactId>
-      <version>${version.graal.js}</version>
-    </dependency>
-
   </dependencies>
 
   <profiles>

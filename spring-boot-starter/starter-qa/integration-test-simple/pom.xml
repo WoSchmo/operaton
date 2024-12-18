@@ -12,20 +12,6 @@
   <artifactId>qa-simple</artifactId>
   <name>Operaton - Spring Boot Starter - QA - Simple</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.operaton.bpm.springboot</groupId>
-      <artifactId>operaton-bpm-spring-boot-starter</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-    </dependency>
-  </dependencies>
-
   <profiles>
     <profile>
       <id>integration-test-spring-boot-starter</id>
