@@ -2,14 +2,18 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>operaton-bpm-assert-qa</artifactId>
   <packaging>jar</packaging>
-  
+
   <name>Operaton - QA - Assert</name>
-  
+
   <parent>
     <groupId>org.operaton.bpm</groupId>
     <artifactId>operaton-bpm-assert-root</artifactId>
     <version>1.0.0-beta-3-SNAPSHOT</version>
   </parent>
+
+  <properties>
+    <install.skip>true</install.skip>
+  </properties>
 
   <dependencies>
     <!-- managed by spring-boot-dependencies -->
@@ -58,18 +62,31 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+  <profiles>
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <os.type>win32</os.type>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-install-plugin</artifactId>
+              <configuration>
+                <skip>true</skip>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
   <description>${project.name}</description>
 </project>
