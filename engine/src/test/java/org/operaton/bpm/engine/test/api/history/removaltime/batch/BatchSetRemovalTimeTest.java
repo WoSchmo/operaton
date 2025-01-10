@@ -59,7 +59,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -247,7 +246,7 @@ public class BatchSetRemovalTimeTest {
     List<String> deploymentIds = engineRule.getRepositoryService().createDeploymentQuery()
         .list().stream()
         .map(org.operaton.bpm.engine.repository.Deployment::getId)
-        .collect(Collectors.toList());
+        .toList();
 
     // when
     Batch batch = historyService.setRemovalTimeToHistoricProcessInstances()
@@ -292,7 +291,7 @@ public class BatchSetRemovalTimeTest {
     List<String> deploymentIds = engineRule.getRepositoryService().createDeploymentQuery()
         .list().stream()
         .map(org.operaton.bpm.engine.repository.Deployment::getId)
-        .collect(Collectors.toList());
+        .toList();
 
     // when
     Batch batch = historyService.setRemovalTimeToHistoricDecisionInstances()
@@ -2238,7 +2237,7 @@ public class BatchSetRemovalTimeTest {
       .byQuery(query);
 
     // when/then
-    assertThatThrownBy(() -> batchBuilder.executeAsync())
+    assertThatThrownBy(batchBuilder::executeAsync)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("removalTime is null");
   }
@@ -2252,7 +2251,7 @@ public class BatchSetRemovalTimeTest {
       .byQuery(query);
 
     // when/then
-    assertThatThrownBy(() -> batchBuilder.executeAsync())
+    assertThatThrownBy(batchBuilder::executeAsync)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("removalTime is null");
   }
@@ -2266,7 +2265,7 @@ public class BatchSetRemovalTimeTest {
       .byQuery(query);
 
     // when/then
-    assertThatThrownBy(() -> batchBuilder.executeAsync())
+    assertThatThrownBy(batchBuilder::executeAsync)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("removalTime is null");
   }
@@ -2279,7 +2278,7 @@ public class BatchSetRemovalTimeTest {
       .absoluteRemovalTime(new Date());
 
     // when/then
-    assertThatThrownBy(() -> batchBuilder.executeAsync())
+    assertThatThrownBy(batchBuilder::executeAsync)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("Neither query nor ids provided.");
   }
@@ -2292,7 +2291,7 @@ public class BatchSetRemovalTimeTest {
       .absoluteRemovalTime(new Date());
 
     // when/then
-    assertThatThrownBy(() -> batchBuilder.executeAsync())
+    assertThatThrownBy(batchBuilder::executeAsync)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("Neither query nor ids provided.");
   }
@@ -2305,7 +2304,7 @@ public class BatchSetRemovalTimeTest {
       .absoluteRemovalTime(new Date());
 
     // when/then
-    assertThatThrownBy(() -> batchBuilder.executeAsync())
+    assertThatThrownBy(batchBuilder::executeAsync)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("Neither query nor ids provided.");
   }
@@ -2540,7 +2539,7 @@ public class BatchSetRemovalTimeTest {
     builder.calculatedRemovalTime();
 
     // when/then
-    assertThatThrownBy(() -> builder.clearedRemovalTime())
+    assertThatThrownBy(builder::clearedRemovalTime)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("The removal time modes are mutually exclusive: mode is not null");
   }
@@ -2564,7 +2563,7 @@ public class BatchSetRemovalTimeTest {
     builder.calculatedRemovalTime();
 
     // when/then
-    assertThatThrownBy(() -> builder.clearedRemovalTime())
+    assertThatThrownBy(builder::clearedRemovalTime)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("The removal time modes are mutually exclusive: mode is not null");
   }
@@ -2588,7 +2587,7 @@ public class BatchSetRemovalTimeTest {
     builder.calculatedRemovalTime();
 
     // when/then
-    assertThatThrownBy(() -> builder.clearedRemovalTime())
+    assertThatThrownBy(builder::clearedRemovalTime)
       .isInstanceOf(BadUserRequestException.class)
       .hasMessageContaining("The removal time modes are mutually exclusive: mode is not null");
   }

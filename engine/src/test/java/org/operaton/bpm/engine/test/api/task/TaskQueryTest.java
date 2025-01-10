@@ -49,7 +49,6 @@ import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -126,7 +125,7 @@ public class TaskQueryTest extends PluggableProcessEngineTest {
     assertEquals(1, query.count());
     List<Task> foundTasks = query.list();
     assertEquals(1, foundTasks.size());
-    List<String> foundTaskIds = foundTasks.stream().map(Task::getId).collect(Collectors.toList());
+    List<String> foundTaskIds = foundTasks.stream().map(Task::getId).toList();
     assertThat(foundTaskIds).containsOnly(taskId);
   }
 
@@ -138,7 +137,7 @@ public class TaskQueryTest extends PluggableProcessEngineTest {
     assertEquals(2, query.count());
     List<Task> foundTasks = query.list();
     assertEquals(2, foundTasks.size());
-    List<String> foundTaskIds = foundTasks.stream().map(Task::getId).collect(Collectors.toList());
+    List<String> foundTaskIds = foundTasks.stream().map(Task::getId).toList();
     assertThat(foundTaskIds).containsOnly(task0Id, task1Id);
   }
 
@@ -5150,9 +5149,7 @@ public class TaskQueryTest extends PluggableProcessEngineTest {
         .processInstanceId(processInstance.getId())
         .singleResult();
 
-    assertThatThrownBy(() -> {
-      task2.getOperatonFormRef();
-    }).isInstanceOf(BadUserRequestException.class)
+    assertThatThrownBy(task2::getOperatonFormRef).isInstanceOf(BadUserRequestException.class)
     .hasMessage("ENGINE-03052 The form key / form reference is not initialized. You must call initializeFormKeys() on the task query before you can retrieve the form key or the form reference.");
   }
 
@@ -5497,9 +5494,7 @@ public class TaskQueryTest extends PluggableProcessEngineTest {
     assertThat(withFormKeys).hasSize(1);
 
     Task taskWithoutFormKey = withoutFormKeys.get(0);
-    assertThatThrownBy(() -> {
-      taskWithoutFormKey.getOperatonFormRef();
-    }).isInstanceOf(BadUserRequestException.class)
+    assertThatThrownBy(taskWithoutFormKey::getOperatonFormRef).isInstanceOf(BadUserRequestException.class)
     .hasMessage("ENGINE-03052 The form key / form reference is not initialized. You must call initializeFormKeys() on the task query before you can retrieve the form key or the form reference.");
 
     Task taskWithFormKey = withFormKeys.get(0);
