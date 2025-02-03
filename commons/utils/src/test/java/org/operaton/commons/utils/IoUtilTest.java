@@ -107,8 +107,9 @@ public class IoUtilTest {
   void getFileFromClassPath() {
     File file = IoUtil.getClasspathFile(TEST_FILE_NAME);
 
-    assertThat(file).isNotNull();
-    assertThat(file.getName()).isEqualTo("testFile.txt");
+    assertThat(file)
+      .isNotNull()
+      .hasName("testFile.txt");
   }
 
   @Test
@@ -139,14 +140,16 @@ public class IoUtilTest {
         return null;
       }
     });
-    assertThat(file).isNotNull();
-    assertThat(file.getName()).isEqualTo("testFile.txt");
+    assertThat(file)
+      .isNotNull()
+      .hasName("testFile.txt");
   }
 
   @Test
   void shouldUseFallBackWhenCustomClassLoaderIsNull() {
     File file = IoUtil.getClasspathFile(TEST_FILE_NAME, null);
-    assertThat(file).isNotNull();
-    assertThat(file.getName()).isEqualTo("testFile.txt");
+    assertThat(file)
+      .isNotNull()
+      .hasName("testFile.txt");
   }
 }

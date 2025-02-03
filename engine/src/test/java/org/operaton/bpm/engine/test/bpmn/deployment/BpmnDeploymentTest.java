@@ -23,8 +23,6 @@ import org.junit.Test;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.impl.RepositoryServiceImpl;
 import org.operaton.bpm.engine.impl.context.Context;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.operaton.bpm.engine.impl.pvm.ReadOnlyProcessDefinition;
@@ -92,8 +90,9 @@ public class BpmnDeploymentTest extends PluggableProcessEngineTest {
     // verify content
     InputStream deploymentInputStream = repositoryService.getResourceAsStream(deploymentId, bpmnResourceName);
     String contentFromDeployment = readInputStreamToString(deploymentInputStream);
-    assertThat(contentFromDeployment).isNotEmpty();
-    assertThat(contentFromDeployment).contains("process id=\"emptyProcess\"");
+    assertThat(contentFromDeployment)
+      .isNotEmpty()
+      .contains("process id=\"emptyProcess\"");
 
     InputStream fileInputStream = ReflectUtil.getResourceAsStream("org/operaton/bpm/engine/test/bpmn/deployment/BpmnDeploymentTest.testGetBpmnXmlFileThroughService.bpmn20.xml");
     String contentFromFile = readInputStreamToString(fileInputStream);
@@ -394,14 +393,9 @@ public class BpmnDeploymentTest extends PluggableProcessEngineTest {
 
     // Graphical information is not yet exposed publicly, so we need to do some plumbing
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    ProcessDefinitionEntity processDefinitionEntity = commandExecutor.execute(new Command<ProcessDefinitionEntity>() {
-      @Override
-      public ProcessDefinitionEntity execute(CommandContext commandContext) {
-        return Context.getProcessEngineConfiguration()
-                      .getDeploymentCache()
-                      .findDeployedLatestProcessDefinitionByKey("myProcess");
-      }
-    });
+    ProcessDefinitionEntity processDefinitionEntity = commandExecutor.execute(commandContext -> Context.getProcessEngineConfiguration()
+        .getDeploymentCache()
+        .findDeployedLatestProcessDefinitionByKey("myProcess"));
 
     assertThat(processDefinitionEntity).isNotNull();
     assertThat(processDefinitionEntity.getActivities()).hasSize(7);
@@ -466,9 +460,9 @@ public class BpmnDeploymentTest extends PluggableProcessEngineTest {
       .addClasspathResource("org/operaton/bpm/engine/test/bpmn/deployment/BpmnDeploymentTest.testInvalidExpression.bpmn20.xml");
     // when
     assertThatThrownBy(() -> testRule.deploy(deployment))
+      .withFailMessage("Expected exception when deploying process with invalid expression.")
       .isInstanceOf(ProcessEngineException.class)
-      .hasMessageContaining("ENGINE-01009 Error while parsing process")
-      .withFailMessage("Expected exception when deploying process with invalid expression.");
+      .hasMessageContaining("ENGINE-01009 Error while parsing process");
     // then
     assertThat(repositoryService.createDeploymentQuery().count()).isZero();
   }

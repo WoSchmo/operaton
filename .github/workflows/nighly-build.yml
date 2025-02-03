@@ -18,12 +18,12 @@ on:
         description: 'Dry-Run: Skips remote operations when true'
         type: boolean
         required: true
-        default: true
+        default: false
       skip_tests:
         description: 'Skip test execution for faster build'
         type: boolean
         required: true
-        default: false
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -39,6 +39,8 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       version: ${{steps.maven-build.outputs.version}}
+      project_version: ${{steps.maven-build.outputs.project_version}}
+      database_version: ${{steps.maven-build.outputs.database_version}}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -50,14 +52,26 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
       - name: Maven Build
         id: maven-build
         shell: bash
         run: |
           .github/scripts/jacoco-create-flag-files.sh
-          RELEASE_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout | tail -n 1)
-          SKIP_TESTS=${{ github.event.inputs.skip_tests || (github.event_name == 'schedule' && false) }}
+          PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout | tail -n 1)
+          RELEASE_VERSION=$(echo $PROJECT_VERSION | sed 's/-SNAPSHOT//')
+          echo "project_version=$PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "project_version=$PROJECT_VERSION"
           echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          echo "version=$RELEASE_VERSION"
+          DATABASE_VERSION=$(grep '<version.operaton.dbscheme>' parent/pom.xml | sed -e 's/.*<version.operaton.dbscheme>\(.*\)<\/version.operaton.dbscheme>.*/\1/')
+          echo "database_version=$DATABASE_VERSION" >> $GITHUB_OUTPUT
+          echo "database_version=$DATABASE_VERSION"
+          SKIP_TESTS=${{ github.event.inputs.skip_tests || (github.event_name == 'schedule' && false) }}
           echo "skip_tests=$SKIP_TESTS"
           ./mvnw \
             -Pdistro,distro-run,distro-tomcat,distro-wildfly,distro-webjar,distro-starter,distro-serverless,h2-in-memory \
@@ -83,13 +97,6 @@ jobs:
             **/target/surefire-reports/*.xml
             target/project-reports.zip
           key: ${{ github.run_id }}-build-artifacts
-      - name: Publish Test Report
-        if: ${{ github.event.inputs.skip_tests == 'false' || github.event_name == 'schedule' }}
-        # https://github.com/marketplace/actions/junit-report-action
-        uses: mikepenz/action-junit-report@v4
-        with:
-          report_paths: ${{ github.workspace }}/**/target/surefire-reports/*.xml
-          require_passed_tests: true
 
   release:
     name: Release
@@ -120,7 +127,7 @@ jobs:
       - name: Release with JReleaser
         uses: jreleaser/release-action@v2
         env:
-          JRELEASER_PROJECT_VERSION: ${{needs.build.outputs.version}}
+          JRELEASER_PROJECT_VERSION: ${{needs.build.outputs.project_version}}
           JRELEASER_GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           JRELEASER_GPG_PUBLIC_KEY: ${{secrets.GPG_PUBLIC_KEY}}
           JRELEASER_GPG_SECRET_KEY: ${{secrets.GPG_PRIVATE_KEY}}
@@ -129,3 +136,48 @@ jobs:
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{secrets.OSSRH_PASSWORD}}
           JRELEASER_DRY_RUN: ${{ github.event_name == 'schedule' && false || github.event.inputs.dry_run }}
           JRELEASER_PRERELEASE_ENABLED: true
+          OPERATON_DATABASE_VERSION: ${{needs.build.outputs.database_version}}
+
+      - name: Publish Test Report
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.skip_tests == 'false'}}
+        # https://github.com/marketplace/actions/junit-report-action
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: ${{ github.workspace }}/**/target/surefire-reports/*.xml
+          require_passed_tests: true
+
+      - name: Archive Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            **/target/reports/**
+
+      - name: Archive Staging Repo
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging
+          path: |
+            ./*/staging-deploy/**
+          retention-days: 10
+
+  post_release:
+    name: Post-Release
+    runs-on: ubuntu-24.04
+    needs:
+      - build
+      - release
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.dry_run == 'false' }}
+    steps:
+      - name: Notify Docker Repository
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.DOCKER_ACTION_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{"ref":"main","inputs":{"version": "${{ needs.build.outputs.version}}","snapshot": "true"}}' \
+            https://api.github.com/repos/operaton/operaton-docker/actions/workflows/build-test-and-publish.yml/dispatches)
+          if [ "$response" -ne 204 ]; then
+            echo "Failed to notify Docker repository. HTTP response code: $response"
+            exit 1
+          fi

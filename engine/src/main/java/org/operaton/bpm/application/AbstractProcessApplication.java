@@ -16,6 +16,14 @@
  */
 package org.operaton.bpm.application;
 
+import jakarta.el.BeanELResolver;
+import jakarta.el.ELResolver;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.Callable;
+import javax.script.ScriptEngine;
 import org.operaton.bpm.application.impl.DefaultElResolverLookup;
 import org.operaton.bpm.application.impl.ProcessApplicationLogger;
 import org.operaton.bpm.application.impl.ProcessApplicationScriptEnvironment;
@@ -25,19 +33,10 @@ import org.operaton.bpm.engine.delegate.ExecutionListener;
 import org.operaton.bpm.engine.delegate.TaskListener;
 import org.operaton.bpm.engine.impl.ProcessEngineLogger;
 import org.operaton.bpm.engine.impl.context.Context;
-import jakarta.el.BeanELResolver;
-import jakarta.el.ELResolver;
 import org.operaton.bpm.engine.impl.scripting.ExecutableScript;
 import org.operaton.bpm.engine.impl.util.ClassLoaderUtil;
 import org.operaton.bpm.engine.impl.variable.serializer.VariableSerializers;
 import org.operaton.bpm.engine.repository.DeploymentBuilder;
-
-import javax.script.ScriptEngine;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.concurrent.Callable;
 
 
 /**
@@ -106,13 +105,13 @@ public abstract class AbstractProcessApplication implements ProcessApplicationIn
     if (annotation != null) {
       name = annotation.value();
 
-      if (name == null || name.length() == 0) {
+      if (name == null || name.isEmpty()) {
         name = annotation.name();
       }
     }
 
 
-    if (name == null || name.length() == 0) {
+    if (name == null || name.isEmpty()) {
       name = autodetectProcessApplicationName();
     }
 
@@ -179,13 +178,9 @@ public abstract class AbstractProcessApplication implements ProcessApplicationIn
   }
 
   @Override
-  public BeanELResolver getBeanElResolver() {
+  public synchronized BeanELResolver getBeanElResolver() {
     if (processApplicationBeanElResolver == null) {
-      synchronized (this) {
-        if (processApplicationBeanElResolver == null) {
-          processApplicationBeanElResolver = new BeanELResolver();
-        }
-      }
+      processApplicationBeanElResolver = new BeanELResolver();
     }
     return processApplicationBeanElResolver;
   }
@@ -230,13 +225,9 @@ public abstract class AbstractProcessApplication implements ProcessApplicationIn
     return getProcessApplicationScriptEnvironment().getEnvironmentScripts();
   }
 
-  protected ProcessApplicationScriptEnvironment getProcessApplicationScriptEnvironment() {
+  protected synchronized ProcessApplicationScriptEnvironment getProcessApplicationScriptEnvironment() {
     if (processApplicationScriptEnvironment == null) {
-      synchronized (this) {
-        if (processApplicationScriptEnvironment == null) {
-          processApplicationScriptEnvironment = new ProcessApplicationScriptEnvironment(this);
-        }
-      }
+      processApplicationScriptEnvironment = new ProcessApplicationScriptEnvironment(this);
     }
     return processApplicationScriptEnvironment;
   }

@@ -427,7 +427,7 @@ public class IdentityServiceTest {
     identityService.createMembership(johndoe.getId(), sales.getId());
 
     List<Group> groups = identityService.createGroupQuery().groupMember(johndoe.getId()).list();
-    assertTrue(groups.size() == 1);
+    assertEquals(1, groups.size());
     assertEquals("sales", groups.get(0).getId());
 
     // Delete the membership and check members of sales group
@@ -919,9 +919,9 @@ public class IdentityServiceTest {
   @Test
   public void testInvalidUserIdOnSave() {
     String invalidId = "john doe";
+    User updatedUser = identityService.newUser("john");
+    updatedUser.setId(invalidId);
     try {
-      User updatedUser = identityService.newUser("john");
-      updatedUser.setId(invalidId);
       identityService.saveUser(updatedUser);
 
       fail("Invalid user id exception expected!");
@@ -945,9 +945,9 @@ public class IdentityServiceTest {
   @Test
   public void testInvalidGroupIdOnSave() {
     String invalidId = "john's group";
+    Group updatedGroup = identityService.newGroup("group");
+    updatedGroup.setId(invalidId);
     try {
-      Group updatedGroup = identityService.newGroup("group");
-      updatedGroup.setId(invalidId);
       identityService.saveGroup(updatedGroup);
 
       fail("Invalid group id exception expected!");
@@ -1088,8 +1088,9 @@ public class IdentityServiceTest {
     String toString = user.toString();
 
     // then
-    assertThat(toString).doesNotContain(salt);
-    assertThat(toString).doesNotContain(hashedPassword);
+    assertThat(toString)
+      .doesNotContain(salt)
+      .doesNotContain(hashedPassword);
 
   }
 

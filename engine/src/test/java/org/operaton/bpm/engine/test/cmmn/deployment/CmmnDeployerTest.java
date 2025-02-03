@@ -73,14 +73,14 @@ public class CmmnDeployerTest extends PluggableProcessEngineTest {
 
   @Test
   public void testDeployTwoCasesWithDuplicateIdAtTheSameTime() {
-    try {
-      String cmmnResourceName1 = "org/operaton/bpm/engine/test/cmmn/deployment/CmmnDeploymentTest.testSimpleDeployment.cmmn";
-      String cmmnResourceName2 = "org/operaton/bpm/engine/test/cmmn/deployment/CmmnDeploymentTest.testSimpleDeployment2.cmmn";
-      repositoryService.createDeployment()
+    String cmmnResourceName1 = "org/operaton/bpm/engine/test/cmmn/deployment/CmmnDeploymentTest.testSimpleDeployment.cmmn";
+    String cmmnResourceName2 = "org/operaton/bpm/engine/test/cmmn/deployment/CmmnDeploymentTest.testSimpleDeployment2.cmmn";
+    var deploymentBuilder = repositoryService.createDeployment()
               .addClasspathResource(cmmnResourceName1)
               .addClasspathResource(cmmnResourceName2)
-              .name("duplicateAtTheSameTime")
-              .deploy();
+              .name("duplicateAtTheSameTime");
+    try {
+      deploymentBuilder.deploy();
       fail();
     } catch (Exception e) {
       // Verify that nothing is deployed
@@ -235,7 +235,7 @@ public class CmmnDeployerTest extends PluggableProcessEngineTest {
     CaseDefinition caseDefinition = repositoryService.createCaseDefinitionQuery().singleResult();
     Integer historyTimeToLive = caseDefinition.getHistoryTimeToLive();
     assertNotNull(historyTimeToLive);
-    assertEquals((int) historyTimeToLive, 5);
+    assertEquals(5, (int) historyTimeToLive);
   }
 
   @Deployment(resources = "org/operaton/bpm/engine/test/cmmn/deployment/CmmnDeploymentTest.testDeployCaseDefinitionWithStringHistoryTimeToLive.cmmn")
@@ -244,7 +244,7 @@ public class CmmnDeployerTest extends PluggableProcessEngineTest {
     CaseDefinition caseDefinition = repositoryService.createCaseDefinitionQuery().singleResult();
     Integer historyTimeToLive = caseDefinition.getHistoryTimeToLive();
     assertNotNull(historyTimeToLive);
-    assertEquals((int) historyTimeToLive, 5);
+    assertEquals(5, (int) historyTimeToLive);
   }
 
   @Test

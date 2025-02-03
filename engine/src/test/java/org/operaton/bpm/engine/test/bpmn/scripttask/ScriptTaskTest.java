@@ -16,18 +16,10 @@
  */
 package org.operaton.bpm.engine.test.bpmn.scripttask;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+import org.junit.Test;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.ScriptCompilationException;
 import org.operaton.bpm.engine.ScriptEvaluationException;
@@ -37,7 +29,14 @@ import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.model.bpmn.Bpmn;
-import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -58,34 +57,33 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testJavascriptProcessVarVisibility() {
 
-    deployProcess(JAVASCRIPT,
-
-        // GIVEN
-        // an execution variable 'foo'
-        "execution.setVariable('foo', 'a');"
-
-        // THEN
-        // there should be a script variable defined
-      + "if (typeof foo !== 'undefined') { "
-      + "  throw 'Variable foo should be defined as script variable.';"
-      + "}"
-
-        // GIVEN
-        // a script variable with the same name
-      + "var foo = 'b';"
-
-        // THEN
-        // it should not change the value of the execution variable
-      + "if(execution.getVariable('foo') != 'a') {"
-      + "  throw 'Execution should contain variable foo';"
-      + "}"
-
-        // AND
-        // it should override the visibility of the execution variable
-      + "if(foo != 'b') {"
-      + "  throw 'Script variable must override the visibiltity of the execution variable.';"
-      + "}"
-
+    deployProcess(JAVASCRIPT, """
+		// GIVEN
+		// an execution variable 'foo'
+		execution.setVariable('foo', 'a');
+		
+		// THEN
+		// there should be a script variable defined
+		if (typeof foo !== 'undefined') {
+		  throw 'Variable foo should be defined as script variable.';
+		}
+		
+		// GIVEN
+		// a script variable with the same name
+		var foo = 'b';
+		
+		// THEN
+		// it should not change the value of the execution variable
+		if(execution.getVariable('foo') != 'a') {
+		  throw 'Execution should contain variable foo';
+		}
+		
+		// AND
+		// it should override the visibility of the execution variable
+		if(foo != 'b') {
+		  throw 'Script variable must override the visibiltity of the execution variable.';
+		}
+      """
     );
 
     // GIVEN
@@ -103,31 +101,30 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testPythonProcessVarAssignment() {
 
-    deployProcess(PYTHON,
-
-        // GIVEN
-        // an execution variable 'foo'
-        "execution.setVariable('foo', 'a')\n"
-
-        // THEN
-        // there should be a script variable defined
-      + "if not foo:\n"
-      + "    raise Exception('Variable foo should be defined as script variable.')\n"
-
-        // GIVEN
-        // a script variable with the same name
-      + "foo = 'b'\n"
-
-        // THEN
-        // it should not change the value of the execution variable
-      + "if execution.getVariable('foo') != 'a':\n"
-      + "    raise Exception('Execution should contain variable foo')\n"
-
-        // AND
-        // it should override the visibility of the execution variable
-      + "if foo != 'b':\n"
-      + "    raise Exception('Script variable must override the visibiltity of the execution variable.')\n"
-
+    deployProcess(PYTHON, """
+		# GIVEN
+		# an execution variable 'foo'
+		execution.setVariable('foo', 'a')
+		
+		# THEN
+		# there should be a script variable defined
+		if not foo:
+		    raise Exception('Variable foo should be defined as script variable.')
+		
+		# GIVEN
+		# a script variable with the same name
+		foo = 'b'
+		
+		# THEN
+		# it should not change the value of the execution variable
+		if execution.getVariable('foo') != 'a':
+		    raise Exception('Execution should contain variable foo')
+		
+		# AND
+		# it should override the visibility of the execution variable
+		if foo != 'b':
+		    raise Exception('Script variable must override the visibiltity of the execution variable.')
+      """
     );
 
     // GIVEN
@@ -145,32 +142,31 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testRubyProcessVarVisibility() {
 
-    deployProcess(RUBY,
-
-        // GIVEN
-        // an execution variable 'foo'
-        "$execution.setVariable('foo', 'a')\n"
-
-        // THEN
-        // there should NOT be a script variable defined (this is unsupported in Ruby binding)
-      + "raise 'Variable foo should be defined as script variable.' if !$foo.nil?\n"
-
-        // GIVEN
-        // a script variable with the same name
-      + "$foo = 'b'\n"
-
-        // THEN
-        // it should not change the value of the execution variable
-      + "if $execution.getVariable('foo') != 'a'\n"
-      + "  raise 'Execution should contain variable foo'\n"
-      + "end\n"
-
-        // AND
-        // it should override the visibility of the execution variable
-      + "if $foo != 'b'\n"
-      + "  raise 'Script variable must override the visibiltity of the execution variable.'\n"
-      + "end"
-
+    deployProcess(RUBY, """
+	      # GIVEN
+	      # an execution variable 'foo'
+	      $execution.setVariable('foo', 'a')
+	
+	      # THEN
+	      # there should NOT be a script variable defined (this is unsupported in Ruby binding)
+	      raise 'Variable foo should be defined as script variable.' if !$foo.nil?
+	
+	      # GIVEN
+	      # a script variable with the same name
+	      $foo = 'b'
+	
+	      # THEN
+	      # it should not change the value of the execution variable
+	      if $execution.getVariable('foo') != 'a'
+	        raise 'Execution should contain variable foo'
+	      end
+	
+	      # AND
+	      # it should override the visibility of the execution variable
+	      if $foo != 'b'
+	        raise 'Script variable must override the visibiltity of the execution variable.'
+	      end
+      """
     );
 
     // GIVEN
@@ -188,33 +184,33 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testGroovyProcessVarVisibility() {
 
-    deployProcess(GROOVY,
-
+    deployProcess(GROOVY, """
         // GIVEN
         // an execution variable 'foo'
-        "execution.setVariable('foo', 'a')\n"
+        execution.setVariable('foo', 'a')
 
         // THEN
         // there should be a script variable defined
-      + "if ( !foo ) {\n"
-      + "  throw new Exception('Variable foo should be defined as script variable.')\n"
-      + "}\n"
+        if ( !foo ) {
+          throw new Exception('Variable foo should be defined as script variable.')
+        }
 
         // GIVEN
         // a script variable with the same name
-      + "foo = 'b'\n"
+        foo = 'b'
 
         // THEN
         // it should not change the value of the execution variable
-      + "if (execution.getVariable('foo') != 'a') {\n"
-      + "  throw new Exception('Execution should contain variable foo')\n"
-      + "}\n"
+        if (execution.getVariable('foo') != 'a') {
+          throw new Exception('Execution should contain variable foo')
+        }
 
         // AND
         // it should override the visibility of the execution variable
-      + "if (foo != 'b') {\n"
-      + "  throw new Exception('Script variable must override the visibiltity of the execution variable.')\n"
-      + "}"
+        if (foo != 'b') {
+          throw new Exception('Script variable must override the visibiltity of the execution variable.')
+        }
+      """
 
     );
 
@@ -233,20 +229,19 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testJavascriptFunctionInvocation() {
 
-    deployProcess(JAVASCRIPT,
-
-        // GIVEN
-        // a function named sum
-        "function sum(a,b){"
-      + "  return a+b;"
-      + "};"
-
-        // THEN
-        // i can call the function
-      + "var result = sum(1,2);"
-
-      + "execution.setVariable('foo', result);"
-
+    deployProcess(JAVASCRIPT, """
+	      // GIVEN
+	      // a function named sum
+	      function sum(a,b){
+	        return a+b;
+	      };
+	      
+	      // THEN
+	      // i can call the function
+	      var result = sum(1,2);
+	      
+	      execution.setVariable('foo', result);
+      """
     );
 
     // GIVEN
@@ -263,18 +258,17 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testPythonFunctionInvocation() {
 
-    deployProcess(PYTHON,
-
-        // GIVEN
-        // a function named sum
-        "def sum(a, b):\n"
-      + "    return a + b\n"
-
-        // THEN
-        // i can call the function
-      + "result = sum(1,2)\n"
-      + "execution.setVariable('foo', result)"
-
+    deployProcess(PYTHON, """
+		# GIVEN
+		# a function named sum
+		def sum(a, b):
+		    return a + b
+		
+		# THEN
+		# i can call the function
+		result = sum(1,2)
+		execution.setVariable('foo', result)
+      """
     );
 
     // GIVEN
@@ -291,20 +285,19 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testRubyFunctionInvocation() {
 
-    deployProcess(RUBY,
-
-        // GIVEN
-        // a function named sum
-        "def sum(a, b)\n"
-      + "    return a + b\n"
-      + "end\n"
-
-        // THEN
-        // i can call the function
-      + "result = sum(1,2)\n"
-
-      + "$execution.setVariable('foo', result)\n"
-
+    deployProcess(RUBY, """
+		# GIVEN
+		# a function named sum
+		def sum(a, b)
+		  return a + b
+		end
+		
+		# THEN
+		# i can call the function
+		result = sum(1,2)
+		
+		$execution.setVariable('foo', result)
+      """
     );
 
     // GIVEN
@@ -321,20 +314,19 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testGroovyFunctionInvocation() {
 
-    deployProcess(GROOVY,
-
-        // GIVEN
-        // a function named sum
-        "def sum(a, b) {\n"
-      + "    return a + b\n"
-      + "}\n"
-
-        // THEN
-        // i can call the function
-      + "result = sum(1,2)\n"
-
-      + "execution.setVariable('foo', result)\n"
-
+    deployProcess(GROOVY, """
+		// GIVEN
+		// a function named sum
+		def sum(a, b) {
+		  return a + b
+		}
+		
+		// THEN
+		// i can call the function
+		result = sum(1,2)
+		
+		execution.setVariable('foo', result)
+      """
     );
 
     // GIVEN
@@ -573,14 +565,15 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
   @Test
   public void testShouldNotDeployProcessWithMissingScriptElementAndResource() {
-    try {
-      deployProcess(Bpmn.createExecutableProcess("testProcess")
+    var processBuilder = Bpmn.createExecutableProcess("testProcess")
         .startEvent()
         .scriptTask()
           .scriptFormat(RUBY)
         .userTask()
         .endEvent()
-      .done());
+      .done();
+    try {
+      deployProcess(processBuilder);
 
       fail("this process should not be deployable");
     } catch (ProcessEngineException e) {

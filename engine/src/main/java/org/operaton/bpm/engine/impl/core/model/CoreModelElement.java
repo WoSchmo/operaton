@@ -49,7 +49,7 @@ public abstract class CoreModelElement implements Serializable {
   protected Map<String, List<VariableListener<?>>> variableListeners =
       new HashMap<>();
 
-  public CoreModelElement(String id) {
+  protected CoreModelElement(String id) {
     this.id = id;
   }
 
@@ -148,11 +148,7 @@ public abstract class CoreModelElement implements Serializable {
   }
 
   protected <T> void addListenerToMap(Map<String, List<T>> listenerMap, String eventName, T listener, int index) {
-    List<T> listenerList = listenerMap.get(eventName);
-    if (listenerList == null) {
-      listenerList = new ArrayList<>();
-      listenerMap.put(eventName, listenerList);
-    }
+    List<T> listenerList = listenerMap.computeIfAbsent(eventName, k -> new ArrayList<>());
     if (index < 0) {
       listenerList.add(listener);
     } else {

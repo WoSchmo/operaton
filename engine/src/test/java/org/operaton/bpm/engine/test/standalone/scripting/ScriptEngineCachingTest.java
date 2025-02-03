@@ -17,18 +17,14 @@
 package org.operaton.bpm.engine.test.standalone.scripting;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import javax.script.ScriptEngine;
 
-import java.util.concurrent.Callable;
-
 import org.operaton.bpm.application.ProcessApplicationInterface;
 import org.operaton.bpm.application.impl.EmbeddedProcessApplication;
 import org.operaton.bpm.engine.impl.context.Context;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.scripting.engine.ScriptingEngines;
 import org.operaton.bpm.engine.repository.ProcessApplicationDeployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
@@ -64,7 +60,7 @@ public class ScriptEngineCachingTest extends PluggableProcessEngineTest {
 
     // then
     assertNotNull(engine);
-    assertFalse(engine.equals(getScriptEngine(SCRIPT_LANGUAGE)));
+    assertNotEquals(engine, getScriptEngine(SCRIPT_LANGUAGE));
 
     processEngineConfiguration.setEnableScriptEngineCaching(true);
     getScriptingEngines().setEnableScriptEngineCaching(true);
@@ -93,7 +89,7 @@ public class ScriptEngineCachingTest extends PluggableProcessEngineTest {
 
     // then
     assertNotNull(engine);
-    assertFalse(engine.equals(processApplication.getScriptEngineForName(SCRIPT_LANGUAGE, false)));
+    assertNotEquals(engine, processApplication.getScriptEngineForName(SCRIPT_LANGUAGE, false));
   }
 
   @Test
@@ -135,10 +131,10 @@ public class ScriptEngineCachingTest extends PluggableProcessEngineTest {
 
     // then
     assertNotNull(engine);
-    assertFalse(engine.equals(getScriptEngineFromPa(SCRIPT_LANGUAGE, processApplication)));
+    assertNotEquals(engine, getScriptEngineFromPa(SCRIPT_LANGUAGE, processApplication));
 
     // not cached in pa
-    assertFalse(engine.equals(processApplication.getScriptEngineForName(SCRIPT_LANGUAGE, false)));
+    assertNotEquals(engine, processApplication.getScriptEngineForName(SCRIPT_LANGUAGE, false));
 
     repositoryService.deleteDeployment(deployment.getId(), true);
 
@@ -165,7 +161,7 @@ public class ScriptEngineCachingTest extends PluggableProcessEngineTest {
     assertEquals(engine, getScriptEngineFromPa(SCRIPT_LANGUAGE, processApplication));
 
     // not cached in pa
-    assertFalse(engine.equals(processApplication.getScriptEngineForName(SCRIPT_LANGUAGE, true)));
+    assertNotEquals(engine, processApplication.getScriptEngineForName(SCRIPT_LANGUAGE, true));
 
     repositoryService.deleteDeployment(deployment.getId(), true);
 
@@ -179,28 +175,12 @@ public class ScriptEngineCachingTest extends PluggableProcessEngineTest {
   protected ScriptEngine getScriptEngine(final String name) {
     final ScriptingEngines scriptingEngines = getScriptingEngines();
     return processEngineConfiguration.getCommandExecutorTxRequired()
-      .execute(new Command<ScriptEngine>() {
-      @Override
-      public ScriptEngine execute(CommandContext commandContext) {
-          return scriptingEngines.getScriptEngineForLanguage(name);
-        }
-      });
+      .execute(commandContext -> scriptingEngines.getScriptEngineForLanguage(name));
   }
 
   protected ScriptEngine getScriptEngineFromPa(final String name, final ProcessApplicationInterface processApplication) {
     return processEngineConfiguration.getCommandExecutorTxRequired()
-      .execute(new Command<ScriptEngine>() {
-      @Override
-      public ScriptEngine execute(CommandContext commandContext) {
-          return Context.executeWithinProcessApplication(new Callable<ScriptEngine>() {
-
-            @Override
-            public ScriptEngine call() throws Exception {
-              return getScriptEngine(name);
-            }
-          }, processApplication.getReference());
-        }
-      });
+      .execute(commandContext -> Context.executeWithinProcessApplication(() -> getScriptEngine(name), processApplication.getReference()));
   }
 
 }

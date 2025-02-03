@@ -19,6 +19,7 @@ package org.operaton.bpm.engine.test.bpmn.iomapping;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -831,16 +832,16 @@ public class InputOutputTest extends PluggableProcessEngineTest {
 
   @Test
   public void testInterruptingEventSubprocessIoSupport() {
-    try {
-      repositoryService
+    var deploymentBuilder = repositoryService
         .createDeployment()
-        .addClasspathResource("org/operaton/bpm/engine/test/bpmn/iomapping/InputOutputTest.testInterruptingEventSubprocessIoSupport.bpmn")
-        .deploy();
+        .addClasspathResource("org/operaton/bpm/engine/test/bpmn/iomapping/InputOutputTest.testInterruptingEventSubprocessIoSupport.bpmn");
+    try {
+      deploymentBuilder.deploy();
       fail("exception expected");
     } catch (ParseException e) {
       // happy path
       testRule.assertTextPresent("operaton:inputOutput mapping unsupported for element type 'subProcess' with attribute 'triggeredByEvent = true'", e.getMessage());
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("SubProcess_1");
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("SubProcess_1");
     }
   }
 
@@ -877,7 +878,7 @@ public class InputOutputTest extends PluggableProcessEngineTest {
     // first sequential mi execution
     Execution miExecution = runtimeService.createExecutionQuery().activityId("miTask").singleResult();
     assertNotNull(miExecution);
-    assertFalse(instance.getId().equals(miExecution.getId()));
+    assertNotEquals(instance.getId(), miExecution.getId());
     assertEquals(0, runtimeService.getVariable(miExecution.getId(), "loopCounter"));
 
     // input mapping
@@ -890,7 +891,7 @@ public class InputOutputTest extends PluggableProcessEngineTest {
     // second sequential mi execution
     miExecution = runtimeService.createExecutionQuery().activityId("miTask").singleResult();
     assertNotNull(miExecution);
-    assertFalse(instance.getId().equals(miExecution.getId()));
+    assertNotEquals(instance.getId(), miExecution.getId());
     assertEquals(1, runtimeService.getVariable(miExecution.getId(), "loopCounter"));
 
     // input mapping
@@ -927,7 +928,7 @@ public class InputOutputTest extends PluggableProcessEngineTest {
     // second sequential mi execution
     miScopeExecution = runtimeService.createExecutionQuery().activityId("task").singleResult();
     assertNotNull(miScopeExecution);
-    assertFalse(instance.getId().equals(miScopeExecution.getId()));
+    assertNotEquals(instance.getId(), miScopeExecution.getId());
     assertEquals(1, runtimeService.getVariable(miScopeExecution.getId(), "loopCounter"));
 
     // input mapping
@@ -955,14 +956,14 @@ public class InputOutputTest extends PluggableProcessEngineTest {
     Execution miExecution1 = runtimeService.createExecutionQuery().activityId("miTask")
         .variableValueEquals("loopCounter", 0).singleResult();
     assertNotNull(miExecution1);
-    assertFalse(instance.getId().equals(miExecution1.getId()));
+    assertNotEquals(instance.getId(), miExecution1.getId());
     counters.add((Integer) runtimeService.getVariableLocal(miExecution1.getId(), "miCounterValue"));
 
     // second mi execution
     Execution miExecution2 = runtimeService.createExecutionQuery().activityId("miTask")
         .variableValueEquals("loopCounter", 1).singleResult();
     assertNotNull(miExecution2);
-    assertFalse(instance.getId().equals(miExecution2.getId()));
+    assertNotEquals(instance.getId(), miExecution2.getId());
     counters.add((Integer) runtimeService.getVariableLocal(miExecution2.getId(), "miCounterValue"));
 
     assertTrue(counters.contains(1));
@@ -998,7 +999,7 @@ public class InputOutputTest extends PluggableProcessEngineTest {
     Execution miScopeExecution2 = runtimeService.createExecutionQuery().activityId("task")
         .variableValueEquals("loopCounter", 1).singleResult();
     assertNotNull(miScopeExecution2);
-    assertFalse(instance.getId().equals(miScopeExecution2.getId()));
+    assertNotEquals(instance.getId(), miScopeExecution2.getId());
     counters.add((Integer) runtimeService.getVariableLocal(miScopeExecution2.getId(), "miCounterValue"));
 
     assertTrue(counters.contains(1));
@@ -1016,14 +1017,14 @@ public class InputOutputTest extends PluggableProcessEngineTest {
 
   @Test
   public void testMIOutputMappingDisallowed() {
+    var deploymentBuilder = repositoryService.createDeployment()
+      .addClasspathResource("org/operaton/bpm/engine/test/bpmn/iomapping/InputOutputTest.testMIOutputMappingDisallowed.bpmn20.xml");
     try {
-      repositoryService.createDeployment()
-      .addClasspathResource("org/operaton/bpm/engine/test/bpmn/iomapping/InputOutputTest.testMIOutputMappingDisallowed.bpmn20.xml")
-      .deploy();
+      deploymentBuilder.deploy();
       fail("Exception expected");
     } catch (ParseException e) {
       testRule.assertTextPresent("operaton:outputParameter not allowed for multi-instance constructs", e.getMessage());
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("miTask");
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("miTask");
     }
 
   }

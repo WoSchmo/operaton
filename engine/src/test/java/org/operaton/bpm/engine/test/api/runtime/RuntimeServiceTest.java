@@ -71,12 +71,7 @@ import org.junit.rules.RuleChain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Frederik Heremans
@@ -298,7 +293,7 @@ public class RuntimeServiceTest {
     // if we do not skip the custom listeners,
     runtimeService.deleteProcessInstance(processInstance.getId(), null, false);
     // the custom listener is invoked
-    assertTrue(TestExecutionListener.collectedEvents.size() == 1);
+    assertEquals(1, TestExecutionListener.collectedEvents.size());
     TestExecutionListener.reset();
 
     processInstance = runtimeService.startProcessInstanceByKey("testProcess");
@@ -319,7 +314,7 @@ public class RuntimeServiceTest {
     // if we do not skip the custom listeners,
     runtimeService.deleteProcessInstance(processInstance.getId(), null, false);
     // the custom listener is invoked
-    assertTrue(TestExecutionListener.collectedEvents.size() == 1);
+    assertEquals(1, TestExecutionListener.collectedEvents.size());
     TestExecutionListener.reset();
 
     processInstance = runtimeService.startProcessInstanceByKey("testProcess");
@@ -496,9 +491,10 @@ public class RuntimeServiceTest {
   @Test
   public void testDeleteProcessInstancesWithFake() {
     ProcessInstance instance = runtimeService.startProcessInstanceByKey("oneTaskProcess");
+    var processInstanceIds = Arrays.asList(instance.getId(), "aFake");
 
     try {
-      runtimeService.deleteProcessInstances(Arrays.asList(instance.getId(), "aFake"), "test", false, false, false, false);
+      runtimeService.deleteProcessInstances(processInstanceIds, "test", false, false, false, false);
       fail("ProcessEngineException expected");
     }catch (ProcessEngineException e) {
       //expected
@@ -795,10 +791,11 @@ public class RuntimeServiceTest {
   @Test
   public void testSignalInactiveExecution() {
     ProcessInstance instance = runtimeService.startProcessInstanceByKey("testSignalInactiveExecution");
+    var instanceId = instance.getId();
 
     // there exist two executions: the inactive parent (the process instance) and the child that actually waits in the receive task
     try {
-      runtimeService.signal(instance.getId());
+      runtimeService.signal(instanceId);
       fail();
     } catch(ProcessEngineException e) {
       // happy path
@@ -882,9 +879,10 @@ public class RuntimeServiceTest {
     "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml"})
   @Test
   public void testSetVariableNullVariableName() {
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess");
+    var processInstanceId = processInstance.getId();
     try {
-      ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess");
-      runtimeService.setVariable(processInstance.getId(), null, "variableValue");
+      runtimeService.setVariable(processInstanceId, null, "variableValue");
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException ae) {
       testRule.assertTextPresent("variableName is null", ae.getMessage());
@@ -1447,8 +1445,9 @@ public class RuntimeServiceTest {
    Execution execution = runtimeService.createExecutionQuery()
      .signalEventSubscriptionName("alert")
      .singleResult();
+   var executionId = execution.getId();
    try {
-     runtimeService.signalEventReceived("bogusSignal", execution.getId());
+     runtimeService.signalEventReceived("bogusSignal", executionId);
      fail("exeception expected");
    }catch (ProcessEngineException e) {
      // this is good
@@ -1498,7 +1497,7 @@ public class RuntimeServiceTest {
     assertEquals(processInstance.getId(), rootActInstance.getProcessInstanceId());
     assertEquals(processInstance.getProcessDefinitionId(), rootActInstance.getProcessDefinitionId());
     assertEquals(processInstance.getId(), rootActInstance.getProcessInstanceId());
-    assertTrue(rootActInstance.getExecutionIds()[0].equals(processInstance.getId()));
+    assertEquals(rootActInstance.getExecutionIds()[0], processInstance.getId());
     assertEquals(rootActInstance.getProcessDefinitionId(), rootActInstance.getActivityId());
     assertNull(rootActInstance.getParentActivityInstanceId());
     assertEquals("processDefinition", rootActInstance.getActivityType());
@@ -1509,7 +1508,7 @@ public class RuntimeServiceTest {
     assertEquals(processInstance.getId(), childActivityInstance.getProcessInstanceId());
     assertEquals(processInstance.getProcessDefinitionId(), childActivityInstance.getProcessDefinitionId());
     assertEquals(processInstance.getId(), childActivityInstance.getProcessInstanceId());
-    assertTrue(childActivityInstance.getExecutionIds()[0].equals(task.getExecutionId()));
+    assertEquals(childActivityInstance.getExecutionIds()[0], task.getExecutionId());
     assertEquals("theTask", childActivityInstance.getActivityId());
     assertEquals(rootActInstance.getId(), childActivityInstance.getParentActivityInstanceId());
     assertEquals("userTask", childActivityInstance.getActivityType());
@@ -1789,7 +1788,7 @@ public class RuntimeServiceTest {
 
     assertEquals("innerTask", asyncBeforeInstances[0].getActivityId());
     assertEquals("innerTask", asyncBeforeInstances[1].getActivityId());
-    assertFalse(asyncBeforeInstances[0].getId().equals(asyncBeforeInstances[1].getId()));
+    assertNotEquals(asyncBeforeInstances[0].getId(), asyncBeforeInstances[1].getId());
 
     TransitionInstance[] asyncEndEventInstances = tree.getTransitionInstances("theSubProcessEnd");
     assertEquals(1, asyncEndEventInstances.length);
@@ -2448,9 +2447,10 @@ public class RuntimeServiceTest {
   @Deployment(resources = "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml")
   @Test
   public void testSetAbstractNumberValueFails() {
+    var variables = Variables.createVariables().putValueTyped("var", Variables.numberValue(42));
+    var variableMap = Variables.numberValue(42);
     try {
-      runtimeService.startProcessInstanceByKey("oneTaskProcess",
-          Variables.createVariables().putValueTyped("var", Variables.numberValue(42)));
+      runtimeService.startProcessInstanceByKey("oneTaskProcess", variables);
       fail("exception expected");
     } catch (ProcessEngineException e) {
       // happy path
@@ -2458,9 +2458,10 @@ public class RuntimeServiceTest {
     }
 
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess");
+    var processInstanceId = processInstance.getId();
 
     try {
-      runtimeService.setVariable(processInstance.getId(), "var", Variables.numberValue(42));
+      runtimeService.setVariable(processInstanceId, "var", variableMap);
       fail("exception expected");
     } catch (ProcessEngineException e) {
       // happy path
@@ -2503,11 +2504,12 @@ public class RuntimeServiceTest {
   @Test
   public void testStartProcessInstanceByMessageWithNonExistingMessageStartEvent() {
 	  String deploymentId = null;
-	  try {
-		 deploymentId = repositoryService.createDeployment().addClasspathResource("org/operaton/bpm/engine/test/api/runtime/messageStartEvent_version2.bpmn20.xml").deploy().getId();
-		 ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionVersion(1).singleResult();
+	  deploymentId = repositoryService.createDeployment().addClasspathResource("org/operaton/bpm/engine/test/api/runtime/messageStartEvent_version2.bpmn20.xml").deploy().getId();
+	  ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionVersion(1).singleResult();
+	  var processDefinitionId = processDefinition.getId();
 
-		 runtimeService.startProcessInstanceByMessageAndProcessDefinitionId("newStartMessage", processDefinition.getId());
+    try {
+		 runtimeService.startProcessInstanceByMessageAndProcessDefinitionId("newStartMessage", processDefinitionId);
 
 		 fail("exeception expected");
 	 } catch(ProcessEngineException e) {

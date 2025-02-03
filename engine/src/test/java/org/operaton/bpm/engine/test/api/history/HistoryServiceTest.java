@@ -17,6 +17,8 @@
 package org.operaton.bpm.engine.test.api.history;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -56,7 +58,6 @@ import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
 import org.operaton.bpm.engine.variable.VariableMap;
 import org.operaton.bpm.engine.variable.Variables;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -75,22 +76,22 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml"})
   public void testHistoricProcessInstanceQuery() {
     // With a clean ProcessEngine, no instances should be available
-    assertTrue(historyService.createHistoricProcessInstanceQuery().count() == 0);
+    assertEquals(0, historyService.createHistoricProcessInstanceQuery().count());
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ONE_TASK_PROCESS);
-    assertTrue(historyService.createHistoricProcessInstanceQuery().count() == 1);
+    assertEquals(1, historyService.createHistoricProcessInstanceQuery().count());
 
     // Complete the task and check if the size is count 1
     List<Task> tasks = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
     assertEquals(1, tasks.size());
     taskService.complete(tasks.get(0).getId());
-    assertTrue(historyService.createHistoricProcessInstanceQuery().count() == 1);
+    assertEquals(1, historyService.createHistoricProcessInstanceQuery().count());
   }
 
   @Test
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml"})
   public void testHistoricProcessInstanceQueryOrderBy() {
     // With a clean ProcessEngine, no instances should be available
-    assertTrue(historyService.createHistoricProcessInstanceQuery().count() == 0);
+    assertEquals(0, historyService.createHistoricProcessInstanceQuery().count());
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ONE_TASK_PROCESS);
 
     List<Task> tasks = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
@@ -294,8 +295,10 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testHistoricProcessInstanceQueryByProcessInstanceIdsEmpty() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+    var processInstanceIds = new HashSet<String>();
     try {
-      historyService.createHistoricProcessInstanceQuery().processInstanceIds(new HashSet<>());
+      historicProcessInstanceQuery.processInstanceIds(processInstanceIds);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException re) {
       testRule.assertTextPresent("Set of process instance ids is empty", re.getMessage());
@@ -304,8 +307,9 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testHistoricProcessInstanceQueryByProcessInstanceIdsNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery().processInstanceIds(null);
+      historicProcessInstanceQuery.processInstanceIds(null);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException re) {
       testRule.assertTextPresent("Set of process instance ids is null", re.getMessage());
@@ -346,11 +350,12 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testQueryByRootProcessInstancesAndSuperProcess() {
+    var historicProcessInstanceQuery1 = historyService.createHistoricProcessInstanceQuery()
+      .rootProcessInstances();
+
     // when
     try {
-      historyService.createHistoricProcessInstanceQuery()
-        .rootProcessInstances()
-        .superProcessInstanceId("processInstanceId");
+      historicProcessInstanceQuery1.superProcessInstanceId("processInstanceId");
 
       fail("expected exception");
     } catch (BadUserRequestException e) {
@@ -358,11 +363,11 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
       assertTrue(e.getMessage().contains("Invalid query usage: cannot set both rootProcessInstances and superProcessInstanceId"));
     }
 
+    var historicProcessInstanceQuery2 = historyService.createHistoricProcessInstanceQuery()
+      .superProcessInstanceId("processInstanceId");
     // when
     try {
-      historyService.createHistoricProcessInstanceQuery()
-        .superProcessInstanceId("processInstanceId")
-        .rootProcessInstances();
+      historicProcessInstanceQuery2.rootProcessInstances();
 
       fail("expected exception");
     } catch (BadUserRequestException e) {
@@ -751,8 +756,9 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
   public void testDeleteRunningProcessInstance() {
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ONE_TASK_PROCESS);
     assertEquals(1, runtimeService.createProcessInstanceQuery().processDefinitionKey(ONE_TASK_PROCESS).count());
+    var processInstanceId = processInstance.getId();
     try {
-      historyService.deleteHistoricProcessInstance(processInstance.getId());
+      historyService.deleteHistoricProcessInstance(processInstanceId);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException ae) {
       testRule.assertTextPresent("Process instance is still running, cannot delete historic process instance", ae.getMessage());
@@ -771,8 +777,7 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testDeleteProcessInstanceIfExistsWithFake() {
-      historyService.deleteHistoricProcessInstanceIfExists("aFake");
-      //don't expect exception
+    assertThatCode(() -> historyService.deleteHistoricProcessInstanceIfExists("aFake")).doesNotThrowAnyException();
   }
 
   @Test
@@ -806,16 +811,13 @@ public class HistoryServiceTest extends PluggableProcessEngineTest {
     List<String> ids = prepareHistoricProcesses();
     ids.add("aFake");
 
-    try {
-      //when
-      historyService.deleteHistoricProcessInstances(ids);
-      fail("Exception expected");
-    } catch (ProcessEngineException e) {
-      //expected
-      Assert.assertThat(e.getMessage(), CoreMatchers.containsString("No historic process instance found with id: [aFake]" ));
-    }
+    // when
+    assertThatThrownBy(() -> historyService.deleteHistoricProcessInstances(ids))
+      // then
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("No historic process instance found with id: [aFake]");
 
-    //then expect no instance is deleted
+    // then expect no instance is deleted
     assertEquals(2, historyService.createHistoricProcessInstanceQuery().processDefinitionKey(ONE_TASK_PROCESS).count());
   }
 

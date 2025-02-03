@@ -182,16 +182,17 @@ public class DmnBusinessRuleTaskResultMappingTest extends PluggableProcessEngine
 
   @Test
   public void testInvalidMapping() {
-    try {
-      testRule.deploy(repositoryService
+    var deploymentBuilder = repositoryService
           .createDeployment()
-          .addClasspathResource(INVALID_MAPPING_BPMN));
+          .addClasspathResource(INVALID_MAPPING_BPMN);
+    try {
+      testRule.deploy(deploymentBuilder);
 
       fail("expect parse exception");
     } catch (ParseException e) {
       testRule.assertTextPresent("No decision result mapper found for name 'invalid'", e.getMessage());
-      assertThat(e.getResorceReports().get(0).getErrors()).hasSize(1);
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("ruleTask");
+      assertThat(e.getResourceReports().get(0).getErrors()).hasSize(1);
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("ruleTask");
     }
   }
 

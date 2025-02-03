@@ -16,45 +16,7 @@
  */
 package org.operaton.bpm.engine.test.api.form;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.entry;
-import static org.operaton.bpm.engine.test.util.OperatonFormUtils.findAllOperatonFormDefinitionEntities;
-import static org.operaton.bpm.engine.variable.Variables.booleanValue;
-import static org.operaton.bpm.engine.variable.Variables.createVariables;
-import static org.operaton.bpm.engine.variable.Variables.objectValue;
-import static org.operaton.bpm.engine.variable.Variables.serializedObjectValue;
-import static org.operaton.bpm.engine.variable.Variables.stringValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.operaton.bpm.engine.BadUserRequestException;
-import org.operaton.bpm.engine.CaseService;
-import org.operaton.bpm.engine.FormService;
-import org.operaton.bpm.engine.HistoryService;
-import org.operaton.bpm.engine.IdentityService;
-import org.operaton.bpm.engine.ManagementService;
-import org.operaton.bpm.engine.ProcessEngineConfiguration;
-import org.operaton.bpm.engine.ProcessEngineException;
-import org.operaton.bpm.engine.RepositoryService;
-import org.operaton.bpm.engine.RuntimeService;
-import org.operaton.bpm.engine.TaskService;
+import org.operaton.bpm.engine.*;
 import org.operaton.bpm.engine.delegate.DelegateExecution;
 import org.operaton.bpm.engine.delegate.ExecutionListener;
 import org.operaton.bpm.engine.exception.NotFoundException;
@@ -66,8 +28,6 @@ import org.operaton.bpm.engine.history.HistoricVariableInstance;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.operaton.bpm.engine.impl.form.type.AbstractFormFieldType;
 import org.operaton.bpm.engine.impl.history.HistoryLevel;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.VariableInstanceEntity;
 import org.operaton.bpm.engine.impl.util.CollectionUtil;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
@@ -89,12 +49,30 @@ import org.operaton.bpm.engine.variable.value.ObjectValue;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 import org.operaton.commons.utils.IoUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.operaton.bpm.engine.test.util.OperatonFormUtils.findAllOperatonFormDefinitionEntities;
+import static org.operaton.bpm.engine.variable.Variables.booleanValue;
+import static org.operaton.bpm.engine.variable.Variables.createVariables;
+import static org.operaton.bpm.engine.variable.Variables.objectValue;
+import static org.operaton.bpm.engine.variable.Variables.serializedObjectValue;
+import static org.operaton.bpm.engine.variable.Variables.stringValue;
+
+import java.io.InputStream;
+import java.util.*;
+import java.util.Map.Entry;
+
+import org.apache.groovy.util.Maps;
+import org.junit.*;
 import org.junit.rules.RuleChain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joram Barrez
@@ -172,32 +150,21 @@ public class FormServiceTest {
 
   @Test
   public void testGetStartFormByKeyNullKey() {
-    try {
-      formService.getRenderedStartForm(null);
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      // Exception expected
-    }
+    assertThatThrownBy(() -> formService.getRenderedStartForm(null))
+      .isInstanceOf(ProcessEngineException.class);
   }
 
   @Test
   public void testGetStartFormByIdNullId() {
-    try {
-      formService.getRenderedStartForm(null);
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      // Exception expected
-    }
+    assertThatThrownBy(() -> formService.getRenderedStartForm(null))
+      .isInstanceOf(ProcessEngineException.class);
   }
 
   @Test
   public void testGetStartFormByIdUnexistingProcessDefinitionId() {
-    try {
-      formService.getRenderedStartForm("unexistingId");
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("no deployed process definition found with id", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getRenderedStartForm("unexistingId"))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("no deployed process definition found with id");
   }
 
   @Test
@@ -212,12 +179,9 @@ public class FormServiceTest {
 
   @Test
   public void testGetTaskFormUnexistingTaskId() {
-    try {
-      formService.getRenderedTaskForm("unexistingtask");
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("Task 'unexistingtask' not found", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getRenderedTaskForm("unexistingtask"))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("Task 'unexistingtask' not found");
   }
 
   @Test
@@ -275,6 +239,7 @@ public class FormServiceTest {
 
   @Deployment
   @Test
+  @SuppressWarnings("deprecation")
   public void testFormPropertyHandlingDeprecated() {
     Map<String, String> properties = new HashMap<>();
     properties.put("room", "5b"); // default
@@ -324,21 +289,19 @@ public class FormServiceTest {
 
     assertEquals(5, formProperties.size());
 
-    try {
-      formService.submitTaskFormData(taskId, new HashMap<>());
-      fail("expected exception about required form property 'street'");
-    } catch (ProcessEngineException e) {
-      // OK
-    }
+    HashMap<String, String> emptyProperties = new HashMap<>();
+    assertThatThrownBy(() -> formService.submitTaskFormData(taskId, emptyProperties))
+      .withFailMessage("expected exception about required form property 'street'")
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("form property 'street' is required");
 
-    try {
-      properties = new HashMap<>();
-      properties.put("speaker", "its not allowed to update speaker!");
-      formService.submitTaskFormData(taskId, properties);
-      fail("expected exception about a non writable form property 'speaker'");
-    } catch (ProcessEngineException e) {
-      // OK
-    }
+    properties = new HashMap<>();
+    properties.put("speaker", "its not allowed to update speaker!");
+    var finalProperties = properties;
+    assertThatThrownBy(() -> formService.submitTaskFormData(taskId, finalProperties))
+      .withFailMessage("expected exception about a non writable form property 'speaker'")
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("form property 'speaker' is not writable");
 
     properties = new HashMap<>();
     properties.put("street", "rubensstraat");
@@ -407,21 +370,16 @@ public class FormServiceTest {
 
     assertEquals(5, formProperties.size());
 
-    try {
-      formService.submitTaskForm(taskId, new HashMap<>());
-      fail("expected exception about required form property 'street'");
-    } catch (ProcessEngineException e) {
-      // OK
-    }
+    HashMap<String, Object> emptyProperties = new HashMap<>();
+    assertThatThrownBy(() -> formService.submitTaskForm(taskId, emptyProperties))
+      .withFailMessage("expected exception about required form property 'street'")
+      .isInstanceOf(ProcessEngineException.class);
 
-    try {
-      properties = new HashMap<>();
-      properties.put("speaker", "its not allowed to update speaker!");
-      formService.submitTaskForm(taskId, properties);
-      fail("expected exception about a non writable form property 'speaker'");
-    } catch (ProcessEngineException e) {
-      // OK
-    }
+    Map<String,Object> finalProperties = Maps.of("speaker", "its not allowed to update speaker!");
+
+    assertThatThrownBy(() -> formService.submitTaskForm(taskId, finalProperties))
+      .withFailMessage("expected exception about a non writable form property 'speaker'")
+      .isInstanceOf(ProcessEngineException.class);
 
     properties = new HashMap<>();
     properties.put("street", "rubensstraat");
@@ -490,23 +448,22 @@ public class FormServiceTest {
   @Deployment
   @Test
   public void testInvalidFormKeyReference() {
-    try {
-      formService.getRenderedStartForm(repositoryService.createProcessDefinitionQuery().singleResult().getId(), "juel");
-      fail();
-    } catch (ProcessEngineException e) {
-      testRule.assertTextPresent("Form with formKey 'IDoNotExist' does not exist", e.getMessage());
-    }
+    String processDefinitionId = repositoryService.createProcessDefinitionQuery().singleResult().getId();
+
+    assertThatThrownBy(() -> formService.getRenderedStartForm(processDefinitionId, "juel"))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("Form with formKey 'IDoNotExist' does not exist");
   }
 
   @Deployment
   @Test
   public void testSubmitStartFormDataWithBusinessKey() {
-    Map<String, String> properties = new HashMap<>();
+    Map<String, Object> properties = new HashMap<>();
     properties.put("duration", "45");
     properties.put("speaker", "Mike");
     String procDefId = repositoryService.createProcessDefinitionQuery().singleResult().getId();
 
-    ProcessInstance processInstance = formService.submitStartFormData(procDefId, "123", properties);
+    ProcessInstance processInstance = formService.submitStartForm(procDefId, "123", properties);
     assertEquals("123", processInstance.getBusinessKey());
 
     assertEquals(processInstance.getId(), runtimeService.createProcessInstanceQuery().processInstanceBusinessKey("123").singleResult().getId());
@@ -611,18 +568,28 @@ public class FormServiceTest {
     caseService.createCaseInstanceByKey("oneTaskCase");
 
     Task task = taskService.createTaskQuery().singleResult();
+    String taskId = task.getId();
 
     String stringValue = "some string";
     String serializedValue = "some value";
 
-    formService.submitTaskForm(task.getId(), createVariables()
-        .putValueTyped("boolean", booleanValue(null))
-        .putValueTyped("string", stringValue(stringValue))
-        .putValueTyped("serializedObject", serializedObjectValue(serializedValue)
-            .objectTypeName(String.class.getName())
-            .serializationDataFormat(Variables.SerializationDataFormats.JAVA)
-            .create())
-        .putValueTyped("object", objectValue(serializedValue).create()));
+    VariableMap variableMap = createVariables()
+      .putValueTyped("boolean", booleanValue(null))
+      .putValueTyped("string", stringValue(stringValue))
+      .putValueTyped("serializedObject", serializedObjectValue(serializedValue).objectTypeName(String.class.getName())
+        .serializationDataFormat(Variables.SerializationDataFormats.JAVA)
+        .create())
+      .putValueTyped("object", objectValue(serializedValue).create());
+
+    task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    assertThat(task).isNotNull();
+
+    // when
+    formService.submitTaskForm(taskId, variableMap);
+
+    // then
+    task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    assertThat(task).isNull();
   }
 
 
@@ -765,19 +732,13 @@ public class FormServiceTest {
 
   @Test
   public void testGetStartFormKeyEmptyArgument() {
-    try {
-      formService.getStartFormKey(null);
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("The process definition id is mandatory, but 'null' has been provided.", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getStartFormKey(null))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The process definition id is mandatory, but 'null' has been provided.");
 
-    try {
-      formService.getStartFormKey("");
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("The process definition id is mandatory, but '' has been provided.", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getStartFormKey(""))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The process definition id is mandatory, but '' has been provided.");
   }
 
   @Deployment(resources = "org/operaton/bpm/engine/test/api/form/FormsProcess.bpmn20.xml")
@@ -791,33 +752,21 @@ public class FormServiceTest {
 
   @Test
   public void testGetTaskFormKeyEmptyArguments() {
-    try {
-      formService.getTaskFormKey(null, "23");
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("The process definition id is mandatory, but 'null' has been provided.", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getTaskFormKey(null, "23"))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The process definition id is mandatory, but 'null' has been provided.");
 
-    try {
-      formService.getTaskFormKey("", "23");
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("The process definition id is mandatory, but '' has been provided.", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getTaskFormKey("", "23"))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The process definition id is mandatory, but '' has been provided.");
 
-    try {
-      formService.getTaskFormKey("42", null);
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("The task definition key is mandatory, but 'null' has been provided.", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getTaskFormKey("42", null))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The task definition key is mandatory, but 'null' has been provided.");
 
-    try {
-      formService.getTaskFormKey("42", "");
-      fail("ProcessEngineException expected");
-    } catch (ProcessEngineException ae) {
-      testRule.assertTextPresent("The task definition key is mandatory, but '' has been provided.", ae.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getTaskFormKey("42", ""))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The task definition key is mandatory, but '' has been provided.");
   }
 
   @Deployment(resources = "org/operaton/bpm/engine/test/api/form/FormsProcess.bpmn20.xml")
@@ -854,8 +803,8 @@ public class FormServiceTest {
     assertEquals("someString", variables.getValueTyped("stringField").getValue());
     assertEquals(ValueType.STRING, variables.getValueTyped("stringField").getType());
 
-    assertEquals(5l, variables.get("longField"));
-    assertEquals(5l, variables.getValueTyped("longField").getValue());
+    assertEquals(5L, variables.get("longField"));
+    assertEquals(5L, variables.getValueTyped("longField").getValue());
     assertEquals(ValueType.LONG, variables.getValueTyped("longField").getType());
 
     assertNull(variables.get("customField"));
@@ -875,14 +824,14 @@ public class FormServiceTest {
     assertEquals(2013, calendar.get(Calendar.YEAR));
 
     // get restricted set of variables:
-    variables = formService.getStartFormVariables(processDefinition.getId(), Arrays.asList("stringField"), true);
+    variables = formService.getStartFormVariables(processDefinition.getId(), List.of("stringField"), true);
     assertEquals(1, variables.size());
     assertEquals("someString", variables.get("stringField"));
     assertEquals("someString", variables.getValueTyped("stringField").getValue());
     assertEquals(ValueType.STRING, variables.getValueTyped("stringField").getType());
 
     // request non-existing variable
-    variables = formService.getStartFormVariables(processDefinition.getId(), Arrays.asList("non-existing!"), true);
+    variables = formService.getStartFormVariables(processDefinition.getId(), List.of("non-existing!"), true);
     assertEquals(0, variables.size());
 
     // null => all
@@ -908,7 +857,7 @@ public class FormServiceTest {
     Map<String, Object> processVars = new HashMap<>();
     processVars.put("someString", "initialValue");
     processVars.put("initialBooleanVariable", true);
-    processVars.put("initialLongVariable", 1l);
+    processVars.put("initialLongVariable", 1L);
     processVars.put("serializable", Arrays.asList("a", "b", "c"));
 
     runtimeService.startProcessInstanceByKey("testProcess", processVars);
@@ -921,8 +870,8 @@ public class FormServiceTest {
     assertEquals("someString", variables.getValueTyped("stringField").getValue());
     assertEquals(ValueType.STRING, variables.getValueTyped("stringField").getType());
 
-    assertEquals(5l, variables.get("longField"));
-    assertEquals(5l, variables.getValueTyped("longField").getValue());
+    assertEquals(5L, variables.get("longField"));
+    assertEquals(5L, variables.getValueTyped("longField").getValue());
     assertEquals(ValueType.LONG, variables.getValueTyped("longField").getType());
 
     assertNull(variables.get("customField"));
@@ -937,38 +886,38 @@ public class FormServiceTest {
     assertEquals(true, variables.getValueTyped("initialBooleanVariable").getValue());
     assertEquals(ValueType.BOOLEAN, variables.getValueTyped("initialBooleanVariable").getType());
 
-    assertEquals(1l, variables.get("initialLongVariable"));
-    assertEquals(1l, variables.getValueTyped("initialLongVariable").getValue());
+    assertEquals(1L, variables.get("initialLongVariable"));
+    assertEquals(1L, variables.getValueTyped("initialLongVariable").getValue());
     assertEquals(ValueType.LONG, variables.getValueTyped("initialLongVariable").getType());
 
     assertNotNull(variables.get("serializable"));
 
     // override the long variable
-    taskService.setVariableLocal(task.getId(), "initialLongVariable", 2l);
+    taskService.setVariableLocal(task.getId(), "initialLongVariable", 2L);
 
     variables = formService.getTaskFormVariables(task.getId());
     assertEquals(7, variables.size());
 
-    assertEquals(2l, variables.get("initialLongVariable"));
-    assertEquals(2l, variables.getValueTyped("initialLongVariable").getValue());
+    assertEquals(2L, variables.get("initialLongVariable"));
+    assertEquals(2L, variables.getValueTyped("initialLongVariable").getValue());
     assertEquals(ValueType.LONG, variables.getValueTyped("initialLongVariable").getType());
 
     // get restricted set of variables (form field):
-    variables = formService.getTaskFormVariables(task.getId(), Arrays.asList("someString"), true);
+    variables = formService.getTaskFormVariables(task.getId(), List.of("someString"), true);
     assertEquals(1, variables.size());
     assertEquals("initialValue", variables.get("someString"));
     assertEquals("initialValue", variables.getValueTyped("someString").getValue());
     assertEquals(ValueType.STRING, variables.getValueTyped("someString").getType());
 
     // get restricted set of variables (process variable):
-    variables = formService.getTaskFormVariables(task.getId(), Arrays.asList("initialBooleanVariable"), true);
+    variables = formService.getTaskFormVariables(task.getId(), List.of("initialBooleanVariable"), true);
     assertEquals(1, variables.size());
     assertEquals(true, variables.get("initialBooleanVariable"));
     assertEquals(true, variables.getValueTyped("initialBooleanVariable").getValue());
     assertEquals(ValueType.BOOLEAN, variables.getValueTyped("initialBooleanVariable").getType());
 
     // request non-existing variable
-    variables = formService.getTaskFormVariables(task.getId(), Arrays.asList("non-existing!"), true);
+    variables = formService.getTaskFormVariables(task.getId(), List.of("non-existing!"), true);
     assertEquals(0, variables.size());
 
     // null => all
@@ -983,7 +932,7 @@ public class FormServiceTest {
     Map<String, Object> processVars = new HashMap<>();
     processVars.put("someString", "initialValue");
     processVars.put("initialBooleanVariable", true);
-    processVars.put("initialLongVariable", 1l);
+    processVars.put("initialLongVariable", 1L);
     processVars.put("serializable", Arrays.asList("a", "b", "c"));
 
     // create new standalone task
@@ -1007,31 +956,31 @@ public class FormServiceTest {
     assertEquals(true, variables.getValueTyped("initialBooleanVariable").getValue());
     assertEquals(ValueType.BOOLEAN, variables.getValueTyped("initialBooleanVariable").getType());
 
-    assertEquals(1l, variables.get("initialLongVariable"));
-    assertEquals(1l, variables.getValueTyped("initialLongVariable").getValue());
+    assertEquals(1L, variables.get("initialLongVariable"));
+    assertEquals(1L, variables.getValueTyped("initialLongVariable").getValue());
     assertEquals(ValueType.LONG, variables.getValueTyped("initialLongVariable").getType());
 
     assertNotNull(variables.get("serializable"));
 
     // override the long variable
-    taskService.setVariable(task.getId(), "initialLongVariable", 2l);
+    taskService.setVariable(task.getId(), "initialLongVariable", 2L);
 
     variables = formService.getTaskFormVariables(task.getId());
     assertEquals(4, variables.size());
 
-    assertEquals(2l, variables.get("initialLongVariable"));
-    assertEquals(2l, variables.getValueTyped("initialLongVariable").getValue());
+    assertEquals(2L, variables.get("initialLongVariable"));
+    assertEquals(2L, variables.getValueTyped("initialLongVariable").getValue());
     assertEquals(ValueType.LONG, variables.getValueTyped("initialLongVariable").getType());
 
     // get restricted set of variables
-    variables = formService.getTaskFormVariables(task.getId(), Arrays.asList("someString"), true);
+    variables = formService.getTaskFormVariables(task.getId(), List.of("someString"), true);
     assertEquals(1, variables.size());
     assertEquals("initialValue", variables.get("someString"));
     assertEquals("initialValue", variables.getValueTyped("someString").getValue());
     assertEquals(ValueType.STRING, variables.getValueTyped("someString").getType());
 
     // request non-existing variable
-    variables = formService.getTaskFormVariables(task.getId(), Arrays.asList("non-existing!"), true);
+    variables = formService.getTaskFormVariables(task.getId(), List.of("non-existing!"), true);
     assertEquals(0, variables.size());
 
     // null => all
@@ -1054,9 +1003,9 @@ public class FormServiceTest {
     ProcessInstance processInstance = formService.submitStartForm(processDefinition.getId(), variables);
 
     // then the variable is available as a process variable
-    ArrayList<String> var = (ArrayList<String>) runtimeService.getVariable(processInstance.getId(), "var");
-    assertNotNull(var);
-    assertTrue(var.isEmpty());
+    ArrayList<String> variable = (ArrayList<String>) runtimeService.getVariable(processInstance.getId(), "var");
+    assertNotNull(variable);
+    assertTrue(variable.isEmpty());
 
     // then no historic form property event has been written since this is not supported for custom objects
     if(processEngineConfiguration.getHistoryLevel().getId() >= ProcessEngineConfigurationImpl.HISTORYLEVEL_FULL) {
@@ -1070,6 +1019,7 @@ public class FormServiceTest {
   public void testSubmitTaskFormWithObjectVariables() {
     // given
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
+    assertThat(processDefinition).isNotNull();
 
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("twoTasksProcess");
 
@@ -1082,9 +1032,9 @@ public class FormServiceTest {
     formService.submitTaskForm(task.getId(), variables);
 
     // then the variable is available as a process variable
-    ArrayList<String> var = (ArrayList<String>) runtimeService.getVariable(processInstance.getId(), "var");
-    assertNotNull(var);
-    assertTrue(var.isEmpty());
+    ArrayList<String> variable = (ArrayList<String>) runtimeService.getVariable(processInstance.getId(), "var");
+    assertNotNull(variable);
+    assertTrue(variable.isEmpty());
 
     // then no historic form property event has been written since this is not supported for custom objects
     if(processEngineConfiguration.getHistoryLevel().getId() >= ProcessEngineConfigurationImpl.HISTORYLEVEL_FULL) {
@@ -1202,13 +1152,9 @@ public class FormServiceTest {
 
     // when
     final boolean hasLoadedAnyVariables =
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Boolean>() {
-
-        @Override
-        public Boolean execute(CommandContext commandContext) {
-          formService.submitTaskForm(task.getId(), null);
-          return !commandContext.getDbEntityManager().getCachedEntitiesByType(VariableInstanceEntity.class).isEmpty();
-        }
+      processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+        formService.submitTaskForm(task.getId(), null);
+        return !commandContext.getDbEntityManager().getCachedEntitiesByType(VariableInstanceEntity.class).isEmpty();
       });
 
     // then
@@ -1304,14 +1250,13 @@ public class FormServiceTest {
 
   @Test
   public void testDeployTaskFormWithoutFieldTypes() {
-    try {
-      repositoryService
-        .createDeployment()
-        .addClasspathResource("org/operaton/bpm/engine/test/api/form/FormServiceTest.testDeployTaskFormWithoutFieldTypes.bpmn20.xml")
-        .deploy();
-    } catch (ProcessEngineException e) {
-      testRule.assertTextPresent("form field must have a 'type' attribute", e.getMessage());
-    }
+    var deploymentBuilder = repositoryService
+      .createDeployment()
+      .addClasspathResource("org/operaton/bpm/engine/test/api/form/FormServiceTest.testDeployTaskFormWithoutFieldTypes.bpmn20.xml");
+
+    assertThatThrownBy(deploymentBuilder::deploy)
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("form field must have a 'type' attribute");
   }
 
   @Deployment
@@ -1341,14 +1286,15 @@ public class FormServiceTest {
 
   @Test
   public void testDeployStartFormWithoutFieldTypes() {
-    try {
-      repositoryService
-        .createDeployment()
-        .addClasspathResource("org/operaton/bpm/engine/test/api/form/FormServiceTest.testDeployStartFormWithoutFieldTypes.bpmn20.xml")
-        .deploy();
-    } catch (ProcessEngineException e) {
-      testRule.assertTextPresent("form field must have a 'type' attribute", e.getMessage());
-    }
+    // when
+    var deploymentBuilder = repositoryService
+      .createDeployment()
+      .addClasspathResource("org/operaton/bpm/engine/test/api/form/FormServiceTest.testDeployStartFormWithoutFieldTypes.bpmn20.xml");
+    // when
+    assertThatThrownBy(deploymentBuilder::deploy)
+    // then
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("form field must have a 'type' attribute");
   }
 
   @Deployment(resources = {
@@ -1422,7 +1368,7 @@ public class FormServiceTest {
 
     List<VariableInstance> result = runtimeService.createVariableInstanceQuery().list();
     assertEquals(1, result.size());
-    assertTrue(result.get(0).getName().equals("secondParam"));
+    assertEquals("secondParam", result.get(0).getName());
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/form/DeployedFormsProcess.bpmn20.xml",
@@ -1481,12 +1427,9 @@ public class FormServiceTest {
 
   @Test
   public void testGetDeployedStartFormWithNullProcDefId() {
-    try {
-      formService.getDeployedStartForm(null);
-      fail("Exception expected");
-    } catch (BadUserRequestException e) {
-      assertEquals("Process definition id cannot be null: processDefinitionId is null", e.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getDeployedStartForm(null))
+      .isInstanceOf(BadUserRequestException.class)
+      .hasMessageContaining("Process definition id cannot be null: processDefinitionId is null");
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/form/DeployedFormsProcess.bpmn20.xml",
@@ -1566,12 +1509,9 @@ public class FormServiceTest {
 
   @Test
   public void testGetDeployedTaskFormWithNullTaskId() {
-    try {
-      formService.getDeployedTaskForm(null);
-      fail("Exception expected");
-    } catch (BadUserRequestException e) {
-      assertEquals("Task id cannot be null: taskId is null", e.getMessage());
-    }
+    assertThatThrownBy(() -> formService.getDeployedTaskForm(null))
+      .isInstanceOf(BadUserRequestException.class)
+      .hasMessageContaining("Task id cannot be null: taskId is null");
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/form/DeployedFormsProcess.bpmn20.xml",
@@ -1582,10 +1522,9 @@ public class FormServiceTest {
     String procDefId = repositoryService.createProcessDefinitionQuery().singleResult().getId();
 
     // when
-    assertThatThrownBy(() -> {
-      formService.getDeployedStartForm(procDefId);
-    }).isInstanceOf(NotFoundException.class)
-    .hasMessageContaining("The form with the resource name 'org/operaton/bpm/engine/test/api/form/start.html' cannot be found in deployment");
+    assertThatThrownBy(() -> formService.getDeployedStartForm(procDefId))
+      .isInstanceOf(NotFoundException.class)
+      .hasMessageContaining("The form with the resource name 'org/operaton/bpm/engine/test/api/form/start.html' cannot be found in deployment");
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/form/DeployedFormsProcess.bpmn20.xml",
@@ -1597,10 +1536,9 @@ public class FormServiceTest {
     String taskId = taskService.createTaskQuery().singleResult().getId();
 
     // when
-    assertThatThrownBy(() -> {
-      formService.getDeployedTaskForm(taskId);
-    }).isInstanceOf(NotFoundException.class)
-    .hasMessageContaining("The form with the resource name 'org/operaton/bpm/engine/test/api/form/task.html' cannot be found in deployment");
+    assertThatThrownBy(() -> formService.getDeployedTaskForm(taskId))
+      .isInstanceOf(NotFoundException.class)
+      .hasMessageContaining("The form with the resource name 'org/operaton/bpm/engine/test/api/form/task.html' cannot be found in deployment");
   }
 
   @Test
@@ -1610,10 +1548,9 @@ public class FormServiceTest {
     String processDefinitionId = repositoryService.createProcessDefinitionQuery().singleResult().getId();
 
     // when
-    assertThatThrownBy(() -> {
-      formService.getDeployedStartForm(processDefinitionId);
-    }).isInstanceOf(BadUserRequestException.class)
-    .hasMessage("One of the attributes 'formKey' and 'operaton:formRef' must be supplied but none were set.");
+    assertThatThrownBy(() -> formService.getDeployedStartForm(processDefinitionId))
+      .isInstanceOf(BadUserRequestException.class)
+      .hasMessage("One of the attributes 'formKey' and 'operaton:formRef' must be supplied but none were set.");
   }
 
   @Test
@@ -1624,10 +1561,9 @@ public class FormServiceTest {
     String taskId = taskService.createTaskQuery().singleResult().getId();
 
     // when
-    assertThatThrownBy(() -> {
-      formService.getDeployedTaskForm(taskId);
-    }).isInstanceOf(BadUserRequestException.class)
-    .hasMessage("One of the attributes 'formKey' and 'operaton:formRef' must be supplied but none were set.");
+    assertThatThrownBy(() -> formService.getDeployedTaskForm(taskId))
+      .isInstanceOf(BadUserRequestException.class)
+      .hasMessage("One of the attributes 'formKey' and 'operaton:formRef' must be supplied but none were set.");
   }
 
   @Deployment(resources = {
@@ -1636,12 +1572,11 @@ public class FormServiceTest {
   public void testGetDeployedStartFormWithWrongKeyFormat() {
     String processDefinitionId = repositoryService.createProcessDefinitionQuery().singleResult().getId();
 
-    try {
-      formService.getDeployedStartForm(processDefinitionId);
-      fail("Exception expected");
-    } catch (BadUserRequestException e) {
-      testRule.assertTextPresent("The form key 'formKey' does not reference a deployed form.", e.getMessage());
-    }
+    // when
+    assertThatThrownBy(() -> formService.getDeployedStartForm(processDefinitionId))
+    // then
+      .isInstanceOf(BadUserRequestException.class)
+      .hasMessageContaining("The form key 'formKey' does not reference a deployed form.");
   }
 
   @Deployment(resources = {
@@ -1651,12 +1586,11 @@ public class FormServiceTest {
     runtimeService.startProcessInstanceByKey("FormsProcess");
     String taskId = taskService.createTaskQuery().singleResult().getId();
 
-    try {
-      formService.getDeployedTaskForm(taskId);
-      fail("Exception expected");
-    } catch (BadUserRequestException e) {
-      testRule.assertTextPresent("The form key 'formKey' does not reference a deployed form.", e.getMessage());
-    }
+    // when
+    assertThatThrownBy(() -> formService.getDeployedTaskForm(taskId))
+    // then
+      .isInstanceOf(BadUserRequestException.class)
+      .hasMessageContaining("The form key 'formKey' does not reference a deployed form.");
   }
 
   @Deployment(resources = {

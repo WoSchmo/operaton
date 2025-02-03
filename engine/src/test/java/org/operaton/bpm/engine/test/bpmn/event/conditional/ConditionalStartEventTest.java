@@ -18,12 +18,7 @@ package org.operaton.bpm.engine.test.bpmn.event.conditional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -131,16 +126,16 @@ public class ConditionalStartEventTest {
       if (processDefinition.getVersion() == 1) {
         for (EventSubscription subscription : newEventSubscriptions) {
           EventSubscriptionEntity subscriptionEntity = (EventSubscriptionEntity) subscription;
-          assertFalse(subscriptionEntity.getConfiguration().equals(processDefinition.getId()));
+          assertNotEquals(subscriptionEntity.getConfiguration(), processDefinition.getId());
         }
       } else {
         for (EventSubscription subscription : newEventSubscriptions) {
           EventSubscriptionEntity subscriptionEntity = (EventSubscriptionEntity) subscription;
-          assertTrue(subscriptionEntity.getConfiguration().equals(processDefinition.getId()));
+          assertEquals(subscriptionEntity.getConfiguration(), processDefinition.getId());
         }
       }
     }
-    assertFalse(eventSubscriptions.equals(newEventSubscriptions));
+    assertNotEquals(eventSubscriptions, newEventSubscriptions);
   }
 
   @Test
@@ -467,7 +462,7 @@ public class ConditionalStartEventTest {
     } catch (ParseException e) {
       // then
       assertThat(e.getMessage()).contains("Cannot have more than one conditional event subscription with the same condition '${variable == 1}'");
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("StartEvent_2");
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("StartEvent_2");
       List<EventSubscription> eventSubscriptions = runtimeService.createEventSubscriptionQuery().list();
       assertEquals(0, eventSubscriptions.size());
     }
@@ -775,7 +770,6 @@ public class ConditionalStartEventTest {
   protected String deployModel(BpmnModelInstance model) {
     List<ProcessDefinition> deployedProcessDefinitions = testRule.deploy(model).getDeployedProcessDefinitions();
     assertEquals(1, deployedProcessDefinitions.size());
-    String definitionId2 = deployedProcessDefinitions.get(0).getId();
-    return definitionId2;
+    return deployedProcessDefinitions.get(0).getId();
   }
 }

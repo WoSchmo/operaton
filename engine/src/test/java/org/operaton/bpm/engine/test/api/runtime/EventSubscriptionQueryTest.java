@@ -29,8 +29,6 @@ import java.util.List;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.impl.EventSubscriptionQueryImpl;
 import org.operaton.bpm.engine.impl.event.EventType;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.EventSubscriptionEntity;
 import org.operaton.bpm.engine.runtime.EventSubscription;
 import org.operaton.bpm.engine.runtime.EventSubscriptionQuery;
@@ -63,11 +61,13 @@ public class EventSubscriptionQueryTest extends PluggableProcessEngineTest {
     assertEquals(1, query.count());
     assertEquals(1, query.list().size());
     assertNotNull(query.singleResult());
+    var eventSubscriptionQuery = runtimeService.createEventSubscriptionQuery();
 
     try {
-      runtimeService.createEventSubscriptionQuery().eventSubscriptionId(null).list();
+      eventSubscriptionQuery.eventSubscriptionId(null);
       fail("Expected ProcessEngineException");
     } catch (ProcessEngineException e) {
+      assertEquals("event subscription id is null", e.getMessage());
     }
 
     cleanDb();
@@ -87,11 +87,13 @@ public class EventSubscriptionQueryTest extends PluggableProcessEngineTest {
       .eventName("messageName2")
       .list();
     assertEquals(1, list.size());
+    var eventSubscriptionQuery = runtimeService.createEventSubscriptionQuery();
 
     try {
-      runtimeService.createEventSubscriptionQuery().eventName(null).list();
+      eventSubscriptionQuery.eventName(null);
       fail("Expected ProcessEngineException");
     } catch (ProcessEngineException e) {
+      assertEquals("event name is null", e.getMessage());
     }
 
     cleanDb();
@@ -112,11 +114,13 @@ public class EventSubscriptionQueryTest extends PluggableProcessEngineTest {
       .eventType("message")
       .list();
     assertEquals(2, list.size());
+    var eventSubscriptionQuery = runtimeService.createEventSubscriptionQuery();
 
     try {
-      runtimeService.createEventSubscriptionQuery().eventType(null).list();
+      eventSubscriptionQuery.eventType(null);
       fail("Expected ProcessEngineException");
     } catch (ProcessEngineException e) {
+      assertEquals("event type is null", e.getMessage());
     }
 
     cleanDb();
@@ -138,11 +142,13 @@ public class EventSubscriptionQueryTest extends PluggableProcessEngineTest {
       .eventType("message")
       .list();
     assertEquals(2, list.size());
+    var eventSubscriptionQuery = runtimeService.createEventSubscriptionQuery();
 
     try {
-      runtimeService.createEventSubscriptionQuery().activityId(null).list();
+      eventSubscriptionQuery.activityId(null);
       fail("Expected ProcessEngineException");
     } catch (ProcessEngineException e) {
+      assertEquals("activity id is null", e.getMessage());
     }
 
     cleanDb();
@@ -175,11 +181,13 @@ public class EventSubscriptionQueryTest extends PluggableProcessEngineTest {
     assertNotNull(signalSubscription);
 
     assertEquals(signalSubscription, subscription);
+    var eventSubscriptionQuery = runtimeService.createEventSubscriptionQuery();
 
     try {
-      runtimeService.createEventSubscriptionQuery().executionId(null).list();
+      eventSubscriptionQuery.executionId(null);
       fail("Expected ProcessEngineException");
     } catch (ProcessEngineException e) {
+      assertEquals("execution id is null", e.getMessage());
     }
 
     cleanDb();
@@ -224,49 +232,43 @@ public class EventSubscriptionQueryTest extends PluggableProcessEngineTest {
 
   protected void createExampleEventSubscriptions() {
     processEngineConfiguration.getCommandExecutorTxRequired()
-    .execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        Calendar calendar = new GregorianCalendar();
+    .execute(commandContext -> {
+      Calendar calendar = new GregorianCalendar();
 
 
-        EventSubscriptionEntity messageEventSubscriptionEntity1 = new EventSubscriptionEntity(EventType.MESSAGE);
-        messageEventSubscriptionEntity1.setEventName("messageName");
-        messageEventSubscriptionEntity1.setActivityId("someActivity");
-        calendar.set(2001, 1, 1);
-        messageEventSubscriptionEntity1.setCreated(calendar.getTime());
-        messageEventSubscriptionEntity1.insert();
+      EventSubscriptionEntity messageEventSubscriptionEntity1 = new EventSubscriptionEntity(EventType.MESSAGE);
+      messageEventSubscriptionEntity1.setEventName("messageName");
+      messageEventSubscriptionEntity1.setActivityId("someActivity");
+      calendar.set(2001, 1, 1);
+      messageEventSubscriptionEntity1.setCreated(calendar.getTime());
+      messageEventSubscriptionEntity1.insert();
 
-        EventSubscriptionEntity messageEventSubscriptionEntity2 = new EventSubscriptionEntity(EventType.MESSAGE);
-        messageEventSubscriptionEntity2.setEventName("messageName");
-        messageEventSubscriptionEntity2.setActivityId("someActivity");
-        calendar.set(2000, 1, 1);
-        messageEventSubscriptionEntity2.setCreated(calendar.getTime());
-        messageEventSubscriptionEntity2.insert();
+      EventSubscriptionEntity messageEventSubscriptionEntity2 = new EventSubscriptionEntity(EventType.MESSAGE);
+      messageEventSubscriptionEntity2.setEventName("messageName");
+      messageEventSubscriptionEntity2.setActivityId("someActivity");
+      calendar.set(2000, 1, 1);
+      messageEventSubscriptionEntity2.setCreated(calendar.getTime());
+      messageEventSubscriptionEntity2.insert();
 
-        EventSubscriptionEntity signalEventSubscriptionEntity3 = new EventSubscriptionEntity(EventType.SIGNAL);
-        signalEventSubscriptionEntity3.setEventName("messageName2");
-        signalEventSubscriptionEntity3.setActivityId("someOtherActivity");
-        calendar.set(2002, 1, 1);
-        signalEventSubscriptionEntity3.setCreated(calendar.getTime());
-        signalEventSubscriptionEntity3.insert();
+      EventSubscriptionEntity signalEventSubscriptionEntity3 = new EventSubscriptionEntity(EventType.SIGNAL);
+      signalEventSubscriptionEntity3.setEventName("messageName2");
+      signalEventSubscriptionEntity3.setActivityId("someOtherActivity");
+      calendar.set(2002, 1, 1);
+      signalEventSubscriptionEntity3.setCreated(calendar.getTime());
+      signalEventSubscriptionEntity3.insert();
 
-        return null;
-      }
+      return null;
     });
   }
 
   protected void cleanDb() {
     processEngineConfiguration.getCommandExecutorTxRequired()
-    .execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        final List<EventSubscription> subscriptions = new EventSubscriptionQueryImpl().list();
-        for (EventSubscription eventSubscriptionEntity : subscriptions) {
-          ((EventSubscriptionEntity) eventSubscriptionEntity).delete();
-        }
-        return null;
+    .execute(commandContext -> {
+      final List<EventSubscription> subscriptions = new EventSubscriptionQueryImpl().list();
+      for (EventSubscription eventSubscriptionEntity : subscriptions) {
+        ((EventSubscriptionEntity) eventSubscriptionEntity).delete();
       }
+      return null;
     });
 
   }

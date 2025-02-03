@@ -27,6 +27,7 @@ import junit.framework.AssertionFailedError;
 import org.operaton.bpm.engine.ParseException;
 import org.operaton.bpm.engine.Problem;
 import org.operaton.bpm.engine.RepositoryService;
+import org.operaton.bpm.engine.repository.DeploymentBuilder;
 import org.operaton.bpm.engine.test.ProcessEngineRule;
 import org.operaton.bpm.engine.test.util.ProvidedProcessEngineRule;
 import org.junit.Before;
@@ -91,18 +92,15 @@ public class EscalationEventParseInvalidProcessTest {
 
   @Test
   public void testParseInvalidProcessDefinition() {
+    var deploymentBuilder = repositoryService.createDeployment()
+      .addClasspathResource(PROCESS_DEFINITION_DIRECTORY + processDefinitionResource);
+
     try {
-      String deploymentId = repositoryService.createDeployment()
-        .addClasspathResource(PROCESS_DEFINITION_DIRECTORY + processDefinitionResource)
-        .deploy().getId();
-
-      // in case that the deployment do not fail
-      repositoryService.deleteDeployment(deploymentId, true);
-
+      deploymentBuilder.deploy();
       fail("exception expected: " + expectedErrorMessage);
     } catch (ParseException e) {
       assertExceptionMessageContainsText(e, expectedErrorMessage);
-      List<Problem> errors = e.getResorceReports().get(0).getErrors();
+      List<Problem> errors = e.getResourceReports().get(0).getErrors();
       for (int i = 0; i < bpmnElementIds.length; i++) {
         assertThat(errors.get(i).getMainElementId()).isEqualTo(bpmnElementIds[i]);
       }

@@ -25,8 +25,6 @@ import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.operaton.bpm.engine.impl.cmd.DeleteJobsCmd;
 import org.operaton.bpm.engine.impl.context.Context;
 import org.operaton.bpm.engine.impl.db.DbEntity;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.persistence.entity.JobEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.JobManager;
@@ -60,6 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -163,18 +162,15 @@ public class JobQueryTest {
     messageDueDate = startTime.getTime();
 
     // Create one message
-    messageId = commandExecutor.execute(new Command<String>() {
-      @Override
-      public String execute(CommandContext commandContext) {
-        MessageEntity message = new MessageEntity();
+    messageId = commandExecutor.execute(commandContext -> {
+      MessageEntity message = new MessageEntity();
 
-        if (ensureJobDueDateSet) {
-          message.setDuedate(messageDueDate);
-        }
-
-        commandContext.getJobManager().send(message);
-        return message.getId();
+      if (ensureJobDueDateSet) {
+        message.setDuedate(messageDueDate);
       }
+
+      commandContext.getJobManager().send(message);
+      return message.getId();
     });
   }
 
@@ -203,11 +199,14 @@ public class JobQueryTest {
   public void testQueryByInvalidActivityId(){
     JobQuery query = managementService.createJobQuery().activityId("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().activityId(null).list();
+      jobQuery.activityId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided activity id is null", e.getMessage());
+    }
   }
 
   @Test
@@ -222,11 +221,14 @@ public class JobQueryTest {
   public void testByInvalidJobDefinitionId() {
     JobQuery query = managementService.createJobQuery().jobDefinitionId("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().jobDefinitionId(null).list();
+      jobQuery.jobDefinitionId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided job definition id is null", e.getMessage());
+    }
   }
 
   @Test
@@ -239,11 +241,14 @@ public class JobQueryTest {
   public void testQueryByInvalidProcessInstanceId() {
     JobQuery query = managementService.createJobQuery().processInstanceId("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().processInstanceId(null);
+      jobQuery.processInstanceId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided process instance id is null", e.getMessage());
+    }
   }
 
   @Test
@@ -258,11 +263,14 @@ public class JobQueryTest {
   public void testQueryByInvalidExecutionId() {
     JobQuery query = managementService.createJobQuery().executionId("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().executionId(null).list();
+      jobQuery.executionId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided execution id is null", e.getMessage());
+    }
   }
 
   @Test
@@ -277,11 +285,14 @@ public class JobQueryTest {
   public void testQueryByInvalidProcessDefinitionId() {
     JobQuery query = managementService.createJobQuery().processDefinitionId("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().processDefinitionId(null).list();
+      jobQuery.processDefinitionId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided process definition id is null", e.getMessage());
+    }
   }
 
   @Test
@@ -303,7 +314,7 @@ public class JobQueryTest {
     verifyQueryResults(query, 1);
 
     String anotherJobId = query.singleResult().getId();
-    assertFalse(jobId.equals(anotherJobId));
+    assertNotEquals(jobId, anotherJobId);
   }
 
   @Test
@@ -316,11 +327,14 @@ public class JobQueryTest {
   public void testQueryByInvalidProcessDefinitionKey() {
     JobQuery query = managementService.createJobQuery().processDefinitionKey("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().processDefinitionKey(null).list();
+      jobQuery.processDefinitionKey(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided process instance key is null", e.getMessage());
+    }
   }
 
   @Test
@@ -336,7 +350,7 @@ public class JobQueryTest {
     verifyQueryResults(query, 1);
 
     String anotherJobId = query.singleResult().getId();
-    assertFalse(jobId.equals(anotherJobId));
+    assertNotEquals(jobId, anotherJobId);
   }
 
   @Test
@@ -381,8 +395,9 @@ public class JobQueryTest {
 
   @Test
   public void testInvalidOnlyTimersUsage() {
+    var jobQuery = managementService.createJobQuery().timers();
     try {
-      managementService.createJobQuery().timers().messages().list();
+      jobQuery.messages();
       fail();
     } catch (ProcessEngineException e) {
       assertThat(e.getMessage()).contains("Cannot combine onlyTimers() with onlyMessages() in the same query");
@@ -588,8 +603,9 @@ public class JobQueryTest {
 
   @Test
   public void testQueryByExceptionMessageNull() {
+    var jobQuery = managementService.createJobQuery();
     try {
-      managementService.createJobQuery().exceptionMessage(null);
+      jobQuery.exceptionMessage(null);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException e) {
       assertEquals("Provided exception message is null", e.getMessage());
@@ -612,11 +628,14 @@ public class JobQueryTest {
   public void testQueryByInvalidFailedActivityId(){
     JobQuery query = managementService.createJobQuery().failedActivityId("invalid");
     verifyQueryResults(query, 0);
+    var jobQuery = managementService.createJobQuery();
 
     try {
-      managementService.createJobQuery().failedActivityId(null).list();
+      jobQuery.failedActivityId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      assertEquals("Provided activity id is null", e.getMessage());
+    }
   }
 
 
@@ -630,7 +649,7 @@ public class JobQueryTest {
     assertNotNull(job);
 
     List<Job> list = managementService.createJobQuery().withException().list();
-    assertEquals(list.size(), 1);
+    assertEquals(1, list.size());
 
     deleteJobInDatabase();
 
@@ -641,7 +660,7 @@ public class JobQueryTest {
     assertNotNull(job);
 
     list = managementService.createJobQuery().withException().list();
-    assertEquals(list.size(), 1);
+    assertEquals(1, list.size());
 
     deleteJobInDatabase();
 
@@ -849,15 +868,17 @@ public class JobQueryTest {
 
   @Test
   public void testQueryInvalidSortingUsage() {
+    var jobQuery = managementService.createJobQuery().orderByJobId();
     try {
-      managementService.createJobQuery().orderByJobId().list();
+      jobQuery.list();
       fail();
     } catch (ProcessEngineException e) {
       assertThat(e.getMessage()).contains("call asc() or desc() after using orderByXX()");
     }
 
+    var jobQuery2 = managementService.createJobQuery();
     try {
-      managementService.createJobQuery().asc();
+      jobQuery2.asc();
       fail();
     } catch (ProcessEngineException e) {
       assertThat(e.getMessage()).contains("You should call any of the orderBy methods first before specifying a direction");
@@ -868,15 +889,10 @@ public class JobQueryTest {
 
   private void setRetries(final String processInstanceId, final int retries) {
     final Job job = managementService.createJobQuery().processInstanceId(processInstanceId).singleResult();
-    commandExecutor.execute(new Command<Void>() {
-
-      @Override
-      public Void execute(CommandContext commandContext) {
-        JobEntity timer = commandContext.getDbEntityManager().selectById(JobEntity.class, job.getId());
-        timer.setRetries(retries);
-        return null;
-      }
-
+    commandExecutor.execute(commandContext -> {
+      JobEntity timer = commandContext.getDbEntityManager().selectById(JobEntity.class, job.getId());
+      timer.setRetries(retries);
+      return null;
     });
   }
 
@@ -928,82 +944,74 @@ public class JobQueryTest {
     try {
       query.singleResult();
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+    }
   }
 
   private void createJobWithoutExceptionMsg() {
-    commandExecutor.execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        JobManager jobManager = commandContext.getJobManager();
+    commandExecutor.execute(commandContext -> {
+      JobManager jobManager = commandContext.getJobManager();
 
-        timerEntity = new TimerEntity();
-        timerEntity.setLockOwner(UUID.randomUUID().toString());
-        timerEntity.setDuedate(new Date());
-        timerEntity.setRetries(0);
+      timerEntity = new TimerEntity();
+      timerEntity.setLockOwner(UUID.randomUUID().toString());
+      timerEntity.setDuedate(new Date());
+      timerEntity.setRetries(0);
 
-        StringWriter stringWriter = new StringWriter();
-        NullPointerException exception = new NullPointerException();
-        exception.printStackTrace(new PrintWriter(stringWriter));
-        timerEntity.setExceptionStacktrace(stringWriter.toString());
+      StringWriter stringWriter = new StringWriter();
+      NullPointerException exception = new NullPointerException();
+      exception.printStackTrace(new PrintWriter(stringWriter));
+      timerEntity.setExceptionStacktrace(stringWriter.toString());
 
-        jobManager.insert(timerEntity);
+      jobManager.insert(timerEntity);
 
-        assertNotNull(timerEntity.getId());
+      assertNotNull(timerEntity.getId());
 
-        return null;
+      return null;
 
-      }
     });
 
   }
 
   private void createJobWithoutExceptionStacktrace() {
-    commandExecutor.execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        JobManager jobManager = commandContext.getJobManager();
+    commandExecutor.execute(commandContext -> {
+      JobManager jobManager = commandContext.getJobManager();
 
-        timerEntity = new TimerEntity();
-        timerEntity.setLockOwner(UUID.randomUUID().toString());
-        timerEntity.setDuedate(new Date());
-        timerEntity.setRetries(0);
-        timerEntity.setExceptionMessage("I'm supposed to fail");
+      timerEntity = new TimerEntity();
+      timerEntity.setLockOwner(UUID.randomUUID().toString());
+      timerEntity.setDuedate(new Date());
+      timerEntity.setRetries(0);
+      timerEntity.setExceptionMessage("I'm supposed to fail");
 
-        jobManager.insert(timerEntity);
+      jobManager.insert(timerEntity);
 
-        assertNotNull(timerEntity.getId());
+      assertNotNull(timerEntity.getId());
 
-        return null;
+      return null;
 
-      }
     });
 
   }
 
   private void deleteJobInDatabase() {
-      commandExecutor.execute(new Command<Void>() {
-        @Override
-        public Void execute(CommandContext commandContext) {
+      commandExecutor.execute(commandContext -> {
 
-          timerEntity.delete();
+        timerEntity.delete();
 
-          commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(timerEntity.getId());
+        commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(timerEntity.getId());
 
-          List<HistoricIncident> historicIncidents = Context
-              .getProcessEngineConfiguration()
-              .getHistoryService()
-              .createHistoricIncidentQuery()
-              .list();
+        List<HistoricIncident> historicIncidents = Context
+            .getProcessEngineConfiguration()
+            .getHistoryService()
+            .createHistoricIncidentQuery()
+            .list();
 
-          for (HistoricIncident historicIncident : historicIncidents) {
-            commandContext
+        for (HistoricIncident historicIncident : historicIncidents) {
+          commandContext
               .getDbEntityManager()
               .delete((DbEntity) historicIncident);
-          }
-
-          return null;
         }
+
+        return null;
       });
   }
 

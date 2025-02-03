@@ -141,13 +141,9 @@ public class CommandContext {
     ProcessApplicationReference targetProcessApplication = getTargetProcessApplication(execution);
 
     if(requiresContextSwitch(targetProcessApplication)) {
-      Context.executeWithinProcessApplication(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          performOperation(executionOperation, execution);
-          return null;
-        }
-
+      Context.executeWithinProcessApplication(() -> {
+        performOperation(executionOperation, execution);
+        return null;
       }, targetProcessApplication, new InvocationContext(execution));
 
     } else {
@@ -279,7 +275,7 @@ public class CommandContext {
     }
   }
 
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({"java:S3824", "unchecked"})
   public <T> T getSession(Class<T> sessionClass) {
     Session session = sessions.get(sessionClass);
     if (session == null) {

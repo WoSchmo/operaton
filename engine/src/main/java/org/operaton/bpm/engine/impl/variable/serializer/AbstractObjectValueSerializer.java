@@ -31,7 +31,7 @@ import org.operaton.bpm.engine.variable.value.ObjectValue;
  */
 public abstract class AbstractObjectValueSerializer extends AbstractSerializableValueSerializer<ObjectValue> {
 
-  public AbstractObjectValueSerializer(String serializationDataFormat) {
+  protected AbstractObjectValueSerializer(String serializationDataFormat) {
     super(ValueType.OBJECT, serializationDataFormat);
   }
 
@@ -95,6 +95,7 @@ public abstract class AbstractObjectValueSerializer extends AbstractSerializable
     return valueFields.getTextValue2();
   }
 
+  @Override
   public boolean isMutableValue(ObjectValue typedValue) {
     return typedValue.isDeserialized();
   }

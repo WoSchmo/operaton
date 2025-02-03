@@ -104,7 +104,7 @@ public class ProcessDefinitionQueryTest extends AbstractDefinitionQueryTest {
     assertThat(processDefinition.getKey()).isEqualTo("two");
     assertThat(processDefinition.getName()).isEqualTo("Two");
     assertThat(processDefinition.getDescription()).isNull();
-    assertThat(processDefinition.getId().startsWith("two:1"));
+    assertThat(processDefinition.getId()).startsWith("two:1");
     assertThat(processDefinition.getCategory()).isEqualTo("Examples2");
     assertThat(processDefinition.isStartableInTasklist()).isTrue();
 
@@ -112,7 +112,7 @@ public class ProcessDefinitionQueryTest extends AbstractDefinitionQueryTest {
     assertThat(processDefinition.getKey()).isEqualTo("xyz_");
     assertThat(processDefinition.getName()).isEqualTo("Xyz_");
     assertThat(processDefinition.getDescription()).isNull();
-    assertThat(processDefinition.getId().startsWith("xyz_:1"));
+    assertThat(processDefinition.getId()).startsWith("xyz_:1");
     assertThat(processDefinition.getCategory()).isEqualTo("xyz_");
     assertThat(processDefinition.isStartableInTasklist()).isFalse();
   }
@@ -302,7 +302,7 @@ public class ProcessDefinitionQueryTest extends AbstractDefinitionQueryTest {
           found = true; break;
         }
       }
-      assertThat(found).withFailMessage("Expected to find process definition " + processDefinition);
+      assertThat(found).withFailMessage("Expected to find process definition " + processDefinition).isTrue();
     }
 
     assertThat(repositoryService.createProcessDefinitionQuery().processDefinitionKey("dummyKey").processDefinitionKeysIn(processDefinitionKeys).count()).isZero();
@@ -661,7 +661,7 @@ public class ProcessDefinitionQueryTest extends AbstractDefinitionQueryTest {
           found = true; break;
         }
       }
-      assertThat(found).withFailMessage("Expected to find process definition " + processDefinition);
+      assertThat(found).withFailMessage("Expected to find process definition " + processDefinition).isTrue();
     }
 
     assertThat(repositoryService.createProcessDefinitionQuery().processDefinitionId("dummyId").processDefinitionIdIn(ids).count()).isZero();
