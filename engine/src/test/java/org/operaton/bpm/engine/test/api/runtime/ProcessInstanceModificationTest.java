@@ -37,10 +37,7 @@ import org.operaton.bpm.engine.delegate.ExecutionListener;
 import org.operaton.bpm.engine.delegate.TaskListener;
 import org.operaton.bpm.engine.exception.NotValidException;
 import org.operaton.bpm.engine.history.HistoricVariableInstance;
-import org.operaton.bpm.engine.runtime.ActivityInstance;
-import org.operaton.bpm.engine.runtime.Execution;
-import org.operaton.bpm.engine.runtime.Job;
-import org.operaton.bpm.engine.runtime.ProcessInstance;
+import org.operaton.bpm.engine.runtime.*;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.RequiredHistoryLevel;
@@ -206,10 +203,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     String processInstanceId = processInstance.getId();
 
     runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess").execute();
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("innerSubProcessTask");
 
     // when I start the inner subprocess task without explicit ancestor
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("innerSubProcessTask").execute();
+      processInstanceModificationBuilder.execute();
       // then the command fails
       fail("should not succeed because the ancestors are ambiguous");
     } catch (ProcessEngineException e) {
@@ -255,9 +253,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     // given two instances of the outer subprocess
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("doubleNestedSubprocess");
     String processInstanceId = processInstance.getId();
+    var processInstanceModificationInstantiationBuilder = runtimeService.createProcessInstanceModification(
+      processInstance.getId()).startBeforeActivity("subProcess", "noValidActivityInstanceId");
 
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess", "noValidActivityInstanceId").execute();
+      processInstanceModificationInstantiationBuilder.execute();
       fail();
     } catch (NotValidException e) {
       // happy path
@@ -265,8 +265,9 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
           + "Ancestor activity instance 'noValidActivityInstanceId' does not exist", e.getMessage());
     }
 
+    var processInstanceModificationBuilder1 = runtimeService.createProcessInstanceModification(processInstance.getId());
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess", null).execute();
+      processInstanceModificationBuilder1.startBeforeActivity("subProcess", null);
       fail();
     } catch (NotValidException e) {
       // happy path
@@ -276,8 +277,9 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     ActivityInstance tree = runtimeService.getActivityInstance(processInstanceId);
     String subProcessTaskId = getInstanceIdForActivity(tree, "subProcessTask");
 
+    var processInstanceModificationInstantiationBuilder2 = runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess", subProcessTaskId);
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess", subProcessTaskId).execute();
+      processInstanceModificationInstantiationBuilder2.execute();
       fail("should not succeed because subProcessTask is a child of subProcess");
     } catch (NotValidException e) {
       // happy path
@@ -291,10 +293,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testStartBeforeNonExistingActivity() {
     // given
     ProcessInstance instance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(instance.getId()).startBeforeActivity("someNonExistingActivity");
 
     try {
       // when
-      runtimeService.createProcessInstanceModification(instance.getId()).startBeforeActivity("someNonExistingActivity").execute();
+      processInstanceModificationBuilder.execute();
       fail("should not succeed");
     } catch (NotValidException e) {
       // then
@@ -393,10 +396,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     String processInstanceId = processInstance.getId();
 
     runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess").execute();
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstance.getId()).startTransition("flow5");
 
     // when I start the inner subprocess task without explicit ancestor
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startTransition("flow5").execute();
+      processInstanceModificationBuilder.execute();
       // then the command fails
       fail("should not succeed because the ancestors are ambiguous");
     } catch (ProcessEngineException e) {
@@ -442,9 +446,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     // given two instances of the outer subprocess
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("doubleNestedSubprocess");
     String processInstanceId = processInstance.getId();
+    var processInstanceModificationInstantiationBuilder1 = runtimeService.createProcessInstanceModification(processInstanceId)
+      .startTransition("flow5", "noValidActivityInstanceId");
 
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startTransition("flow5", "noValidActivityInstanceId").execute();
+      processInstanceModificationInstantiationBuilder1.execute();
       fail();
     } catch (NotValidException e) {
       // happy path
@@ -452,8 +458,9 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
           + "Ancestor activity instance 'noValidActivityInstanceId' does not exist", e.getMessage());
     }
 
+    var processInstanceModificationInstantiationBuilder2 = runtimeService.createProcessInstanceModification(processInstanceId);
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startTransition("flow5", null).execute();
+      processInstanceModificationInstantiationBuilder2.startTransition("flow5", null);
       fail();
     } catch (NotValidException e) {
       // happy path
@@ -462,9 +469,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
 
     ActivityInstance tree = runtimeService.getActivityInstance(processInstanceId);
     String subProcessTaskId = getInstanceIdForActivity(tree, "subProcessTask");
+    var processInstanceModificationInstantiationBuilder3 = runtimeService.createProcessInstanceModification(processInstanceId)
+      .startTransition("flow5", subProcessTaskId);
 
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startTransition("flow5", subProcessTaskId).execute();
+      processInstanceModificationInstantiationBuilder3.execute();
       fail("should not succeed because subProcessTask is a child of subProcess");
     } catch (NotValidException e) {
       // happy path
@@ -504,9 +513,10 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testStartTransitionInvalidTransitionId() {
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
     String processInstanceId = processInstance.getId();
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstanceId).startTransition("invalidFlowId");
 
     try {
-      runtimeService.createProcessInstanceModification(processInstanceId).startTransition("invalidFlowId").execute();
+      processInstanceModificationBuilder.execute();
 
       fail("should not suceed");
 
@@ -579,10 +589,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     String processInstanceId = processInstance.getId();
 
     runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("subProcess").execute();
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("innerSubProcessStart");
 
     // when I start the inner subprocess task without explicit ancestor
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("innerSubProcessStart").execute();
+      processInstanceModificationBuilder.execute();
       // then the command fails
       fail("should not succeed because the ancestors are ambiguous");
     } catch (ProcessEngineException e) {
@@ -628,10 +639,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     // given two instances of the outer subprocess
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("doubleNestedSubprocess");
     String processInstanceId = processInstance.getId();
+    var processInstanceModificationInstantiationBuilder1 = runtimeService.createProcessInstanceModification(processInstanceId)
+      .startAfterActivity("innerSubProcessStart", "noValidActivityInstanceId");
 
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("innerSubProcessStart", "noValidActivityInstanceId")
-          .execute();
+      processInstanceModificationInstantiationBuilder1.execute();
       fail();
     } catch (NotValidException e) {
       // happy path
@@ -641,8 +653,9 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
           e.getMessage());
     }
 
+    var processInstanceModificationInstantiationBuilder2 = runtimeService.createProcessInstanceModification(processInstanceId);
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("innerSubProcessStart", null).execute();
+      processInstanceModificationInstantiationBuilder2.startAfterActivity("innerSubProcessStart", null);
       fail();
     } catch (NotValidException e) {
       // happy path
@@ -652,8 +665,10 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
     ActivityInstance tree = runtimeService.getActivityInstance(processInstanceId);
     String subProcessTaskId = getInstanceIdForActivity(tree, "subProcessTask");
 
+    var processInstanceModificationInstantiationBuilder3 = runtimeService.createProcessInstanceModification(processInstanceId)
+      .startAfterActivity("innerSubProcessStart", subProcessTaskId);
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("innerSubProcessStart", subProcessTaskId).execute();
+      processInstanceModificationInstantiationBuilder3.execute();
       fail("should not succeed because subProcessTask is a child of subProcess");
     } catch (NotValidException e) {
       // happy path
@@ -667,9 +682,10 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testStartAfterActivityAmbiguousTransitions() {
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
     String processInstanceId = processInstance.getId();
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstanceId).startAfterActivity("fork");
 
     try {
-      runtimeService.createProcessInstanceModification(processInstanceId).startAfterActivity("fork").execute();
+      processInstanceModificationBuilder.execute();
 
       fail("should not suceed since 'fork' has more than one outgoing sequence flow");
 
@@ -684,9 +700,10 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testStartAfterActivityNoOutgoingTransitions() {
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
     String processInstanceId = processInstance.getId();
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstanceId).startAfterActivity("theEnd");
 
     try {
-      runtimeService.createProcessInstanceModification(processInstanceId).startAfterActivity("theEnd").execute();
+      processInstanceModificationBuilder.execute();
 
       fail("should not suceed since 'theEnd' has no outgoing sequence flow");
 
@@ -701,10 +718,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testStartAfterNonExistingActivity() {
     // given
     ProcessInstance instance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(instance.getId()).startAfterActivity("someNonExistingActivity");
 
     try {
       // when
-      runtimeService.createProcessInstanceModification(instance.getId()).startAfterActivity("someNonExistingActivity").execute();
+      processInstanceModificationBuilder.execute();
       fail("should not succeed");
     } catch (NotValidException e) {
       // then
@@ -1466,17 +1484,22 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   @Test
   public void testStartCompensationBoundary() {
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("testProcess");
+    String processInstanceId = processInstance.getId();
 
+    var processInstanceModificationInstantiationBuilder1 = runtimeService.createProcessInstanceModification(processInstanceId)
+      .startBeforeActivity("compensateBoundaryEvent");
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("compensateBoundaryEvent").execute();
+      processInstanceModificationInstantiationBuilder1.execute();
 
       fail("should not succeed");
     } catch (ProcessEngineException e) {
       testRule.assertTextPresent("compensation boundary event", e.getMessage());
     }
 
+    var processInstanceModificationInstantiationBuilder2 = runtimeService.createProcessInstanceModification(processInstanceId)
+      .startAfterActivity("compensateBoundaryEvent");
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("compensateBoundaryEvent").execute();
+      processInstanceModificationInstantiationBuilder2.execute();
 
       fail("should not succeed");
     } catch (ProcessEngineException e) {
@@ -1538,10 +1561,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testCancelNonExistingActivityInstance() {
     // given
     ProcessInstance instance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(instance.getId()).cancelActivityInstance("nonExistingActivityInstance");
 
     // when - then throw exception
     try {
-      runtimeService.createProcessInstanceModification(instance.getId()).cancelActivityInstance("nonExistingActivityInstance").execute();
+      processInstanceModificationBuilder.execute();
       fail("should not succeed");
     } catch (NotValidException e) {
       testRule.assertTextPresent("Cannot perform instruction: Cancel activity instance 'nonExistingActivityInstance'; "
@@ -1555,10 +1579,11 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   public void testCancelNonExistingTranisitionInstance() {
     // given
     ProcessInstance instance = runtimeService.startProcessInstanceByKey("exclusiveGateway");
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(instance.getId()).cancelTransitionInstance("nonExistingActivityInstance");
 
     // when - then throw exception
     try {
-      runtimeService.createProcessInstanceModification(instance.getId()).cancelTransitionInstance("nonExistingActivityInstance").execute();
+      processInstanceModificationBuilder.execute();
       fail("should not succeed");
     } catch (NotValidException e) {
       testRule.assertTextPresent("Cannot perform instruction: Cancel transition instance 'nonExistingActivityInstance'; "
@@ -1586,7 +1611,7 @@ public class ProcessInstanceModificationTest extends PluggableProcessEngineTest 
   @Test
   public void testModifyNullProcessInstance() {
     try {
-      runtimeService.createProcessInstanceModification(null).startBeforeActivity("someActivity").execute();
+      runtimeService.createProcessInstanceModification(null);
       fail("should not succeed");
     } catch (NotValidException e) {
       testRule.assertTextPresent("processInstanceId is null", e.getMessage());

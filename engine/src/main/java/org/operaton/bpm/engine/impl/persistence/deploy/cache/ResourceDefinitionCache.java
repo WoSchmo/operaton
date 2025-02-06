@@ -35,7 +35,7 @@ public abstract class ResourceDefinitionCache<T extends ResourceDefinitionEntity
   protected Cache<String, T> cache;
   protected CacheDeployer cacheDeployer;
 
-  public ResourceDefinitionCache(CacheFactory factory, int cacheCapacity, CacheDeployer cacheDeployer) {
+  protected ResourceDefinitionCache(CacheFactory factory, int cacheCapacity, CacheDeployer cacheDeployer) {
     this.cache = factory.createCache(cacheCapacity);
     this.cacheDeployer = cacheDeployer;
   }
@@ -79,12 +79,7 @@ public abstract class ResourceDefinitionCache<T extends ResourceDefinitionEntity
 
   public T findDeployedDefinitionByKeyVersionAndTenantId(final String definitionKey, final Integer definitionVersion, final String tenantId) {
     final CommandContext commandContext = Context.getCommandContext();
-    T definition = commandContext.runWithoutAuthorization(new Callable<T>() {
-      @Override
-      public T call() throws Exception {
-        return getManager().findDefinitionByKeyVersionAndTenantId(definitionKey, definitionVersion, tenantId);
-      }
-    });
+    T definition = commandContext.runWithoutAuthorization((Callable<T>) () -> getManager().findDefinitionByKeyVersionAndTenantId(definitionKey, definitionVersion, tenantId));
     checkInvalidDefinitionByKeyVersionAndTenantId(definitionKey, definitionVersion, tenantId, definition);
     definition = resolveDefinition(definition);
     return definition;
@@ -92,12 +87,7 @@ public abstract class ResourceDefinitionCache<T extends ResourceDefinitionEntity
 
   public T findDeployedDefinitionByKeyVersionTagAndTenantId(final String definitionKey, final String definitionVersionTag, final String tenantId) {
     final CommandContext commandContext = Context.getCommandContext();
-    T definition = commandContext.runWithoutAuthorization(new Callable<T>() {
-      @Override
-      public T call() throws Exception {
-        return getManager().findDefinitionByKeyVersionTagAndTenantId(definitionKey, definitionVersionTag, tenantId);
-      }
-    });
+    T definition = commandContext.runWithoutAuthorization((Callable<T>) () -> getManager().findDefinitionByKeyVersionTagAndTenantId(definitionKey, definitionVersionTag, tenantId));
     checkInvalidDefinitionByKeyVersionTagAndTenantId(definitionKey, definitionVersionTag, tenantId, definition);
     definition = resolveDefinition(definition);
     return definition;

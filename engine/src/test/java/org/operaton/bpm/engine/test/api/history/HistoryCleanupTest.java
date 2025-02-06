@@ -24,8 +24,6 @@ import org.operaton.bpm.engine.history.UserOperationLogEntry;
 import org.operaton.bpm.engine.impl.cfg.BatchWindowConfiguration;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.operaton.bpm.engine.impl.cmd.HistoryCleanupCmd;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.jobexecutor.historycleanup.HistoryCleanupHelper;
 import org.operaton.bpm.engine.impl.jobexecutor.historycleanup.HistoryCleanupJobHandlerConfiguration;
 import org.operaton.bpm.engine.impl.metrics.Meter;
@@ -662,15 +660,12 @@ public class HistoryCleanupTest {
   }
 
   private void imitateFailedJob(final String jobId) {
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        JobEntity jobEntity = getJobEntity(jobId);
-        jobEntity.setRetries(0);
-        jobEntity.setExceptionMessage("Something bad happened");
-        jobEntity.setExceptionStacktrace(ExceptionUtil.getExceptionStacktrace(new RuntimeException("Something bad happened")));
-        return null;
-      }
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      JobEntity jobEntity = getJobEntity(jobId);
+      jobEntity.setRetries(0);
+      jobEntity.setExceptionMessage("Something bad happened");
+      jobEntity.setExceptionStacktrace(ExceptionUtil.getExceptionStacktrace(new RuntimeException("Something bad happened")));
+      return null;
     });
   }
 
@@ -903,7 +898,7 @@ public class HistoryCleanupTest {
 
       //job rescheduled till next batch window start time
       Date nextRun = getNextRunWithinBatchWindow(ClockUtil.getCurrentTime());
-      assertTrue(jobEntity.getDuedate().equals(nextRun));
+      assertEquals(jobEntity.getDuedate(), nextRun);
 
       //countEmptyRuns canceled
       assertEquals(0, configuration.getCountEmptyRuns());
@@ -938,7 +933,7 @@ public class HistoryCleanupTest {
 
       //job rescheduled till next batch window start
       Date nextRun = getNextRunWithinBatchWindow(ClockUtil.getCurrentTime());
-      assertTrue(jobEntity.getDuedate().equals(nextRun));
+      assertEquals(jobEntity.getDuedate(), nextRun);
 
       //countEmptyRuns canceled
       assertEquals(0, configuration.getCountEmptyRuns());
@@ -970,7 +965,7 @@ public class HistoryCleanupTest {
 
     //job rescheduled till next batch window start
     Date nextRun = getNextRunWithinBatchWindow(ClockUtil.getCurrentTime());
-    assertTrue(jobEntity.getDuedate().equals(nextRun));
+    assertEquals(jobEntity.getDuedate(), nextRun);
     assertTrue(nextRun.after(ClockUtil.getCurrentTime()));
 
     //countEmptyRuns canceled
@@ -1002,7 +997,7 @@ public class HistoryCleanupTest {
 
     //job rescheduled till next batch window start
     Date nextRun = getNextRunWithinBatchWindow(ClockUtil.getCurrentTime());
-    assertTrue(jobEntity.getDuedate().equals(nextRun));
+    assertEquals(jobEntity.getDuedate(), nextRun);
     assertTrue(nextRun.after(ClockUtil.getCurrentTime()));
 
     //countEmptyRuns cancelled
@@ -1116,7 +1111,7 @@ public class HistoryCleanupTest {
     //job rescheduled till next batch window start
     Date nextRun = getNextRunWithinBatchWindow(ClockUtil.getCurrentTime());
 
-    assertTrue(jobEntity.getDuedate().equals(nextRun));
+    assertEquals(jobEntity.getDuedate(), nextRun);
     assertTrue(nextRun.after(ClockUtil.getCurrentTime()));
 
     //countEmptyRuns canceled
@@ -1201,7 +1196,7 @@ public class HistoryCleanupTest {
 
     processEngineConfiguration.setHistoryCleanupBatchSize(500);
     processEngineConfiguration.initHistoryCleanup();
-    assertEquals(processEngineConfiguration.getHistoryCleanupBatchSize(), 500);
+    assertEquals(500, processEngineConfiguration.getHistoryCleanupBatchSize());
 
     processEngineConfiguration.setHistoryTimeToLive("5");
     processEngineConfiguration.initHistoryCleanup();
@@ -1239,20 +1234,16 @@ public class HistoryCleanupTest {
 
   @Test
   public void testConfigurationFailureWrongDayOfTheWeekStartTime() {
-
     // when/then
-    assertThatThrownBy(() -> processEngineConfiguration.getHistoryCleanupBatchWindows()
-        .put(Calendar.MONDAY, new BatchWindowConfiguration("23", "01:00")))
+    assertThatThrownBy(() -> new BatchWindowConfiguration("23", "01:00"))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("startTime");
   }
 
   @Test
   public void testConfigurationFailureWrongDayOfTheWeekEndTime() {
-
     // when/then
-    assertThatThrownBy(() -> processEngineConfiguration.getHistoryCleanupBatchWindows()
-        .put(Calendar.MONDAY, new BatchWindowConfiguration("23:00", "01")))
+    assertThatThrownBy(() -> new BatchWindowConfiguration("23:00", "01"))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("endTime");
   }

@@ -17,12 +17,7 @@
 package org.operaton.bpm.engine.test.cmmn.processtask;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
 
@@ -546,7 +541,7 @@ public class ProcessTaskTest extends CmmnTest {
     assertEquals(processTaskId, processInstance.getSuperCaseExecutionId());
     // the business key has been set
     assertEquals("myOwnBusinessKey", processInstance.getBusinessKey());
-    assertFalse(businessKey.equals(processInstance.getBusinessKey()));
+    assertNotEquals(businessKey, processInstance.getBusinessKey());
 
     TaskEntity task = (TaskEntity) queryTask();
 
@@ -592,7 +587,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -647,7 +642,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -694,7 +689,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -740,7 +735,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -788,7 +783,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -873,7 +868,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -906,12 +901,12 @@ public class ProcessTaskTest extends CmmnTest {
     // given
     String caseInstanceId = createCaseInstanceByKey(ONE_PROCESS_TASK_CASE).getId();
     String processTaskId = queryCaseExecutionByActivityId(PROCESS_TASK).getId();
+    var caseExecutionCommandBuilder = caseService
+        .withCaseExecution(processTaskId);
 
     try {
       // when
-      caseService
-        .withCaseExecution(processTaskId)
-        .manualStart();
+      caseExecutionCommandBuilder.manualStart();
       fail("It should not be possible to start a process instance.");
     } catch (ProcessEngineException e) {}
 
@@ -982,7 +977,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1033,7 +1028,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1081,7 +1076,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1128,7 +1123,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1180,7 +1175,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1232,7 +1227,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1337,7 +1332,7 @@ public class ProcessTaskTest extends CmmnTest {
         .list();
 
     assertEquals(2, variables.size());
-    assertFalse(variables.get(0).getName().equals(variables.get(1).getName()));
+    assertNotEquals(variables.get(0).getName(), variables.get(1).getName());
 
     for (VariableInstance variable : variables) {
       String name = variable.getName();
@@ -1459,12 +1454,12 @@ public class ProcessTaskTest extends CmmnTest {
     // given
     String caseInstanceId = createCaseInstanceByKey(ONE_PROCESS_TASK_CASE).getId();
     String processTaskId = queryCaseExecutionByActivityId(PROCESS_TASK).getId();
+    var caseExecutionCommandBuilder = caseService
+        .withCaseExecution(processTaskId);
 
     try {
       // when
-      caseService
-        .withCaseExecution(processTaskId)
-        .complete();
+      caseExecutionCommandBuilder.complete();
       fail("It should not be possible to complete a process task, while the process instance is running.");
     } catch (NotAllowedException e) {}
 
@@ -1498,12 +1493,12 @@ public class ProcessTaskTest extends CmmnTest {
 
     ProcessInstance processInstance = queryProcessInstance();
     assertNull(processInstance);
+    var caseExecutionCommandBuilder = caseService
+        .withCaseExecution(processTaskId);
 
     try {
       // when
-      caseService
-        .withCaseExecution(processTaskId)
-        .complete();
+      caseExecutionCommandBuilder.complete();
       fail("It should not be possible to complete a process task");
     } catch (Exception e) {}
 
@@ -1834,7 +1829,6 @@ public class ProcessTaskTest extends CmmnTest {
     taskService.complete(task.getId());
 
     Object variable = caseService.getVariable(caseInstanceId, variableName);
-    assertThat(variable).isNotNull();
     assertThat(variable).isEqualTo(variableValue);
   }
 
@@ -1851,7 +1845,6 @@ public class ProcessTaskTest extends CmmnTest {
     taskService.complete(task.getId());
 
     Object variable = caseService.getVariable(caseInstanceId, variableName);
-    assertThat(variable).isNotNull();
     assertThat(variable).isEqualTo(variableValue);
   }
 

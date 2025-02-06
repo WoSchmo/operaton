@@ -130,8 +130,9 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
   @Deployment
   @Test
   public void testNoSequenceFlowSelected() {
+    var variables = CollectionUtil.singletonMap("input", 4);
     try {
-      runtimeService.startProcessInstanceByKey("inclusiveGwNoSeqFlowSelected", CollectionUtil.singletonMap("input", 4));
+      runtimeService.startProcessInstanceByKey("inclusiveGwNoSeqFlowSelected", variables);
       fail();
     } catch (ProcessEngineException e) {
        testRule.assertTextPresent("ENGINE-02004 No outgoing sequence flow for the element with id 'inclusiveGw' could be selected for continuing the process.", e.getMessage());
@@ -182,7 +183,7 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
     Task lastTask = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
     taskService.complete(lastTask.getId());
 
-    assertEquals(0l, runtimeService.createProcessInstanceQuery().active().count());
+    assertEquals(0L, runtimeService.createProcessInstanceQuery().active().count());
   }
 
   /**
@@ -199,10 +200,11 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
   @Deployment(resources = { "org/operaton/bpm/engine/test/bpmn/gateway/InclusiveGatewayTest.testDivergingInclusiveGateway.bpmn20.xml" })
   @Test
   public void testUnknownVariableInExpression() {
+    var variables = CollectionUtil.singletonMap("iinput", 1);
     // Instead of 'input' we're starting a process instance with the name
-    // 'iinput' (ie. a typo)
+    // 'iinput' (i.e. a typo)
     try {
-      runtimeService.startProcessInstanceByKey("inclusiveGwDiverging", CollectionUtil.singletonMap("iinput", 1));
+      runtimeService.startProcessInstanceByKey("inclusiveGwDiverging", variables);
       fail();
     } catch (ProcessEngineException e) {
        testRule.assertTextPresent("Unknown property used in expression", e.getMessage());
@@ -232,22 +234,23 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
     orders.add(new InclusiveGatewayTestOrder(300));
     orders.add(new InclusiveGatewayTestOrder(175));
 
-    ProcessInstance pi = null;
+    ProcessInstance pi;
+    var variables = CollectionUtil.singletonMap("orders", orders);
     try {
-      pi = runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", CollectionUtil.singletonMap("orders", orders));
+      runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", variables);
       fail();
     } catch (ProcessEngineException e) {
       // expect an exception to be thrown here
     }
 
     orders.set(1, new InclusiveGatewayTestOrder(175));
-    pi = runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", CollectionUtil.singletonMap("orders", orders));
+    pi = runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", variables);
     Task task = taskService.createTaskQuery().processInstanceId(pi.getId()).singleResult();
     assertNotNull(task);
     assertEquals(BEAN_TASK3_NAME, task.getName());
 
     orders.set(1, new InclusiveGatewayTestOrder(125));
-    pi = runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", CollectionUtil.singletonMap("orders", orders));
+    pi = runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", variables);
     List<Task> tasks = taskService.createTaskQuery().processInstanceId(pi.getId()).list();
     assertNotNull(tasks);
     assertEquals(2, tasks.size());
@@ -260,7 +263,7 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
     assertEquals(0, expectedNames.size());
 
     // Arrays are usable in exactly the same way
-    InclusiveGatewayTestOrder[] orderArray = orders.toArray(new InclusiveGatewayTestOrder[orders.size()]);
+    InclusiveGatewayTestOrder[] orderArray = orders.toArray(new InclusiveGatewayTestOrder[0]);
     orderArray[1].setPrice(10);
     pi = runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnListOrArrayOfBeans", CollectionUtil.singletonMap("orders", orderArray));
     tasks = taskService.createTaskQuery().processInstanceId(pi.getId()).list();
@@ -296,9 +299,10 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
       expectedNames.remove(t.getName());
     }
     assertEquals(0, expectedNames.size());
+    var variables = CollectionUtil.singletonMap("order", new InclusiveGatewayTestOrder(300));
 
     try {
-      runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnBeanMethod", CollectionUtil.singletonMap("order", new InclusiveGatewayTestOrder(300)));
+      runtimeService.startProcessInstanceByKey("inclusiveDecisionBasedOnBeanMethod", variables);
       fail();
     } catch (ProcessEngineException e) {
       // Should get an exception indicating that no path could be taken
@@ -309,11 +313,12 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
   @Deployment
   @Test
   public void testInvalidMethodExpression() {
+    var variables = CollectionUtil.singletonMap("order", new InclusiveGatewayTestOrder(50));
     try {
-      runtimeService.startProcessInstanceByKey("inclusiveInvalidMethodExpression", CollectionUtil.singletonMap("order", new InclusiveGatewayTestOrder(50)));
+      runtimeService.startProcessInstanceByKey("inclusiveInvalidMethodExpression", variables);
       fail();
     } catch (ProcessEngineException e) {
-       testRule.assertTextPresent("Unknown method used in expression", e.getMessage());
+      testRule.assertTextPresent("Unknown method used in expression", e.getMessage());
     }
   }
 
@@ -479,7 +484,7 @@ public class InclusiveGatewayTest extends PluggableProcessEngineTest {
     variableMap.put("a", 2);
     variableMap.put("b", 2);
     try {
-      processInstance = runtimeService.startProcessInstanceByKey("InclusiveGateway", variableMap);
+      runtimeService.startProcessInstanceByKey("InclusiveGateway", variableMap);
       fail();
     } catch(ProcessEngineException e) {
       assertTrue(e.getMessage().contains("No outgoing sequence flow"));

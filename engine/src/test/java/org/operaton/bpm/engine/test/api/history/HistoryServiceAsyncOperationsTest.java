@@ -17,8 +17,6 @@
 package org.operaton.bpm.engine.test.api.history;
 
 import org.assertj.core.api.Assertions;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +40,7 @@ import org.operaton.bpm.engine.test.util.ProvidedProcessEngineRule;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -191,8 +190,10 @@ public class HistoryServiceAsyncOperationsTest extends AbstractAsyncOperationsTe
 
   @Test
   public void testDeleteHistoryProcessInstancesAsyncWithEmptyList() {
+    // given
+    List<String> processInstanceIds = emptyList();
     // when/then
-    assertThatThrownBy(() -> historyService.deleteHistoricProcessInstancesAsync(new ArrayList<String>(), TEST_REASON))
+    assertThatThrownBy(() -> historyService.deleteHistoricProcessInstancesAsync(processInstanceIds, TEST_REASON))
       .isInstanceOf(ProcessEngineException.class);
   }
 
@@ -339,7 +340,7 @@ public class HistoryServiceAsyncOperationsTest extends AbstractAsyncOperationsTe
 
   protected void assertNoHistoryForTasks() {
     if (!testRule.isHistoryLevelNone()) {
-      Assert.assertThat(historyService.createHistoricTaskInstanceQuery().count(), CoreMatchers.is(0L));
+      assertThat(historyService.createHistoricTaskInstanceQuery().count()).isZero();
     }
   }
 

@@ -19,10 +19,7 @@ package org.operaton.bpm.engine.test.api.identity;
 import org.operaton.bpm.engine.*;
 import org.operaton.bpm.engine.authorization.Authorization;
 import org.operaton.bpm.engine.exception.NullValueException;
-import org.operaton.bpm.engine.identity.Group;
-import org.operaton.bpm.engine.identity.Picture;
-import org.operaton.bpm.engine.identity.Tenant;
-import org.operaton.bpm.engine.identity.User;
+import org.operaton.bpm.engine.identity.*;
 import org.operaton.bpm.engine.impl.identity.Account;
 import org.operaton.bpm.engine.impl.identity.Authentication;
 import org.operaton.bpm.engine.impl.persistence.entity.UserEntity;
@@ -43,6 +40,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -320,9 +318,10 @@ public class IdentityServiceTest {
   public void testCreateMembershipUnexistingGroup() {
     User johndoe = identityService.newUser("johndoe");
     identityService.saveUser(johndoe);
+    String userId = johndoe.getId();
 
     // when/then
-    assertThatThrownBy(() -> identityService.createMembership(johndoe.getId(), "unexistinggroup"))
+    assertThatThrownBy(() -> identityService.createMembership(userId, "unexistinggroup"))
       .isInstanceOf(NullValueException.class)
       .hasMessageContaining("No group found with id 'unexistinggroup'.: group is null");
   }
@@ -331,9 +330,10 @@ public class IdentityServiceTest {
   public void testCreateMembershipUnexistingUser() {
     Group sales = identityService.newGroup("sales");
     identityService.saveGroup(sales);
+    String groupId = sales.getId();
 
     // when/then
-    assertThatThrownBy(() -> identityService.createMembership("unexistinguser", sales.getId()))
+    assertThatThrownBy(() -> identityService.createMembership("unexistinguser", groupId))
       .isInstanceOf(NullValueException.class)
       .hasMessageContaining("No user found with id 'unexistinguser'.: user is null");
   }
@@ -344,12 +344,14 @@ public class IdentityServiceTest {
     identityService.saveGroup(sales);
     User johndoe = identityService.newUser("johndoe");
     identityService.saveUser(johndoe);
+    String userId = johndoe.getId();
+    String groupId = sales.getId();
 
     // Create the membership
-    identityService.createMembership(johndoe.getId(), sales.getId());
+    identityService.createMembership(userId, groupId);
 
     // when/then
-    assertThatThrownBy(() -> identityService.createMembership(johndoe.getId(), sales.getId()))
+    assertThatThrownBy(() -> identityService.createMembership(userId, groupId))
       .isInstanceOf(ProcessEngineException.class);
   }
 
@@ -371,8 +373,9 @@ public class IdentityServiceTest {
 
   @Test
   public void testFindGroupByIdNullArgument() {
+    var groupQuery = identityService.createGroupQuery();
     // when/then
-    assertThatThrownBy(() -> identityService.createGroupQuery().groupId(null).singleResult())
+    assertThatThrownBy(() -> groupQuery.groupId(null))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("id is null");
   }
@@ -395,8 +398,9 @@ public class IdentityServiceTest {
 
   @Test
   public void testFindGroupsByUserIdNullArguments() {
+    var groupQuery = identityService.createGroupQuery();
     // when/then
-    assertThatThrownBy(() -> identityService.createGroupQuery().groupMember(null).singleResult())
+    assertThatThrownBy(() -> groupQuery.groupMember(null))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("userId is null");
   }
@@ -427,7 +431,7 @@ public class IdentityServiceTest {
     identityService.createMembership(johndoe.getId(), sales.getId());
 
     List<Group> groups = identityService.createGroupQuery().groupMember(johndoe.getId()).list();
-    assertTrue(groups.size() == 1);
+    assertEquals(1, groups.size());
     assertEquals("sales", groups.get(0).getId());
 
     // Delete the membership and check members of sales group
@@ -448,7 +452,8 @@ public class IdentityServiceTest {
     identityService.saveUser(johndoe);
 
     // Delete the membership when the user is no member
-    identityService.deleteMembership(johndoe.getId(), sales.getId());
+    assertThatCode(() -> identityService.deleteMembership(johndoe.getId(), sales.getId()))
+      .doesNotThrowAnyException();
 
     identityService.deleteGroup("sales");
     identityService.deleteUser("johndoe");
@@ -459,7 +464,8 @@ public class IdentityServiceTest {
     User johndoe = identityService.newUser("johndoe");
     identityService.saveUser(johndoe);
     // No exception should be thrown when group doesn't exist
-    identityService.deleteMembership(johndoe.getId(), "unexistinggroup");
+    assertThatCode(() -> identityService.deleteMembership(johndoe.getId(), "unexistinggroup"))
+      .doesNotThrowAnyException();
     identityService.deleteUser(johndoe.getId());
   }
 
@@ -468,7 +474,8 @@ public class IdentityServiceTest {
     Group sales = identityService.newGroup("sales");
     identityService.saveGroup(sales);
     // No exception should be thrown when user doesn't exist
-    identityService.deleteMembership("unexistinguser", sales.getId());
+    assertThatCode(() -> identityService.deleteMembership("unexistinguser", sales.getId()))
+      .doesNotThrowAnyException();
     identityService.deleteGroup(sales.getId());
   }
 
@@ -500,7 +507,8 @@ public class IdentityServiceTest {
   public void testDeleteUserUnexistingUserId() {
     // No exception should be thrown. Deleting an unexisting user should
     // be ignored silently
-    identityService.deleteUser("unexistinguser");
+    assertThatCode(() -> identityService.deleteUser("unexistinguser"))
+      .doesNotThrowAnyException();
   }
 
   @Test
@@ -586,10 +594,11 @@ public class IdentityServiceTest {
       .createProcessEngineConfigurationFromResource("org/operaton/bpm/engine/test/api/identity/generic.resource.id.whitelist.operaton.cfg.xml")
       .buildProcessEngine();
 
-    User user = processEngine.getIdentityService().newUser("*");
+    User user = identityService.newUser("*");
+    IdentityService identityService1 = processEngine.getIdentityService();
 
     // when/then
-    assertThatThrownBy(() -> processEngine.getIdentityService().saveUser(user))
+    assertThatThrownBy(() -> identityService1.saveUser(user))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("has an invalid id: id cannot be *. * is a reserved identifier.");
   }
@@ -600,10 +609,11 @@ public class IdentityServiceTest {
       .createProcessEngineConfigurationFromResource("org/operaton/bpm/engine/test/api/identity/generic.resource.id.whitelist.operaton.cfg.xml")
       .buildProcessEngine();
 
-    Group group = processEngine.getIdentityService().newGroup("*");
+    Group group = identityService.newGroup("*");
+    var identityService1 = processEngine.getIdentityService();
 
     // when/then
-    assertThatThrownBy(() -> processEngine.getIdentityService().saveGroup(group))
+    assertThatThrownBy(() -> identityService1.saveGroup(group))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("has an invalid id: id cannot be *. * is a reserved identifier.");
   }
@@ -619,16 +629,18 @@ public class IdentityServiceTest {
 
   @Test
   public void testSetAuthenticationUserIdToGenericId() {
+    List<String> tenentIds = List.of("*");
     // when/then
-    assertThatThrownBy(() -> identityService.setAuthentication("aUserId", Arrays.asList("*")))
+    assertThatThrownBy(() -> identityService.setAuthentication("aUserId", tenentIds))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("invalid group id provided: id cannot be *. * is a reserved identifier.");
   }
 
   @Test
   public void testSetAuthenticatedTenantIdToGenericId() {
+    List<String> tenantIds = List.of("*");
     // when/then
-    assertThatThrownBy(() -> identityService.setAuthentication(null, null, Arrays.asList("*")))
+    assertThatThrownBy(() -> identityService.setAuthentication(null, null, tenantIds))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("invalid tenant id provided: id cannot be *. * is a reserved identifier.");
   }
@@ -919,9 +931,9 @@ public class IdentityServiceTest {
   @Test
   public void testInvalidUserIdOnSave() {
     String invalidId = "john doe";
+    User updatedUser = identityService.newUser("john");
+    updatedUser.setId(invalidId);
     try {
-      User updatedUser = identityService.newUser("john");
-      updatedUser.setId(invalidId);
       identityService.saveUser(updatedUser);
 
       fail("Invalid user id exception expected!");
@@ -945,9 +957,9 @@ public class IdentityServiceTest {
   @Test
   public void testInvalidGroupIdOnSave() {
     String invalidId = "john's group";
+    Group updatedGroup = identityService.newGroup("group");
+    updatedGroup.setId(invalidId);
     try {
-      Group updatedGroup = identityService.newGroup("group");
-      updatedGroup.setId(invalidId);
       identityService.saveGroup(updatedGroup);
 
       fail("Invalid group id exception expected!");
@@ -1088,8 +1100,9 @@ public class IdentityServiceTest {
     String toString = user.toString();
 
     // then
-    assertThat(toString).doesNotContain(salt);
-    assertThat(toString).doesNotContain(hashedPassword);
+    assertThat(toString)
+      .doesNotContain(salt)
+      .doesNotContain(hashedPassword);
 
   }
 

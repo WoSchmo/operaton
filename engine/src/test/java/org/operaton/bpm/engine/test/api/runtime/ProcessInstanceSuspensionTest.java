@@ -16,18 +16,15 @@
  */
 package org.operaton.bpm.engine.test.api.runtime;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-import org.operaton.bpm.engine.BadUserRequestException;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.SuspendedEntityInteractionException;
 import org.operaton.bpm.engine.externaltask.ExternalTask;
@@ -50,6 +47,8 @@ import org.junit.Test;
  * @author Joram Barrez
  */
 public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
+  private static final Map<String, String> emptyProperties = emptyMap();
+  private static final Map<String, Object> emptyProcessVariables = emptyMap();
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/oneTaskProcess.bpmn20.xml"})
   @Test
@@ -601,13 +600,13 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.setVariables(processInstance.getId(), new HashMap<String, Object>());
+      runtimeService.setVariables(processInstance.getId(), new HashMap<>());
     } catch (ProcessEngineException e) {
       fail("This should be possible");
     }
 
     try {
-      runtimeService.setVariablesLocal(processInstance.getId(), new HashMap<String, Object>());
+      runtimeService.setVariablesLocal(processInstance.getId(), new HashMap<>());
     } catch (ProcessEngineException e) {
       fail("This should be possible");
     }
@@ -658,13 +657,13 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.setVariables(processInstance.getId(), new HashMap<String, Object>());
+      runtimeService.setVariables(processInstance.getId(), new HashMap<>());
     } catch (ProcessEngineException e) {
       fail("This should be possible");
     }
 
     try {
-      runtimeService.setVariablesLocal(processInstance.getId(), new HashMap<String, Object>());
+      runtimeService.setVariablesLocal(processInstance.getId(), new HashMap<>());
     } catch (ProcessEngineException e) {
       fail("This should be possible");
     }
@@ -714,13 +713,13 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.setVariables(processInstance.getId(), new HashMap<String, Object>());
+      runtimeService.setVariables(processInstance.getId(), new HashMap<>());
     } catch (ProcessEngineException e) {
       fail("This should be possible");
     }
 
     try {
-      runtimeService.setVariablesLocal(processInstance.getId(), new HashMap<String, Object>());
+      runtimeService.setVariablesLocal(processInstance.getId(), new HashMap<>());
     } catch (ProcessEngineException e) {
       fail("This should be possible");
     }
@@ -732,9 +731,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceById(processInstance.getId());
+    var taskQuery = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult().getId();
 
     try {
-      formService.submitTaskFormData(taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult().getId(), new HashMap<>());
+      formService.submitTaskFormData(taskQuery, emptyProperties);
       fail();
     } catch(SuspendedEntityInteractionException e) {
       // This is expected
@@ -747,9 +747,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceByProcessDefinitionId(processDefinition.getId());
+    var taskQuery = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult().getId();
 
     try {
-      formService.submitTaskFormData(taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult().getId(), new HashMap<>());
+      formService.submitTaskFormData(taskQuery, emptyProperties);
       fail();
     } catch(SuspendedEntityInteractionException e) {
       // This is expected
@@ -762,9 +763,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceByProcessDefinitionKey(processDefinition.getKey());
+    var taskQuery = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult().getId();
 
     try {
-      formService.submitTaskFormData(taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult().getId(), new HashMap<>());
+      formService.submitTaskFormData(taskQuery, emptyProperties);
       fail();
     } catch(SuspendedEntityInteractionException e) {
       // This is expected
@@ -778,24 +780,23 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     // Suspend process instance
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
-    runtimeService.suspendProcessInstanceById(processInstance.getId());
+    var processInstanceId = processInstance.getId();
+    runtimeService.suspendProcessInstanceById(processInstanceId);
 
     try {
-      runtimeService.signal(processInstance.getId());
+      runtimeService.signal(processInstanceId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
       testRule.assertTextPresent("is suspended", e.getMessage());
-      assertTrue(e instanceof BadUserRequestException);
     }
 
     try {
-      runtimeService.signal(processInstance.getId(), new HashMap<>());
+      runtimeService.signal(processInstanceId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
       testRule.assertTextPresent("is suspended", e.getMessage());
-      assertTrue(e instanceof BadUserRequestException);
     }
   }
 
@@ -807,23 +808,22 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceByProcessDefinitionId(processDefinition.getId());
+    String processInstanceId = processInstance.getId();
 
     try {
-      runtimeService.signal(processInstance.getId());
+      runtimeService.signal(processInstanceId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
       testRule.assertTextPresent("is suspended", e.getMessage());
-      assertTrue(e instanceof BadUserRequestException);
     }
 
     try {
-      runtimeService.signal(processInstance.getId(), new HashMap<>());
+      runtimeService.signal(processInstanceId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
       testRule.assertTextPresent("is suspended", e.getMessage());
-      assertTrue(e instanceof BadUserRequestException);
     }
   }
 
@@ -834,24 +834,23 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     // Suspend process instance
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().singleResult();
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
+    var processInstanceId = processInstance.getId();
     runtimeService.suspendProcessInstanceByProcessDefinitionKey(processDefinition.getKey());
 
     try {
-      runtimeService.signal(processInstance.getId());
+      runtimeService.signal(processInstanceId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
       testRule.assertTextPresent("is suspended", e.getMessage());
-      assertTrue(e instanceof BadUserRequestException);
     }
 
     try {
-      runtimeService.signal(processInstance.getId(), new HashMap<>());
+      runtimeService.signal(processInstanceId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
       testRule.assertTextPresent("is suspended", e.getMessage());
-      assertTrue(e instanceof BadUserRequestException);
     }
   }
 
@@ -862,9 +861,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceById(processInstance.getId());
     EventSubscription subscription = runtimeService.createEventSubscriptionQuery().singleResult();
+    var executionId = subscription.getExecutionId();
 
     try {
-      runtimeService.messageEventReceived("someMessage", subscription.getExecutionId());
+      runtimeService.messageEventReceived("someMessage", executionId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -872,7 +872,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.messageEventReceived("someMessage", subscription.getExecutionId(), new HashMap<>());
+      runtimeService.messageEventReceived("someMessage", executionId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -887,9 +887,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceByProcessDefinitionId(processDefinition.getId());
     EventSubscription subscription = runtimeService.createEventSubscriptionQuery().singleResult();
+    var executionId = subscription.getExecutionId();
 
     try {
-      runtimeService.messageEventReceived("someMessage", subscription.getExecutionId());
+      runtimeService.messageEventReceived("someMessage", executionId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -897,7 +898,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.messageEventReceived("someMessage", subscription.getExecutionId(), new HashMap<>());
+      runtimeService.messageEventReceived("someMessage", executionId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -912,9 +913,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     runtimeService.startProcessInstanceById(processDefinition.getId());
     runtimeService.suspendProcessInstanceByProcessDefinitionKey(processDefinition.getKey());
     EventSubscription subscription = runtimeService.createEventSubscriptionQuery().singleResult();
+    var executionId = subscription.getExecutionId();
 
     try {
-      runtimeService.messageEventReceived("someMessage", subscription.getExecutionId());
+      runtimeService.messageEventReceived("someMessage", executionId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -922,7 +924,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.messageEventReceived("someMessage", subscription.getExecutionId(), new HashMap<>());
+      runtimeService.messageEventReceived("someMessage", executionId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -951,8 +953,9 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     assertEquals(1, runtimeService.createProcessInstanceQuery().count());
 
     EventSubscription subscription = runtimeService.createEventSubscriptionQuery().singleResult();
+    var executionId = subscription.getExecutionId();
     try {
-      runtimeService.signalEventReceived(signal, subscription.getExecutionId());
+      runtimeService.signalEventReceived(signal, executionId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -960,7 +963,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.signalEventReceived(signal, subscription.getExecutionId(), new HashMap<>());
+      runtimeService.signalEventReceived(signal, executionId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -994,8 +997,9 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     assertEquals(1, runtimeService.createProcessInstanceQuery().count());
 
     EventSubscription subscription = runtimeService.createEventSubscriptionQuery().singleResult();
+    var executionId = subscription.getExecutionId();
     try {
-      runtimeService.signalEventReceived(signal, subscription.getExecutionId());
+      runtimeService.signalEventReceived(signal, executionId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -1003,7 +1007,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.signalEventReceived(signal, subscription.getExecutionId(), new HashMap<>());
+      runtimeService.signalEventReceived(signal, executionId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -1042,8 +1046,9 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     assertEquals(1, runtimeService.createProcessInstanceQuery().count());
 
     EventSubscription subscription = runtimeService.createEventSubscriptionQuery().singleResult();
+    var executionId = subscription.getExecutionId();
     try {
-      runtimeService.signalEventReceived(signal, subscription.getExecutionId());
+      runtimeService.signalEventReceived(signal, executionId);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -1051,7 +1056,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     }
 
     try {
-      runtimeService.signalEventReceived(signal, subscription.getExecutionId(), new HashMap<>());
+      runtimeService.signalEventReceived(signal, executionId, emptyProcessVariables);
       fail();
     } catch (SuspendedEntityInteractionException e) {
       // This is expected
@@ -1073,13 +1078,14 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
     assertNotNull(task);
+    var taskId = task.getId();
 
     // Suspend the process instance
     runtimeService.suspendProcessInstanceById(processInstance.getId());
 
     // Completing the task should fail
     try {
-      taskService.complete(task.getId());
+      taskService.complete(taskId);
       fail("It is not allowed to complete a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1087,7 +1093,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Claiming the task should fail
     try {
-      taskService.claim(task.getId(), "jos");
+      taskService.claim(taskId, "jos");
       fail("It is not allowed to claim a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1097,7 +1103,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding candidate groups on the task should fail
     try {
-      taskService.addCandidateGroup(task.getId(), "blahGroup");
+      taskService.addCandidateGroup(taskId, "blahGroup");
       fail("It is not allowed to add a candidate group on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1105,7 +1111,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding candidate users on the task should fail
     try {
-      taskService.addCandidateUser(task.getId(), "blahUser");
+      taskService.addCandidateUser(taskId, "blahUser");
       fail("It is not allowed to add a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1113,7 +1119,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding group identity links on the task should fail
     try {
-      taskService.addGroupIdentityLink(task.getId(), "blahGroup", IdentityLinkType.CANDIDATE);
+      taskService.addGroupIdentityLink(taskId, "blahGroup", IdentityLinkType.CANDIDATE);
       fail("It is not allowed to add a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1121,7 +1127,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding an identity link on the task should fail
     try {
-      taskService.addUserIdentityLink(task.getId(), "blahUser", IdentityLinkType.OWNER);
+      taskService.addUserIdentityLink(taskId, "blahUser", IdentityLinkType.OWNER);
       fail("It is not allowed to add an identityLink on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1130,7 +1136,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Set an assignee on the task should fail
     try {
-      taskService.setAssignee(task.getId(), "mispiggy");
+      taskService.setAssignee(taskId, "mispiggy");
       fail("It is not allowed to set an assignee on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1138,7 +1144,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Set an owner on the task should fail
     try {
-      taskService.setOwner(task.getId(), "kermit");
+      taskService.setOwner(taskId, "kermit");
       fail("It is not allowed to set an owner on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1146,7 +1152,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing candidate groups on the task should fail
     try {
-      taskService.deleteCandidateGroup(task.getId(), "blahGroup");
+      taskService.deleteCandidateGroup(taskId, "blahGroup");
       fail("It is not allowed to remove a candidate group on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1154,7 +1160,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing candidate users on the task should fail
     try {
-      taskService.deleteCandidateUser(task.getId(), "blahUser");
+      taskService.deleteCandidateUser(taskId, "blahUser");
       fail("It is not allowed to remove a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1162,7 +1168,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing group identity links on the task should fail
     try {
-      taskService.deleteGroupIdentityLink(task.getId(), "blahGroup", IdentityLinkType.CANDIDATE);
+      taskService.deleteGroupIdentityLink(taskId, "blahGroup", IdentityLinkType.CANDIDATE);
       fail("It is not allowed to remove a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1170,7 +1176,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing an identity link on the task should fail
     try {
-      taskService.deleteUserIdentityLink(task.getId(), "blahUser", IdentityLinkType.OWNER);
+      taskService.deleteUserIdentityLink(taskId, "blahUser", IdentityLinkType.OWNER);
       fail("It is not allowed to remove an identityLink on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1187,13 +1193,14 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
     assertNotNull(task);
+    var taskId = task.getId();
 
     // Suspend the process instance
     runtimeService.suspendProcessInstanceByProcessDefinitionId(processDefinition.getId());
 
     // Completing the task should fail
     try {
-      taskService.complete(task.getId());
+      taskService.complete(taskId);
       fail("It is not allowed to complete a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1201,7 +1208,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Claiming the task should fail
     try {
-      taskService.claim(task.getId(), "jos");
+      taskService.claim(taskId, "jos");
       fail("It is not allowed to claim a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1211,7 +1218,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding candidate groups on the task should fail
     try {
-      taskService.addCandidateGroup(task.getId(), "blahGroup");
+      taskService.addCandidateGroup(taskId, "blahGroup");
       fail("It is not allowed to add a candidate group on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1219,7 +1226,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding candidate users on the task should fail
     try {
-      taskService.addCandidateUser(task.getId(), "blahUser");
+      taskService.addCandidateUser(taskId, "blahUser");
       fail("It is not allowed to add a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1227,7 +1234,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding group identity links on the task should fail
     try {
-      taskService.addGroupIdentityLink(task.getId(), "blahGroup", IdentityLinkType.CANDIDATE);
+      taskService.addGroupIdentityLink(taskId, "blahGroup", IdentityLinkType.CANDIDATE);
       fail("It is not allowed to add a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1235,7 +1242,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding an identity link on the task should fail
     try {
-      taskService.addUserIdentityLink(task.getId(), "blahUser", IdentityLinkType.OWNER);
+      taskService.addUserIdentityLink(taskId, "blahUser", IdentityLinkType.OWNER);
       fail("It is not allowed to add an identityLink on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1244,7 +1251,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Set an assignee on the task should fail
     try {
-      taskService.setAssignee(task.getId(), "mispiggy");
+      taskService.setAssignee(taskId, "mispiggy");
       fail("It is not allowed to set an assignee on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1252,7 +1259,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Set an owner on the task should fail
     try {
-      taskService.setOwner(task.getId(), "kermit");
+      taskService.setOwner(taskId, "kermit");
       fail("It is not allowed to set an owner on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1260,7 +1267,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing candidate groups on the task should fail
     try {
-      taskService.deleteCandidateGroup(task.getId(), "blahGroup");
+      taskService.deleteCandidateGroup(taskId, "blahGroup");
       fail("It is not allowed to remove a candidate group on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1268,7 +1275,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing candidate users on the task should fail
     try {
-      taskService.deleteCandidateUser(task.getId(), "blahUser");
+      taskService.deleteCandidateUser(taskId, "blahUser");
       fail("It is not allowed to remove a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1276,7 +1283,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing group identity links on the task should fail
     try {
-      taskService.deleteGroupIdentityLink(task.getId(), "blahGroup", IdentityLinkType.CANDIDATE);
+      taskService.deleteGroupIdentityLink(taskId, "blahGroup", IdentityLinkType.CANDIDATE);
       fail("It is not allowed to remove a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1284,7 +1291,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing an identity link on the task should fail
     try {
-      taskService.deleteUserIdentityLink(task.getId(), "blahUser", IdentityLinkType.OWNER);
+      taskService.deleteUserIdentityLink(taskId, "blahUser", IdentityLinkType.OWNER);
       fail("It is not allowed to remove an identityLink on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1301,13 +1308,14 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId());
     final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
     assertNotNull(task);
+    var taskId = task.getId();
 
     // Suspend the process instance
     runtimeService.suspendProcessInstanceByProcessDefinitionKey(processDefinition.getKey());
 
     // Completing the task should fail
     try {
-      taskService.complete(task.getId());
+      taskService.complete(taskId);
       fail("It is not allowed to complete a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1315,7 +1323,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Claiming the task should fail
     try {
-      taskService.claim(task.getId(), "jos");
+      taskService.claim(taskId, "jos");
       fail("It is not allowed to claim a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1325,7 +1333,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding candidate groups on the task should fail
     try {
-      taskService.addCandidateGroup(task.getId(), "blahGroup");
+      taskService.addCandidateGroup(taskId, "blahGroup");
       fail("It is not allowed to add a candidate group on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1333,7 +1341,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding candidate users on the task should fail
     try {
-      taskService.addCandidateUser(task.getId(), "blahUser");
+      taskService.addCandidateUser(taskId, "blahUser");
       fail("It is not allowed to add a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1341,7 +1349,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding group identity links on the task should fail
     try {
-      taskService.addGroupIdentityLink(task.getId(), "blahGroup", IdentityLinkType.CANDIDATE);
+      taskService.addGroupIdentityLink(taskId, "blahGroup", IdentityLinkType.CANDIDATE);
       fail("It is not allowed to add a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1349,7 +1357,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Adding an identity link on the task should fail
     try {
-      taskService.addUserIdentityLink(task.getId(), "blahUser", IdentityLinkType.OWNER);
+      taskService.addUserIdentityLink(taskId, "blahUser", IdentityLinkType.OWNER);
       fail("It is not allowed to add an identityLink on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1358,7 +1366,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Set an assignee on the task should fail
     try {
-      taskService.setAssignee(task.getId(), "mispiggy");
+      taskService.setAssignee(taskId, "mispiggy");
       fail("It is not allowed to set an assignee on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1366,7 +1374,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Set an owner on the task should fail
     try {
-      taskService.setOwner(task.getId(), "kermit");
+      taskService.setOwner(taskId, "kermit");
       fail("It is not allowed to set an owner on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1374,7 +1382,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing candidate groups on the task should fail
     try {
-      taskService.deleteCandidateGroup(task.getId(), "blahGroup");
+      taskService.deleteCandidateGroup(taskId, "blahGroup");
       fail("It is not allowed to remove a candidate group on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1382,7 +1390,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing candidate users on the task should fail
     try {
-      taskService.deleteCandidateUser(task.getId(), "blahUser");
+      taskService.deleteCandidateUser(taskId, "blahUser");
       fail("It is not allowed to remove a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1390,7 +1398,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing group identity links on the task should fail
     try {
-      taskService.deleteGroupIdentityLink(task.getId(), "blahGroup", IdentityLinkType.CANDIDATE);
+      taskService.deleteGroupIdentityLink(taskId, "blahGroup", IdentityLinkType.CANDIDATE);
       fail("It is not allowed to remove a candidate user on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1398,7 +1406,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Removing an identity link on the task should fail
     try {
-      taskService.deleteUserIdentityLink(task.getId(), "blahUser", IdentityLinkType.OWNER);
+      taskService.deleteUserIdentityLink(taskId, "blahUser", IdentityLinkType.OWNER);
       fail("It is not allowed to remove an identityLink on a task of a suspended process instance");
     } catch (SuspendedEntityInteractionException e) {
       // This is good
@@ -1420,6 +1428,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
       taskService.saveTask(subTask);
       fail("Creating sub tasks for suspended task should not be possible");
     } catch (SuspendedEntityInteractionException e) {
+      // expected
     }
   }
 
@@ -1438,6 +1447,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
       taskService.saveTask(subTask);
       fail("Creating sub tasks for suspended task should not be possible");
     } catch (SuspendedEntityInteractionException e) {
+      // expected
     }
   }
 
@@ -1456,6 +1466,7 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
       taskService.saveTask(subTask);
       fail("Creating sub tasks for suspended task should not be possible");
     } catch (SuspendedEntityInteractionException e) {
+      // expected
     }
   }
 
@@ -1812,9 +1823,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     runtimeService.suspendProcessInstanceById(instance.getId());
 
     Task task = taskService.createTaskQuery().singleResult();
+    var taskId = task.getId();
 
     try {
-      taskService.complete(task.getId());
+      taskService.complete(taskId);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
@@ -1835,9 +1847,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     runtimeService.suspendProcessInstanceByProcessDefinitionId(instance.getProcessDefinitionId());
 
     Task task = taskService.createTaskQuery().singleResult();
+    var taskId = task.getId();
 
     try {
-      taskService.complete(task.getId());
+      taskService.complete(taskId);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
@@ -1863,9 +1876,10 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     runtimeService.suspendProcessInstanceByProcessDefinitionKey(processDefinition.getKey());
 
     Task task = taskService.createTaskQuery().singleResult();
+    var taskId = task.getId();
 
     try {
-      taskService.complete(task.getId());
+      taskService.complete(taskId);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
@@ -1888,16 +1902,18 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     List<Task> tasks = taskService.createTaskQuery().list();
     Task task1 = tasks.get(0);
     Task task2 = tasks.get(1);
+    String task1Id = task1.getId();
+    String task2Id = task2.getId();
 
     try {
-      taskService.complete(task1.getId());
+      taskService.complete(task1Id);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
     }
 
     try {
-      taskService.complete(task2.getId());
+      taskService.complete(task2Id);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
@@ -1905,8 +1921,8 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // should be successful after reactivation
     runtimeService.activateProcessInstanceById(instance.getId());
-    taskService.complete(task1.getId());
-    taskService.complete(task2.getId());
+    taskService.complete(task1Id);
+    taskService.complete(task2Id);
 
     assertEquals(0, runtimeService.createProcessInstanceQuery().count());
   }
@@ -1921,16 +1937,18 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     List<Task> tasks = taskService.createTaskQuery().list();
     Task task1 = tasks.get(0);
     Task task2 = tasks.get(1);
+    String task1Id = task1.getId();
+    String task2Id = task2.getId();
 
     try {
-      taskService.complete(task1.getId());
+      taskService.complete(task1Id);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
     }
 
     try {
-      taskService.complete(task2.getId());
+      taskService.complete(task2Id);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
@@ -1938,8 +1956,8 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // should be successful after reactivation
     runtimeService.activateProcessInstanceByProcessDefinitionId(instance.getProcessDefinitionId());
-    taskService.complete(task1.getId());
-    taskService.complete(task2.getId());
+    taskService.complete(task1Id);
+    taskService.complete(task2Id);
 
     assertEquals(0, runtimeService.createProcessInstanceQuery().count());
   }
@@ -1958,16 +1976,18 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
     List<Task> tasks = taskService.createTaskQuery().list();
     Task task1 = tasks.get(0);
     Task task2 = tasks.get(1);
+    String task1Id = task1.getId();
+    String task2Id = task2.getId();
 
     try {
-      taskService.complete(task1.getId());
+      taskService.complete(task1Id);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
     }
 
     try {
-      taskService.complete(task2.getId());
+      taskService.complete(task2Id);
       fail("this should not be successful, as the execution of a suspended instance is resumed");
     } catch (SuspendedEntityInteractionException e) {
       // this is expected to fail
@@ -1975,8 +1995,8 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // should be successful after reactivation
     runtimeService.activateProcessInstanceByProcessDefinitionKey(processDefinition.getKey());
-    taskService.complete(task1.getId());
-    taskService.complete(task2.getId());
+    taskService.complete(task1Id);
+    taskService.complete(task2Id);
 
     assertEquals(0, runtimeService.createProcessInstanceQuery().count());
   }
@@ -1992,10 +2012,11 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Suspend process instance
     runtimeService.suspendProcessInstanceById(processInstance.getId());
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("theTask");
 
     // try to start before activity for suspended processDefinition
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startBeforeActivity("theTask").execute();
+      processInstanceModificationBuilder.execute();
       fail("Exception is expected but not thrown");
     } catch(SuspendedEntityInteractionException e) {
       testRule.assertTextPresentIgnoreCase("is suspended", e.getMessage());
@@ -2013,10 +2034,11 @@ public class ProcessInstanceSuspensionTest extends PluggableProcessEngineTest {
 
     // Suspend process instance
     runtimeService.suspendProcessInstanceById(processInstance.getId());
+    var processInstanceModificationBuilder = runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("theTask");
 
     // try to start after activity for suspended processDefinition
     try {
-      runtimeService.createProcessInstanceModification(processInstance.getId()).startAfterActivity("theTask").execute();
+      processInstanceModificationBuilder.execute();
       fail("Exception is expected but not thrown");
     } catch(SuspendedEntityInteractionException e) {
       testRule.assertTextPresentIgnoreCase("is suspended", e.getMessage());

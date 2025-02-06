@@ -39,7 +39,7 @@ public abstract class AbstractSetStateCmd implements Command<Void> {
   protected boolean isLogUserOperationDisabled;
   protected Date executionDate;
 
-  public AbstractSetStateCmd(boolean includeSubResources, Date executionDate) {
+  protected AbstractSetStateCmd(boolean includeSubResources, Date executionDate) {
     this.includeSubResources = includeSubResources;
     this.executionDate = executionDate;
   }
@@ -170,10 +170,8 @@ public abstract class AbstractSetStateCmd implements Command<Void> {
   protected String getDeploymentIdByJobDefinition(CommandContext commandContext, String jobDefinitionId) {
     JobDefinitionManager jobDefinitionManager = commandContext.getJobDefinitionManager();
     JobDefinitionEntity jobDefinition = jobDefinitionManager.findById(jobDefinitionId);
-    if (jobDefinition != null) {
-      if (jobDefinition.getProcessDefinitionId() != null) {
-        return getDeploymentIdByProcessDefinition(commandContext, jobDefinition.getProcessDefinitionId());
-      }
+    if (jobDefinition != null && jobDefinition.getProcessDefinitionId() != null) {
+      return getDeploymentIdByProcessDefinition(commandContext, jobDefinition.getProcessDefinitionId());
     }
     return null;
   }

@@ -58,9 +58,9 @@ public abstract class AbstractRestQueryParametersDto<T> extends QueryParameters 
   protected ObjectMapper objectMapper;
 
   // required for populating via jackson
-  public AbstractRestQueryParametersDto() { }
+  protected AbstractRestQueryParametersDto() { }
 
-  public AbstractRestQueryParametersDto(ObjectMapper objectMapper, MultivaluedMap<String, String> queryParameters) {
+  protected AbstractRestQueryParametersDto(ObjectMapper objectMapper, MultivaluedMap<String, String> queryParameters) {
     this.objectMapper = objectMapper;
     for (Entry<String, List<String>> param : queryParameters.entrySet()) {
       String key = param.getKey();
@@ -140,11 +140,11 @@ public abstract class AbstractRestQueryParametersDto<T> extends QueryParameters 
 
       JacksonAwareStringToTypeConverter<?> converter = null;
       try {
-        converter = converterClass.newInstance();
+        converter = converterClass.getDeclaredConstructor().newInstance();
         converter.setObjectMapper(objectMapper);
         Object convertedValue = converter.convertQueryParameterToType(value);
         method.invoke(this, convertedValue);
-      } catch (InstantiationException | IllegalAccessException e) {
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException e) {
         throw new RestException(Status.INTERNAL_SERVER_ERROR, e, "Server error.");
       } catch (InvocationTargetException e) {
         throw new InvalidRequestException(Status.BAD_REQUEST, e, "Cannot set query parameter '" + key + "' to value '" + value + "'");
@@ -158,16 +158,12 @@ public abstract class AbstractRestQueryParametersDto<T> extends QueryParameters 
   private List<Method> findMatchingAnnotatedMethods(String parameterName) {
     List<Method> result = new ArrayList<>();
     Method[] methods = this.getClass().getMethods();
-    for (int i = 0; i < methods.length; i++) {
-      Method method = methods[i];
+    for (Method method : methods) {
       Annotation[] methodAnnotations = method.getAnnotations();
 
-      for (int j = 0; j < methodAnnotations.length; j++) {
-        Annotation annotation = methodAnnotations[j];
-        if (annotation instanceof OperatonQueryParam parameterAnnotation) {
-          if (parameterAnnotation.value().equals(parameterName)) {
+      for (Annotation annotation : methodAnnotations) {
+        if (annotation instanceof OperatonQueryParam parameterAnnotation && parameterAnnotation.value().equals(parameterName)) {
             result.add(method);
-          }
         }
       }
     }

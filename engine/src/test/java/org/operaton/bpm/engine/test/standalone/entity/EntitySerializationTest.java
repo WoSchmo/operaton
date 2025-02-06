@@ -16,17 +16,6 @@
  */
 package org.operaton.bpm.engine.test.standalone.entity;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Collections;
-import java.util.Date;
-
 import org.operaton.bpm.engine.delegate.ExecutionListener;
 import org.operaton.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.TaskEntity;
@@ -35,7 +24,13 @@ import org.operaton.bpm.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.operaton.bpm.engine.impl.pvm.process.TransitionImpl;
 import org.operaton.bpm.engine.impl.task.TaskDefinition;
 import org.operaton.bpm.engine.task.DelegationState;
+
+import java.io.*;
+import java.util.Date;
+
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class EntitySerializationTest {
 
@@ -69,15 +64,15 @@ public class EntitySerializationTest {
    ExecutionEntity execution = new ExecutionEntity();
 
    ActivityImpl activityImpl = new ActivityImpl("test", null);
-   activityImpl.getExecutionListeners().put("start", Collections.<ExecutionListener>singletonList(new TestExecutionListener()));
+   activityImpl.addListener("start", new TestExecutionListener());
    execution.setActivity(activityImpl);
 
    ProcessDefinitionImpl processDefinitionImpl = new ProcessDefinitionImpl("test");
-   processDefinitionImpl.getExecutionListeners().put("start", Collections.<ExecutionListener>singletonList(new TestExecutionListener()));
+   processDefinitionImpl.addListener("start", new TestExecutionListener());
    execution.setProcessDefinition(processDefinitionImpl);
 
    TransitionImpl transitionImpl = new TransitionImpl("test", new ProcessDefinitionImpl("test"));
-   transitionImpl.addExecutionListener(new TestExecutionListener());
+   transitionImpl.addListener(ExecutionListener.EVENTNAME_TAKE, new TestExecutionListener());
    execution.setTransition(transitionImpl);
 
    execution.setSuperExecution(new ExecutionEntity());
@@ -112,9 +107,7 @@ public class EntitySerializationTest {
   private Object readObject(byte[] data) throws IOException, ClassNotFoundException {
     InputStream buffer = new ByteArrayInputStream(data);
     ObjectInputStream inputStream = new ObjectInputStream(buffer);
-    Object object = inputStream.readObject();
-
-    return object;
+    return inputStream.readObject();
   }
 
 }

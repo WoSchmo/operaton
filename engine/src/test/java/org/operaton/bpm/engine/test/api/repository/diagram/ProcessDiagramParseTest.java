@@ -26,9 +26,6 @@ import java.io.InputStream;
 
 import org.operaton.bpm.engine.impl.bpmn.diagram.ProcessDiagramLayoutFactory;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
-import org.operaton.bpm.engine.repository.DiagramLayout;
 import org.operaton.bpm.engine.test.ProcessEngineRule;
 import org.operaton.bpm.engine.test.util.ProvidedProcessEngineRule;
 import org.junit.After;
@@ -41,7 +38,7 @@ import org.junit.Test;
  */
 public class ProcessDiagramParseTest {
 
-  private static final String resourcePath = "src/test/resources/org/operaton/bpm/engine/test/api/repository/diagram/testXxeParsingIsDisabled";
+  private static final String RESOURCE_PATH = "src/test/resources/org/operaton/bpm/engine/test/api/repository/diagram/testXxeParsingIsDisabled";
 
   @Rule
   public ProcessEngineRule engineRule = new ProvidedProcessEngineRule();
@@ -63,27 +60,17 @@ public class ProcessDiagramParseTest {
   @Test
   public void testXxeParsingIsDisabled() {
     processEngineConfiguration.setEnableXxeProcessing(false);
+    final InputStream bpmnXmlStream = getResourceInputStream(RESOURCE_PATH + ".bpmn20.xml");
+    final InputStream imageStream = getResourceInputStream(RESOURCE_PATH + ".png");
+    assertNotNull(bpmnXmlStream);
+    var processEngineConfigurationImpl = engineRule.getProcessEngineConfiguration()
+        .getCommandExecutorTxRequired();
 
     try {
-      final InputStream bpmnXmlStream = new FileInputStream(
-        resourcePath + ".bpmn20.xml");
-      final InputStream imageStream = new FileInputStream(
-        resourcePath + ".png");
-
-      assertNotNull(bpmnXmlStream);
 
       // when we run this in the ProcessEngine context
-      engineRule.getProcessEngineConfiguration()
-        .getCommandExecutorTxRequired()
-        .execute(new Command<DiagramLayout>() {
-          @Override
-          public DiagramLayout execute(CommandContext commandContext) {
-            return new ProcessDiagramLayoutFactory().getProcessDiagramLayout(bpmnXmlStream, imageStream);
-          }
-        });
+      processEngineConfigurationImpl.execute(commandContext -> new ProcessDiagramLayoutFactory().getProcessDiagramLayout(bpmnXmlStream, imageStream));
       fail("The test model contains a DOCTYPE declaration! The test should fail.");
-    } catch (FileNotFoundException ex) {
-      fail("The test BPMN model file is missing. " + ex.getMessage());
     } catch (Exception e) {
       // then
       assertThat(e.getMessage()).contains("Error while parsing BPMN model");
@@ -94,31 +81,29 @@ public class ProcessDiagramParseTest {
   @Test
   public void testXxeParsingIsEnabled() {
     processEngineConfiguration.setEnableXxeProcessing(true);
+    final InputStream bpmnXmlStream = getResourceInputStream(RESOURCE_PATH + ".bpmn20.xml");
+    final InputStream imageStream = getResourceInputStream(RESOURCE_PATH + ".png");
+    assertNotNull(bpmnXmlStream);
+    var processEngineConfigurationImpl = engineRule.getProcessEngineConfiguration()
+        .getCommandExecutorTxRequired();
 
     try {
-      final InputStream bpmnXmlStream = new FileInputStream(
-        resourcePath + ".bpmn20.xml");
-      final InputStream imageStream = new FileInputStream(
-        resourcePath + ".png");
-
-      assertNotNull(bpmnXmlStream);
 
       // when we run this in the ProcessEngine context
-      engineRule.getProcessEngineConfiguration()
-        .getCommandExecutorTxRequired()
-        .execute(new Command<DiagramLayout>() {
-          @Override
-          public DiagramLayout execute(CommandContext commandContext) {
-            return new ProcessDiagramLayoutFactory().getProcessDiagramLayout(bpmnXmlStream, imageStream);
-          }
-        });
+      processEngineConfigurationImpl.execute(commandContext -> new ProcessDiagramLayoutFactory().getProcessDiagramLayout(bpmnXmlStream, imageStream));
       fail("The test model contains a DOCTYPE declaration! The test should fail.");
-    } catch (FileNotFoundException ex) {
-      fail("The test BPMN model file is missing. " + ex.getMessage());
     } catch (Exception e) {
       // then
       assertThat(e.getMessage()).contains("Error while parsing BPMN model");
       assertThat(e.getCause().getMessage()).contains("file.txt");
+    }
+  }
+
+  private InputStream getResourceInputStream(String path) {
+    try {
+      return new FileInputStream(path);
+    } catch (FileNotFoundException ex) {
+      throw new AssertionError("The test BPMN model file is missing. " + ex.getMessage());
     }
   }
 }

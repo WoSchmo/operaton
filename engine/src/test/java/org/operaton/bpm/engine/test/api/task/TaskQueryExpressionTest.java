@@ -36,7 +36,6 @@ import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -88,7 +87,7 @@ public class TaskQueryExpressionTest {
     anotherUser = createUser("anotherUser", group3.getId());
     userWithoutGroups = createUser("userWithoutGroups");
 
-    setTime(1427547759000l);
+    setTime(1427547759000L);
     testTask = createTestTask("task");
     // shift time to force distinguishable create times
     adjustTime(2 * 60);
@@ -192,8 +191,9 @@ public class TaskQueryExpressionTest {
     assertCount(taskQuery().taskCandidateGroupInExpression("${currentUserGroups()}"), 0);
 
     setCurrentUser(userWithoutGroups);
+    var taskQuery = taskQuery().taskCandidateGroupInExpression("${currentUserGroups()}");
     try {
-      taskQuery().taskCandidateGroupInExpression("${currentUserGroups()}").count();
+      taskQuery.count();
       fail("Exception expected");
     }
     catch (ProcessEngineException e) {
@@ -455,7 +455,7 @@ public class TaskQueryExpressionTest {
     assertTrue(taskQuery.getFollowUpDate().after(queryDate));
     assertTrue(taskQuery.getFollowUpAfter().after(queryDate));
 
-    // candidates has to be tested separately cause they have to be set exclusively
+    // candidates has to be tested separately because they have to be set exclusively
 
     taskQuery = (TaskQueryImpl) taskQuery()
       .taskCandidateGroup(queryString)
@@ -476,7 +476,7 @@ public class TaskQueryExpressionTest {
     assertEquals(expressionString, taskQuery.getCandidateUser());
 
     setCurrentUser(testUser);
-    List<String> queryList = Arrays.asList("query");
+    List<String> queryList = List.of("query");
     String testGroupsExpression = "${currentUserGroups()}";
 
     taskQuery = (TaskQueryImpl) taskQuery()
@@ -531,22 +531,23 @@ public class TaskQueryExpressionTest {
     // execute query so expression will be evaluated
     taskQuery.count();
 
-    assertThat(queryString).isEqualTo(taskQuery.getAssignee());
-    assertThat(queryString).isEqualTo(taskQuery.getAssigneeLike());
-    assertThat(queryString).isEqualTo(taskQuery.getOwner());
-    assertThat(queryString).isEqualTo(taskQuery.getInvolvedUser());
+    assertThat(queryString)
+      .isEqualTo(taskQuery.getAssignee())
+      .isEqualTo(taskQuery.getAssigneeLike())
+      .isEqualTo(taskQuery.getOwner())
+      .isEqualTo(taskQuery.getInvolvedUser());
     assertThat(taskQuery.getUpdatedAfter()).isEqualTo(queryDate);
-    assertThat(taskQuery.getCreateTimeBefore().equals(queryDate));
-    assertThat(taskQuery.getCreateTime().equals(queryDate));
-    assertThat(taskQuery.getCreateTimeAfter().equals(queryDate));
-    assertThat(taskQuery.getDueBefore().equals(queryDate));
-    assertThat(taskQuery.getDueDate().equals(queryDate));
-    assertThat(taskQuery.getDueAfter().equals(queryDate));
-    assertThat(taskQuery.getFollowUpBefore().equals(queryDate));
-    assertThat(taskQuery.getFollowUpDate().equals(queryDate));
-    assertThat(taskQuery.getFollowUpAfter().equals(queryDate));
+    assertThat(taskQuery.getCreateTimeBefore()).isEqualTo(queryDate);
+    assertThat(taskQuery.getCreateTime()).isEqualTo(queryDate);
+    assertThat(taskQuery.getCreateTimeAfter()).isEqualTo(queryDate);
+    assertThat(taskQuery.getDueBefore()).isEqualTo(queryDate);
+    assertThat(taskQuery.getDueDate()).isEqualTo(queryDate);
+    assertThat(taskQuery.getDueAfter()).isEqualTo(queryDate);
+    assertThat(taskQuery.getFollowUpBefore()).isEqualTo(queryDate);
+    assertThat(taskQuery.getFollowUpDate()).isEqualTo(queryDate);
+    assertThat(taskQuery.getFollowUpAfter()).isEqualTo(queryDate);
 
-    // candidates has to be tested separately cause they have to be set exclusively
+    // candidates has to be tested separately because they have to be set exclusively
 
     taskQuery = (TaskQueryImpl) taskQuery()
       .taskCandidateGroupExpression(testStringExpression)
@@ -567,7 +568,7 @@ public class TaskQueryExpressionTest {
     assertThat(queryString).isEqualTo(taskQuery.getCandidateUser());
 
     setCurrentUser(testUser);
-    List<String> queryList = Arrays.asList("query");
+    List<String> queryList = List.of("query");
     String testGroupsExpression = "${currentUserGroups()}";
 
     taskQuery = (TaskQueryImpl) taskQuery()
@@ -625,42 +626,48 @@ public class TaskQueryExpressionTest {
 
   @Test
   public void shouldRejectDueDateExpressionAndWithoutDueDateCombination() {
-    assertThatThrownBy(() -> taskService.createTaskQuery().dueDateExpression("").withoutDueDate())
+    var taskQuery = taskService.createTaskQuery().dueDateExpression("");
+    assertThatThrownBy(taskQuery::withoutDueDate)
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Invalid query usage");
   }
 
   @Test
   public void shouldRejectWithoutDueDateAndDueDateExpressionCombination() {
-    assertThatThrownBy(() -> taskService.createTaskQuery().withoutDueDate().dueDateExpression(""))
+    var taskQuery = taskService.createTaskQuery().withoutDueDate();
+    assertThatThrownBy(() -> taskQuery.dueDateExpression(""))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Invalid query usage");
   }
 
   @Test
   public void shouldRejectDueAfterExpressionAndWithoutDueDateCombination() {
-    assertThatThrownBy(() -> taskService.createTaskQuery().dueAfterExpression("").withoutDueDate())
+    var taskQuery = taskService.createTaskQuery().dueAfterExpression("");
+    assertThatThrownBy(taskQuery::withoutDueDate)
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Invalid query usage");
   }
 
   @Test
   public void shouldRejectWithoutDueDateAndDueAfterExpressionCombination() {
-    assertThatThrownBy(() -> taskService.createTaskQuery().withoutDueDate().dueAfterExpression(""))
+    var taskQuery = taskService.createTaskQuery().withoutDueDate();
+    assertThatThrownBy(() -> taskQuery.dueAfterExpression(""))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Invalid query usage");
   }
 
   @Test
   public void shouldRejectDueBeforeExpressionAndWithoutDueDateCombination() {
-    assertThatThrownBy(() -> taskService.createTaskQuery().dueBeforeExpression("").withoutDueDate())
+    var taskQuery = taskService.createTaskQuery().dueBeforeExpression("");
+    assertThatThrownBy(taskQuery::withoutDueDate)
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Invalid query usage");
   }
 
   @Test
   public void shouldRejectWithoutDueDateAndDueBeforeExpressionCombination() {
-    assertThatThrownBy(() -> taskService.createTaskQuery().withoutDueDate().dueBeforeExpression(""))
+    var taskQuery = taskService.createTaskQuery().withoutDueDate();
+    assertThatThrownBy(() -> taskQuery.dueBeforeExpression(""))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Invalid query usage");
   }

@@ -52,7 +52,7 @@ public class IdentityServiceTenantTest {
   protected static final String TENANT_ONE = "tenant1";
   protected static final String TENANT_TWO = "tenant2";
 
-  private final String INVALID_ID_MESSAGE = "%s has an invalid id: '%s' is not a valid resource identifier.";
+  private static final String INVALID_ID_MESSAGE = "%s has an invalid id: '%s' is not a valid resource identifier.";
 
   @Rule
   public ProcessEngineRule engineRule = new ProvidedProcessEngineRule();
@@ -154,9 +154,9 @@ public class IdentityServiceTenantTest {
   @Test
   public void testInvalidTenantIdOnUpdate() {
     String invalidId = "john's tenant";
+    Tenant updatedTenant = identityService.newTenant("john");
+    updatedTenant.setId(invalidId);
     try {
-      Tenant updatedTenant = identityService.newTenant("john");
-      updatedTenant.setId(invalidId);
       identityService.saveTenant(updatedTenant);
 
       fail("Invalid tenant id exception expected!");
@@ -176,7 +176,7 @@ public class IdentityServiceTenantTest {
 
     Tenant tenant = processEngine.getIdentityService().newTenant(invalidId);
     try {
-      processEngine.getIdentityService().saveTenant(tenant);
+      identityService.saveTenant(tenant);
       fail("Invalid tenant id exception expected!");
     } catch (ProcessEngineException ex) {
       assertEquals(String.format(INVALID_ID_MESSAGE, "Tenant", invalidId), ex.getMessage());
@@ -192,11 +192,11 @@ public class IdentityServiceTenantTest {
 
     String validId = "johnsTenant";
     String invalidId = "john!@#$%";
+    Tenant tenant = processEngine.getIdentityService().newTenant(validId);
+    tenant.setId(invalidId);
 
     try {
-      Tenant tenant = processEngine.getIdentityService().newTenant(validId);
-      tenant.setId(invalidId);
-      processEngine.getIdentityService().saveTenant(tenant);
+      identityService.saveTenant(tenant);
 
       fail("Invalid tenant id exception expected!");
     } catch (ProcessEngineException ex) {
@@ -248,17 +248,18 @@ public class IdentityServiceTenantTest {
 
     Tenant tenant = processEngine.getIdentityService().newTenant("*");
 
-    assertThatThrownBy(() -> processEngine.getIdentityService().saveTenant(tenant))
+    assertThatThrownBy(() -> identityService.saveTenant(tenant))
       .isInstanceOf(ProcessEngineException.class)
-      .hasMessageContaining("has an invalid id: id cannot be *. * is a reserved identifier.");
+      .hasMessageContaining("Tenant has an invalid id: '*' is not a valid resource identifier.");
   }
 
   @Test
   public void createTenantMembershipUnexistingTenant() {
     User user = identityService.newUser(USER_ONE);
     identityService.saveUser(user);
+    String userId = user.getId();
 
-    assertThatThrownBy(() -> identityService.createTenantUserMembership("nonExisting", user.getId()))
+    assertThatThrownBy(() -> identityService.createTenantUserMembership("nonExisting", userId))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("No tenant found with id 'nonExisting'.");
   }
@@ -267,8 +268,9 @@ public class IdentityServiceTenantTest {
   public void createTenantMembershipUnexistingUser() {
     Tenant tenant = identityService.newTenant(TENANT_ONE);
     identityService.saveTenant(tenant);
+    String tenantId = tenant.getId();
 
-    assertThatThrownBy(() -> identityService.createTenantUserMembership(tenant.getId(), "nonExisting"))
+    assertThatThrownBy(() -> identityService.createTenantUserMembership(tenantId, "nonExisting"))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("No user found with id 'nonExisting'.");
   }
@@ -277,8 +279,9 @@ public class IdentityServiceTenantTest {
   public void createTenantMembershipUnexistingGroup() {
     Tenant tenant = identityService.newTenant(TENANT_ONE);
     identityService.saveTenant(tenant);
+    String tenantId = tenant.getId();
 
-    assertThatThrownBy(() -> identityService.createTenantGroupMembership(tenant.getId(), "nonExisting"))
+    assertThatThrownBy(() -> identityService.createTenantGroupMembership(tenantId, "nonExisting"))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("No group found with id 'nonExisting'.");
 

@@ -22,6 +22,7 @@ import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.executio
 import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.hierarchical;
 import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.inverted;
 import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.verifySorting;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -147,9 +148,11 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     assertEquals(4, query.count());
 
     try {
-      assertNull(query.singleResult());
+      query.singleResult();
       fail();
-    } catch (ProcessEngineException e) { }
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Test
@@ -214,11 +217,12 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
 
   @Test
   public void testQueryInvalidSorting() {
+    var executionQuery = runtimeService.createExecutionQuery().orderByProcessDefinitionKey();
     try {
-      runtimeService.createExecutionQuery().orderByProcessDefinitionKey().list();
+      executionQuery.list();
       fail();
     } catch (ProcessEngineException e) {
-
+      // expected
     }
   }
 
@@ -774,31 +778,32 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     assertNotNull(instances);
     assertEquals(1, instances.size());
     assertEquals(processInstance1.getId(), instances.get(0).getId());
+    var processInstanceQuery = runtimeService.createProcessInstanceQuery();
 
     // Test unsupported operations
     try {
-      runtimeService.createProcessInstanceQuery().variableValueGreaterThan("booleanVar", true);
+      processInstanceQuery.variableValueGreaterThan("booleanVar", true);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'greater than' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createProcessInstanceQuery().variableValueGreaterThanOrEqual("booleanVar", true);
+      processInstanceQuery.variableValueGreaterThanOrEqual("booleanVar", true);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'greater than or equal' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createProcessInstanceQuery().variableValueLessThan("booleanVar", true);
+      processInstanceQuery.variableValueLessThan("booleanVar", true);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'less than' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createProcessInstanceQuery().variableValueLessThanOrEqual("booleanVar", true);
+      processInstanceQuery.variableValueLessThanOrEqual("booleanVar", true);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'less than or equal' condition", ae.getMessage());
@@ -894,38 +899,39 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     Assert.assertEquals(1, runtimeService.createExecutionQuery().variableValueNotEquals("nullVarDouble", null).count());
     // When a byte-array refrence is present, the variable is not considered null
     Assert.assertEquals(1, runtimeService.createExecutionQuery().variableValueNotEquals("nullVarByte", null).count());
+    var executionQuery = runtimeService.createExecutionQuery();
 
     // All other variable queries with null should throw exception
     try {
-      runtimeService.createExecutionQuery().variableValueGreaterThan("nullVar", null);
+      executionQuery.variableValueGreaterThan("nullVar", null);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'greater than' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createExecutionQuery().variableValueGreaterThanOrEqual("nullVar", null);
+      executionQuery.variableValueGreaterThanOrEqual("nullVar", null);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'greater than or equal' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createExecutionQuery().variableValueLessThan("nullVar", null);
+      executionQuery.variableValueLessThan("nullVar", null);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'less than' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createExecutionQuery().variableValueLessThanOrEqual("nullVar", null);
+      executionQuery.variableValueLessThanOrEqual("nullVar", null);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'less than or equal' condition", ae.getMessage());
     }
 
     try {
-      runtimeService.createExecutionQuery().variableValueLike("nullVar", null);
+      executionQuery.variableValueLike("nullVar", null);
       fail("Excetion expected");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Booleans and null cannot be used in 'like' condition", ae.getMessage());
@@ -943,24 +949,24 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
   @Test
   public void testQueryInvalidTypes() {
     Map<String, Object> vars = new HashMap<>();
-    vars.put("bytesVar", "test".getBytes());
-    vars.put("serializableVar",new DummySerializable());
+    byte[] testBytes = "test".getBytes();
+    vars.put("bytesVar", testBytes);
+    DummySerializable dummySerializable = new DummySerializable();
+    vars.put("serializableVar", dummySerializable);
 
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess", vars);
+    ExecutionQuery executionQuery1 = runtimeService.createExecutionQuery().variableValueEquals("bytesVar", "test".getBytes());
+    ExecutionQuery executionQuery2 = runtimeService.createExecutionQuery().variableValueEquals("serializableVar", new DummySerializable());
 
     try {
-      runtimeService.createExecutionQuery()
-        .variableValueEquals("bytesVar", "test".getBytes())
-        .list();
+      executionQuery1.list();
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Variables of type ByteArray cannot be used to query", ae.getMessage());
     }
 
     try {
-      runtimeService.createExecutionQuery()
-        .variableValueEquals("serializableVar", new DummySerializable())
-        .list();
+      executionQuery2.list();
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("Object values cannot be used to query", ae.getMessage());
@@ -971,44 +977,45 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
 
   @Test
   public void testQueryVariablesNullNameArgument() {
+    var executionQuery = runtimeService.createExecutionQuery();
     try {
-      runtimeService.createExecutionQuery().variableValueEquals(null, "value");
+      executionQuery.variableValueEquals(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
     }
     try {
-      runtimeService.createExecutionQuery().variableValueNotEquals(null, "value");
+      executionQuery.variableValueNotEquals(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
     }
     try {
-      runtimeService.createExecutionQuery().variableValueGreaterThan(null, "value");
+      executionQuery.variableValueGreaterThan(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
     }
     try {
-      runtimeService.createExecutionQuery().variableValueGreaterThanOrEqual(null, "value");
+      executionQuery.variableValueGreaterThanOrEqual(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
     }
     try {
-      runtimeService.createExecutionQuery().variableValueLessThan(null, "value");
+      executionQuery.variableValueLessThan(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
     }
     try {
-      runtimeService.createExecutionQuery().variableValueLessThanOrEqual(null, "value");
+      executionQuery.variableValueLessThanOrEqual(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
     }
     try {
-      runtimeService.createExecutionQuery().variableValueLike(null, "value");
+      executionQuery.variableValueLike(null, "value");
       fail("Expected exception");
     } catch(ProcessEngineException ae) {
       testRule.assertTextPresent("name is null", ae.getMessage());
@@ -1162,7 +1169,7 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
   @Test
   public void testExecutionQueryForSuspendedExecutions() {
     List<Execution> suspendedExecutions = runtimeService.createExecutionQuery().suspended().list();
-    assertEquals(suspendedExecutions.size(), 0);
+    assertEquals(0, suspendedExecutions.size());
 
     for (String instanceId : concurrentProcessInstanceIds) {
       runtimeService.suspendProcessInstanceById(instanceId);
@@ -1207,7 +1214,9 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     try {
       query.incidentId(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/failingProcessCreateOneIncident.bpmn20.xml"})
@@ -1238,7 +1247,9 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     try {
       query.incidentType(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/failingProcessCreateOneIncident.bpmn20.xml"})
@@ -1269,7 +1280,9 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     try {
       query.incidentMessage(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/failingProcessCreateOneIncident.bpmn20.xml"})
@@ -1298,7 +1311,9 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
     try {
       query.incidentMessageLike(null);
       fail();
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/failingSubProcessCreateOneIncident.bpmn20.xml"})
@@ -1497,34 +1512,34 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
   public void testProcessVariableValueEqualsNumber() {
     // long
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 123L));
+        Collections.singletonMap("var", 123L));
 
     // non-matching long
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 12345L));
+        Collections.singletonMap("var", 12345L));
 
     // short
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", (short) 123));
+        Collections.singletonMap("var", (short) 123));
 
     // double
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 123.0d));
+        Collections.singletonMap("var", 123.0d));
 
     // integer
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 123));
+        Collections.singletonMap("var", 123));
 
     // untyped null (should not match)
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", null));
+        Collections.singletonMap("var", null));
 
     // typed null (should not match)
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", Variables.longValue(null)));
+        Collections.singletonMap("var", Variables.longValue(null)));
 
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", "123"));
+        Collections.singletonMap("var", "123"));
 
     assertEquals(4, runtimeService.createExecutionQuery().processVariableValueEquals("var", Variables.numberValue(123)).count());
     assertEquals(4, runtimeService.createExecutionQuery().processVariableValueEquals("var", Variables.numberValue(123L)).count());
@@ -1546,34 +1561,34 @@ public class ExecutionQueryTest extends PluggableProcessEngineTest {
   public void testProcessVariableValueNumberComparison() {
     // long
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 123L));
+        Collections.singletonMap("var", 123L));
 
     // non-matching long
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 12345L));
+        Collections.singletonMap("var", 12345L));
 
     // short
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", (short) 123));
+        Collections.singletonMap("var", (short) 123));
 
     // double
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 123.0d));
+        Collections.singletonMap("var", 123.0d));
 
     // integer
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", 123));
+        Collections.singletonMap("var", 123));
 
     // untyped null
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", null));
+        Collections.singletonMap("var", null));
 
     // typed null
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", Variables.longValue(null)));
+        Collections.singletonMap("var", Variables.longValue(null)));
 
     runtimeService.startProcessInstanceByKey("oneTaskProcess",
-        Collections.<String, Object>singletonMap("var", "123"));
+        Collections.singletonMap("var", "123"));
 
     assertEquals(4, runtimeService.createExecutionQuery().processVariableValueNotEquals("var", Variables.numberValue(123)).count());
   }

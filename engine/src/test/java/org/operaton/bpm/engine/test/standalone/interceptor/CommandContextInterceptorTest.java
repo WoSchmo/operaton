@@ -40,12 +40,10 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
 
   @Test
   public void testCommandContextGetCurrentAfterException() {
+    var commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
     try {
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-        @Override
-        public Object execute(CommandContext commandContext) {
-          throw new IllegalStateException("here i come!");
-        }
+      commandExecutor.execute(commandContext -> {
+        throw new IllegalStateException("here i come!");
       });
 
       fail("expected exception");
@@ -60,18 +58,14 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
   public void testCommandContextNestedFailingCommands() {
     final ExceptionThrowingCmd innerCommand1 = new ExceptionThrowingCmd(new IdentifiableRuntimeException(1));
     final ExceptionThrowingCmd innerCommand2 = new ExceptionThrowingCmd(new IdentifiableRuntimeException(2));
+    var commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
 
     try {
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-        @Override
-        public Object execute(CommandContext commandContext) {
-          CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutorTxRequired();
+      commandExecutor.execute(commandContext -> {
+        commandExecutor.execute(innerCommand1);
+        commandExecutor.execute(innerCommand2);
 
-          commandExecutor.execute(innerCommand1);
-          commandExecutor.execute(innerCommand2);
-
-          return null;
-        }
+        return null;
       });
 
       fail("Exception expected");
@@ -87,22 +81,19 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
   public void testCommandContextNestedTryCatch() {
     final ExceptionThrowingCmd innerCommand = new ExceptionThrowingCmd(new IdentifiableRuntimeException(1));
 
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-        CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutorTxRequired();
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutorTxRequired();
 
-        try {
-          commandExecutor.execute(innerCommand);
-          fail("exception expected to pop up during execution of inner command");
-        } catch (IdentifiableRuntimeException e) {
-          // happy path
-          assertNull("the exception should not have been propagated to this command's context",
-              Context.getCommandInvocationContext().getThrowable());
-        }
-
-        return null;
+      try {
+        commandExecutor.execute(innerCommand);
+        fail("exception expected to pop up during execution of inner command");
+      } catch (IdentifiableRuntimeException e) {
+        // happy path
+        assertNull("the exception should not have been propagated to this command's context",
+            Context.getCommandInvocationContext().getThrowable());
       }
+
+      return null;
     });
   }
 
@@ -119,14 +110,12 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
    testRule.deploy(modelInstance);
 
     boolean errorThrown = false;
+    var commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
     try {
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-        @Override
-        public Object execute(CommandContext commandContext) {
+      commandExecutor.execute(commandContext -> {
 
-          runtimeService.startProcessInstanceByKey("processThrowingThrowable");
-          return null;
-        }
+        runtimeService.startProcessInstanceByKey("processThrowingThrowable");
+        return null;
       });
       fail("Exception expected");
     } catch (StackOverflowError t) {

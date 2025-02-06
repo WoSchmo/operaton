@@ -648,8 +648,7 @@ public abstract class JobEntity extends AcquirableJobEntity
 
   @Override
   public Set<String> getReferencedEntityIds() {
-    Set<String> referencedEntityIds = new HashSet<>();
-    return referencedEntityIds;
+    return new HashSet<>();
   }
 
   @Override
@@ -675,7 +674,7 @@ public abstract class JobEntity extends AcquirableJobEntity
       persistedDependentEntities.put(exceptionByteArrayId, ByteArrayEntity.class);
     }
     else {
-      persistedDependentEntities = Collections.EMPTY_MAP;
+      persistedDependentEntities = Collections.emptyMap();
     }
   }
 
