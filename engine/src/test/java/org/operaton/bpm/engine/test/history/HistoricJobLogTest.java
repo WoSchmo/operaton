@@ -159,9 +159,10 @@ public class HistoricJobLogTest {
     JobEntity job = (JobEntity) managementService
         .createJobQuery()
         .singleResult();
+    var jobId = job.getId();
 
     try {
-      managementService.executeJob(job.getId());
+      managementService.executeJob(jobId);
       fail("exception expected");
     } catch (Exception e) {
       // expected
@@ -354,7 +355,7 @@ public class HistoricJobLogTest {
         .createJobQuery()
         .singleResult();
 
-    assertThat(job.getId().equals(anotherJob.getId())).isFalse();
+    assertThat(job.getId()).isNotEqualTo(anotherJob.getId());
 
     HistoricJobLog historicJob = historyService
         .createHistoricJobLogQuery()
@@ -389,7 +390,7 @@ public class HistoricJobLogTest {
       .createJobQuery()
       .singleResult();
 
-    assertThat(job.getId().equals(anotherJob.getId())).isFalse();
+    assertThat(job.getId()).isNotEqualTo(anotherJob.getId());
 
     HistoricJobLog historicJob = historyService
       .createHistoricJobLogQuery()
@@ -1194,8 +1195,9 @@ public class HistoricJobLogTest {
         .getId();
 
     String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(failedHistoricJobLogId);
-    assertThat(stacktrace).isNotNull();
-    assertThat(stacktrace).containsIgnoringCase(FailingDelegate.EXCEPTION_MESSAGE);
+    assertThat(stacktrace)
+      .isNotNull()
+      .containsIgnoringCase(FailingDelegate.EXCEPTION_MESSAGE);
   }
 
   @Test
@@ -1245,9 +1247,10 @@ public class HistoricJobLogTest {
     assertThat(serviceTask1FailedHistoricJobLog.getJobExceptionMessage()).isEqualTo(FirstFailingDelegate.FIRST_EXCEPTION_MESSAGE);
 
     String serviceTask1Stacktrace = historyService.getHistoricJobLogExceptionStacktrace(serviceTask1FailedHistoricJobLogId);
-    assertThat(serviceTask1Stacktrace).isNotNull();
-    assertThat(serviceTask1Stacktrace).containsIgnoringCase(FirstFailingDelegate.FIRST_EXCEPTION_MESSAGE);
-    assertThat(serviceTask1Stacktrace).containsIgnoringCase(FirstFailingDelegate.class.getName());
+    assertThat(serviceTask1Stacktrace)
+      .isNotNull()
+      .containsIgnoringCase(FirstFailingDelegate.FIRST_EXCEPTION_MESSAGE)
+      .containsIgnoringCase(FirstFailingDelegate.class.getName());
 
     // when (2)
     runtimeService.setVariable(processInstanceId, "firstFail", false);
@@ -1272,11 +1275,12 @@ public class HistoricJobLogTest {
     assertThat(serviceTask2FailedHistoricJobLog.getJobExceptionMessage()).isEqualTo(SecondFailingDelegate.SECOND_EXCEPTION_MESSAGE);
 
     String serviceTask2Stacktrace = historyService.getHistoricJobLogExceptionStacktrace(serviceTask2FailedHistoricJobLogId);
-    assertThat(serviceTask2Stacktrace).isNotNull();
-    assertThat(serviceTask2Stacktrace).containsIgnoringCase(SecondFailingDelegate.SECOND_EXCEPTION_MESSAGE);
-    assertThat(serviceTask2Stacktrace).containsIgnoringCase(SecondFailingDelegate.class.getName());
+    assertThat(serviceTask2Stacktrace)
+      .isNotNull()
+      .containsIgnoringCase(SecondFailingDelegate.SECOND_EXCEPTION_MESSAGE)
+      .containsIgnoringCase(SecondFailingDelegate.class.getName());
 
-    assertThat(serviceTask1Stacktrace.equals(serviceTask2Stacktrace)).isFalse();
+    assertThat(serviceTask1Stacktrace).isNotEqualTo(serviceTask2Stacktrace);
   }
 
   @Deployment
@@ -1306,8 +1310,9 @@ public class HistoricJobLogTest {
     assertThat(failedHistoricJobLog.getJobExceptionMessage()).isNull();
 
     String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(failedHistoricJobLogId);
-    assertThat(stacktrace).isNotNull();
-    assertThat(stacktrace).containsIgnoringCase(ThrowExceptionWithoutMessageDelegate.class.getName());
+    assertThat(stacktrace)
+      .isNotNull()
+      .containsIgnoringCase(ThrowExceptionWithoutMessageDelegate.class.getName());
   }
 
   @Deployment
@@ -1321,10 +1326,11 @@ public class HistoricJobLogTest {
 
     runtimeService.startProcessInstanceByKey("process", Variables.createVariables().putValue("delegate", delegate));
     Job job = managementService.createJobQuery().singleResult();
+    var jobId = job.getId();
 
     // when
     try {
-      managementService.executeJob(job.getId());
+      managementService.executeJob(jobId);
       fail("exception expected");
     } catch (Exception e) {
       // expected

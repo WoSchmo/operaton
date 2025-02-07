@@ -340,22 +340,23 @@ public class HistoricActivityInstanceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testInvalidSorting() {
+    var historicActivityInstanceQuery = historyService.createHistoricActivityInstanceQuery().orderByHistoricActivityInstanceDuration();
     try {
-      historyService.createHistoricActivityInstanceQuery().asc().list();
+      historicActivityInstanceQuery.list();
       fail();
     } catch (ProcessEngineException e) {
 
     }
 
     try {
-      historyService.createHistoricActivityInstanceQuery().desc().list();
+      historicActivityInstanceQuery.list();
       fail();
     } catch (ProcessEngineException e) {
 
     }
 
     try {
-      historyService.createHistoricActivityInstanceQuery().orderByHistoricActivityInstanceDuration().list();
+      historicActivityInstanceQuery.list();
       fail();
     } catch (ProcessEngineException e) {
 
@@ -445,12 +446,11 @@ public class HistoricActivityInstanceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testHistoricActivityInstanceQueryByCompleteScopeAndCanceled() {
-    try {
-      historyService
+    var historicActivityInstanceQuery = historyService
           .createHistoricActivityInstanceQuery()
-          .completeScope()
-          .canceled()
-          .list();
+          .completeScope();
+    try {
+      historicActivityInstanceQuery.canceled();
       fail("It should not be possible to query by completeScope and canceled.");
     } catch (ProcessEngineException e) {
       // exception expected

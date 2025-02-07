@@ -54,7 +54,6 @@ import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.verifySo
 import static org.operaton.bpm.engine.test.api.runtime.migration.ModifiableBpmnModelInstance.modify;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Before;
@@ -475,21 +474,23 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testHistoricProcessInstanceQueryWithIncidentMessageNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery().incidentMessage(null).count();
+      historicProcessInstanceQuery.incidentMessage(null);
       fail("incidentMessage with null value is not allowed");
     } catch( NullValueException nex ) {
-      // expected
+      assertEquals("incidentMessage is null", nex.getMessage());
     }
   }
 
   @Test
   public void testHistoricProcessInstanceQueryWithIncidentMessageLikeNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery().incidentMessageLike(null).count();
+      historicProcessInstanceQuery.incidentMessageLike(null);
       fail("incidentMessageLike with null value is not allowed");
     } catch( NullValueException nex ) {
-      // expected
+      assertEquals("incidentMessageLike is null", nex.getMessage());
     }
   }
 
@@ -543,14 +544,16 @@ public class HistoricProcessInstanceTest {
     exludeIds.add("oneTaskProcess");
     assertEquals(0, historyService.createHistoricProcessInstanceQuery().processDefinitionKey("oneTaskProcess").processDefinitionKeyNotIn(exludeIds).count());
     assertEquals(0, historyService.createHistoricProcessInstanceQuery().processDefinitionKeyNotIn(exludeIds).count());
+    var emptyProcessDefinitionKeys = List.of("");
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
 
     try {
       // oracle handles empty string like null which seems to lead to undefined behavior of the LIKE comparison
-      historyService.createHistoricProcessInstanceQuery().processDefinitionKeyNotIn(Arrays.asList(""));
+      historicProcessInstanceQuery.processDefinitionKeyNotIn(emptyProcessDefinitionKeys);
       fail("Exception expected");
     }
     catch (NotValidException e) {
-      // expected
+      assertEquals("processDefinitionKeys contains empty string", e.getMessage());
     }
 
     // After finishing process
@@ -664,25 +667,27 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testInvalidSorting() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery().asc();
+      historicProcessInstanceQuery.asc();
       fail();
     } catch (ProcessEngineException e) {
-
+      assertEquals("You should call any of the orderBy methods first before specifying a direction: currentOrderingProperty is null", e.getMessage());
     }
 
     try {
-      historyService.createHistoricProcessInstanceQuery().desc();
+      historicProcessInstanceQuery.desc();
       fail();
     } catch (ProcessEngineException e) {
-
+      assertEquals("You should call any of the orderBy methods first before specifying a direction: currentOrderingProperty is null", e.getMessage());
     }
 
+    var historicProcessInstanceQuery1 = historicProcessInstanceQuery.orderByProcessInstanceId();
     try {
-      historyService.createHistoricProcessInstanceQuery().orderByProcessInstanceId().list();
+      historicProcessInstanceQuery1.list();
       fail();
     } catch (ProcessEngineException e) {
-
+      assertEquals("Invalid query: call asc() or desc() after using orderByXX(): direction is null", e.getMessage());
     }
   }
 
@@ -1509,9 +1514,9 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testHistoricProcInstQueryWithExecutedActivityIdsNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery()
-      .executedActivityIdIn((String[]) null).list();
+      historicProcessInstanceQuery.executedActivityIdIn((String[]) null);
       fail("exception expected");
     } catch (BadUserRequestException e) {
       assertThat(e.getMessage()).contains("activity ids is null");
@@ -1520,9 +1525,9 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testHistoricProcInstQueryWithExecutedActivityIdsContainNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery()
-      .executedActivityIdIn(null, "1").list();
+      historicProcessInstanceQuery.executedActivityIdIn(null, "1");
       fail("exception expected");
     } catch (BadUserRequestException e) {
       assertThat(e.getMessage()).contains("activity ids contains null");
@@ -1557,9 +1562,9 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void shouldFailWhenQueryByNullActivityId() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery()
-          .activityIdIn((String) null);
+      historicProcessInstanceQuery.activityIdIn((String) null);
       fail("exception expected");
     }
     catch (BadUserRequestException e) {
@@ -1569,9 +1574,9 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void shouldFailWhenQueryByNullActivityIds() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery()
-          .activityIdIn((String[]) null);
+      historicProcessInstanceQuery.activityIdIn((String[]) null);
       fail("exception expected");
     }
     catch (BadUserRequestException e) {
@@ -1965,7 +1970,7 @@ public class HistoricProcessInstanceTest {
     // then
     assertThat(queryByInnerServiceActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance.getId());
-    assertThat(queryBySubProcessActivityId).hasSize(0);
+    assertThat(queryBySubProcessActivityId).isEmpty();
     assertThat(queryByOuterProcessActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance2.getId());
     assertThat(queryByOuterAndInnedActivityId).extracting("id")
@@ -1996,7 +2001,7 @@ public class HistoricProcessInstanceTest {
     // then
     assertThat(queryByInnerServiceActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance.getId());
-    assertThat(queryBySubProcessActivityId).hasSize(0);
+    assertThat(queryBySubProcessActivityId).isEmpty();
     assertThat(queryByOuterProcessActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance2.getId());
     assertThat(queryByOuterAndInnedActivityId).extracting("id")
@@ -2022,8 +2027,9 @@ public class HistoricProcessInstanceTest {
 
     // when: incident is raised
     for(int i = 0; i<3; i++) {
+      var jobId = job.getId();
       try {
-        managementService.executeJob(job.getId());
+        managementService.executeJob(jobId);
         fail("Exception expected");
       } catch (Exception e) {
         // exception expected
@@ -2043,9 +2049,9 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testHistoricProcInstQueryWithActiveActivityIdsNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery()
-      .activeActivityIdIn((String[]) null).list();
+      historicProcessInstanceQuery.activeActivityIdIn((String[]) null);
       fail("exception expected");
     } catch (BadUserRequestException e) {
       assertThat(e.getMessage()).contains("activity ids is null");
@@ -2054,9 +2060,9 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testHistoricProcInstQueryWithActiveActivityIdsContainNull() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery()
-      .activeActivityIdIn(null, "1").list();
+      historicProcessInstanceQuery.activeActivityIdIn(null, "1");
       fail("exception expected");
     } catch (BadUserRequestException e) {
       assertThat(e.getMessage()).contains("activity ids contains null");
@@ -2166,10 +2172,10 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testQueryByOneInvalidProcessDefinitionKeyIn() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
       // when
-      historyService.createHistoricProcessInstanceQuery()
-        .processDefinitionKeyIn((String) null);
+      historicProcessInstanceQuery.processDefinitionKeyIn((String) null);
       fail();
     } catch(ProcessEngineException expected) {
       // then Exception is expected
@@ -2178,10 +2184,10 @@ public class HistoricProcessInstanceTest {
 
   @Test
   public void testQueryByMultipleInvalidProcessDefinitionKeyIn() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
       // when
-      historyService.createHistoricProcessInstanceQuery()
-        .processDefinitionKeyIn(ProcessModels.PROCESS_KEY, null);
+      historicProcessInstanceQuery.processDefinitionKeyIn(ProcessModels.PROCESS_KEY, null);
       fail();
     } catch(ProcessEngineException expected) {
       // then Exception is expected
@@ -2212,7 +2218,7 @@ public class HistoricProcessInstanceTest {
         .containsExactlyInAnyOrderElementsOf(
             processInstanceList.stream()
                 .map(HistoricProcessInstance::getId)
-                .collect(Collectors.toList()));
+                .toList());
   }
 
   @Test
@@ -2246,16 +2252,17 @@ public class HistoricProcessInstanceTest {
         .containsExactlyInAnyOrderElementsOf(
             processInstanceList.stream()
                 .map(HistoricProcessInstance::getId)
-                .collect(Collectors.toList()));
+                .toList());
   }
 
   @Test
   public void shouldFailWhenQueryWithNullIncidentIdIn() {
+    var historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
     try {
-      historyService.createHistoricProcessInstanceQuery().incidentIdIn(null).list();
+      historicProcessInstanceQuery.incidentIdIn(null);
       fail("incidentMessage with null value is not allowed");
     } catch( NullValueException nex ) {
-      // expected
+      assertEquals("incidentIds is null", nex.getMessage());
     }
   }
 

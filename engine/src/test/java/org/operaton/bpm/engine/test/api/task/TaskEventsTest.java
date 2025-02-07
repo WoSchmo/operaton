@@ -23,15 +23,15 @@ import static org.operaton.bpm.engine.task.Event.ACTION_DELETE_ATTACHMENT;
 import static org.operaton.bpm.engine.task.Event.ACTION_DELETE_GROUP_LINK;
 import static org.operaton.bpm.engine.task.Event.ACTION_DELETE_USER_LINK;
 import static org.operaton.bpm.engine.task.IdentityLinkType.CANDIDATE;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.List;
 
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.CommentEntity;
 import org.operaton.bpm.engine.impl.util.ClockUtil;
 import org.operaton.bpm.engine.task.Attachment;
@@ -86,8 +86,8 @@ public class TaskEventsTest extends AbstractUserOperationLogTest {
     assertEquals(task.getId(), event.getTaskId());
     assertEquals(ACTION_ADD_USER_LINK, event.getAction());
     assertEquals(JONNY + CommentEntity.MESSAGE_PARTS_MARKER + CANDIDATE, event.getMessage());
-    assertEquals(null, event.getProcessInstanceId());
-    assertNotNull(event.getTime().getTime() <= ClockUtil.getCurrentTime().getTime());
+    assertNull(event.getProcessInstanceId());
+    assertThat(event.getTime().getTime()).isLessThanOrEqualTo(ClockUtil.getCurrentTime().getTime());
 
     assertNoCommentsForTask();
   }
@@ -113,8 +113,8 @@ public class TaskEventsTest extends AbstractUserOperationLogTest {
     assertEquals(task.getId(), event.getTaskId());
     assertEquals(ACTION_DELETE_USER_LINK, event.getAction());
     assertEquals(JONNY + CommentEntity.MESSAGE_PARTS_MARKER + CANDIDATE, event.getMessage());
-    assertEquals(null, event.getProcessInstanceId());
-    assertNotNull(event.getTime().getTime() <= ClockUtil.getCurrentTime().getTime());
+    assertNull(event.getProcessInstanceId());
+    assertThat(event.getTime().getTime()).isLessThanOrEqualTo(ClockUtil.getCurrentTime().getTime());
 
     assertNoCommentsForTask();
   }
@@ -136,8 +136,8 @@ public class TaskEventsTest extends AbstractUserOperationLogTest {
     assertEquals(task.getId(), event.getTaskId());
     assertEquals(ACTION_ADD_GROUP_LINK, event.getAction());
     assertEquals(ACCOUNTING + CommentEntity.MESSAGE_PARTS_MARKER + CANDIDATE, event.getMessage());
-    assertEquals(null, event.getProcessInstanceId());
-    assertNotNull(event.getTime().getTime() <= ClockUtil.getCurrentTime().getTime());
+    assertNull(event.getProcessInstanceId());
+    assertThat(event.getTime().getTime()).isLessThanOrEqualTo(ClockUtil.getCurrentTime().getTime());
 
     assertNoCommentsForTask();
   }
@@ -163,8 +163,8 @@ public class TaskEventsTest extends AbstractUserOperationLogTest {
     assertEquals(task.getId(), event.getTaskId());
     assertEquals(ACTION_DELETE_GROUP_LINK, event.getAction());
     assertEquals(ACCOUNTING + CommentEntity.MESSAGE_PARTS_MARKER + CANDIDATE, event.getMessage());
-    assertEquals(null, event.getProcessInstanceId());
-    assertNotNull(event.getTime().getTime() <= ClockUtil.getCurrentTime().getTime());
+    assertNull(event.getProcessInstanceId());
+    assertThat(event.getTime().getTime()).isLessThanOrEqualTo(ClockUtil.getCurrentTime().getTime());
 
     assertNoCommentsForTask();
   }
@@ -186,8 +186,8 @@ public class TaskEventsTest extends AbstractUserOperationLogTest {
     assertEquals(task.getId(), event.getTaskId());
     assertEquals(ACTION_ADD_ATTACHMENT, event.getAction());
     assertEquals(IMAGE_NAME, event.getMessage());
-    assertEquals(null, event.getProcessInstanceId());
-    assertNotNull(event.getTime().getTime() <= ClockUtil.getCurrentTime().getTime());
+    assertNull(event.getProcessInstanceId());
+    assertThat(event.getTime().getTime()).isLessThanOrEqualTo(ClockUtil.getCurrentTime().getTime());
 
     assertNoCommentsForTask();
   }
@@ -213,20 +213,17 @@ public class TaskEventsTest extends AbstractUserOperationLogTest {
     assertEquals(task.getId(), event.getTaskId());
     assertEquals(ACTION_DELETE_ATTACHMENT, event.getAction());
     assertEquals(IMAGE_NAME, event.getMessage());
-    assertEquals(null, event.getProcessInstanceId());
-    assertNotNull(event.getTime().getTime() <= ClockUtil.getCurrentTime().getTime());
+    assertNull(event.getProcessInstanceId());
+    assertThat(event.getTime().getTime()).isLessThanOrEqualTo(ClockUtil.getCurrentTime().getTime());
 
     assertNoCommentsForTask();
   }
 
 
   private void assertNoCommentsForTask() {
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        assertTrue(commandContext.getCommentManager().findCommentsByTaskId(task.getId()).isEmpty());
-        return null;
-      }
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      assertTrue(commandContext.getCommentManager().findCommentsByTaskId(task.getId()).isEmpty());
+      return null;
     });
   }
 

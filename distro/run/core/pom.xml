@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.operaton.bpm.run</groupId>
     <artifactId>operaton-bpm-run-root</artifactId>
-    <version>1.0.0-beta-3-SNAPSHOT</version>
+    <version>1.0.0-beta-4-SNAPSHOT</version>
   </parent>
 
   <artifactId>operaton-bpm-run-core</artifactId>
@@ -116,6 +116,7 @@
   </dependencies>
 
   <build>
+    <finalName>operaton-bpm-core</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

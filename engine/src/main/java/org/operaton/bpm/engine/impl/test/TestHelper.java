@@ -379,8 +379,7 @@ public abstract class TestHelper {
       message.append("Database is not clean:\n")
              .append(databasePurgeReport.getPurgeReportAsString());
     } else {
-      LOG.debug(
-          purgeReport.getDatabasePurgeReport().isDbContainsLicenseKey() ? "Database contains license key but is considered clean." : "Database was clean.");
+      LOG.debug("Database was clean.");
     }
     if (paRegistrationMessage != null) {
       message.append(paRegistrationMessage);
@@ -518,16 +517,14 @@ public abstract class TestHelper {
   }
 
   public static ProcessEngine getProcessEngine(String configurationResource) {
-    ProcessEngine processEngine = processEngines.get(configurationResource);
-    if (processEngine==null) {
+    return processEngines.computeIfAbsent(configurationResource, resource -> {
       LOG.debug("==== BUILDING PROCESS ENGINE ========================================================================");
-      processEngine = ProcessEngineConfiguration
-        .createProcessEngineConfigurationFromResource(configurationResource)
+      ProcessEngine newProcessEngine = ProcessEngineConfiguration
+        .createProcessEngineConfigurationFromResource(resource)
         .buildProcessEngine();
       LOG.debug("==== PROCESS ENGINE CREATED =========================================================================");
-      processEngines.put(configurationResource, processEngine);
-    }
-    return processEngine;
+      return newProcessEngine;
+    });
   }
 
   public static void closeProcessEngines() {

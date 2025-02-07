@@ -32,16 +32,20 @@ import java.util.Map;
  */
 public class SpinScriptTaskSupportWithAutoStoreScriptVariablesTest extends PluggableProcessEngineTestCase {
 
-  protected static String TEST_SCRIPT = "var_s = S('{}')\n" +
-                                        "var_xml = XML('<root/>')\n" +
-                                        "var_json = JSON('{}')\n";
+  protected static String TEST_SCRIPT = """
+                                        var_s = S('{}')
+                                        var_xml = XML('<root/>')
+                                        var_json = JSON('{}')
+                                        """;
 
   protected ProcessInstance processInstance;
 
+  @Override
   public void setUp() {
     processEngineConfiguration.setAutoStoreScriptVariables(true);
   }
 
+  @Override
   public void tearDown() {
     processEngineConfiguration.setAutoStoreScriptVariables(false);
   }

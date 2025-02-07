@@ -43,11 +43,11 @@ public abstract class AbstractSearchQueryDto {
   protected ObjectMapper objectMapper;
 
   // required for populating via jackson
-  public AbstractSearchQueryDto() {
+  protected AbstractSearchQueryDto() {
 
   }
 
-  public AbstractSearchQueryDto(ObjectMapper objectMapper, MultivaluedMap<String, String> queryParameters) {
+  protected AbstractSearchQueryDto(ObjectMapper objectMapper, MultivaluedMap<String, String> queryParameters) {
     this.objectMapper = objectMapper;
     for (Entry<String, List<String>> param : queryParameters.entrySet()) {
       String key = param.getKey();
@@ -80,15 +80,13 @@ public abstract class AbstractSearchQueryDto {
 
       JacksonAwareStringToTypeConverter<?> converter = null;
       try {
-        converter = converterClass.newInstance();
+        converter = converterClass.getDeclaredConstructor().newInstance();
         converter.setObjectMapper(objectMapper);
         Object convertedValue = converter.convertQueryParameterToType(value);
         method.invoke(this, convertedValue);
-      } catch (InstantiationException e) {
+      } catch (InstantiationException | NoSuchMethodException | IllegalAccessException e) {
         throw new RestException(Status.INTERNAL_SERVER_ERROR, e, "Server error.");
-      } catch (IllegalAccessException e) {
-        throw new RestException(Status.INTERNAL_SERVER_ERROR, e, "Server error.");
-      } catch (InvocationTargetException e) {
+      }  catch (InvocationTargetException e) {
         throw new InvalidRequestException(Status.BAD_REQUEST, e, "Cannot set query parameter '" + key + "' to value '" + value + "'");
       } catch (RestException e) {
         throw new InvalidRequestException(e.getStatus(), e,

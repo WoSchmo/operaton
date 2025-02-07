@@ -17,6 +17,7 @@
 package org.operaton.bpm.engine.test.api.mgmt;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -130,9 +131,10 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
         .singleResult();
 
     assertNotNull("No job found for process instance", timerJob);
+    var timerJobId = timerJob.getId();
 
     try {
-      managementService.executeJob(timerJob.getId());
+      managementService.executeJob(timerJobId);
       fail("RuntimeException from within the script task expected");
     } catch (RuntimeException re) {
       testRule.assertTextPresent("This is an exception thrown from scriptTask", re.getMessage());
@@ -220,9 +222,10 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
   @Test
   public void shouldThrowExceptionOnSetJobRetriesWithNoJobReference() {
     // given
+    var setJobRetriesBuilder = managementService.setJobRetries(5);
 
     // when/then
-    assertThatThrownBy(() -> managementService.setJobRetries(5).execute())
+    assertThatThrownBy(setJobRetriesBuilder::execute)
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("052")
       .hasMessageContaining("You must specify exactly one of jobId, jobIds or jobDefinitionId as parameter.");
@@ -553,19 +556,16 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
   protected void createJob(final int retries, final String owner, final Date lockExpirationTime) {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        JobManager jobManager = commandContext.getJobManager();
-        MessageEntity job = new MessageEntity();
-        job.setJobHandlerType("any");
-        job.setLockOwner(owner);
-        job.setLockExpirationTime(lockExpirationTime);
-        job.setRetries(retries);
+    commandExecutor.execute(commandContext -> {
+      JobManager jobManager = commandContext.getJobManager();
+      MessageEntity job = new MessageEntity();
+      job.setJobHandlerType("any");
+      job.setLockOwner(owner);
+      job.setLockExpirationTime(lockExpirationTime);
+      job.setRetries(retries);
 
-        jobManager.send(job);
-        return null;
-      }
+      jobManager.send(job);
+      return null;
     });
   }
 
@@ -612,20 +612,17 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
             .incidentType(Incident.FAILED_JOB_HANDLER_TYPE).list();
 
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        ((JobEntity) job).delete();
+    commandExecutor.execute(commandContext -> {
+      ((JobEntity) job).delete();
 
-        HistoricIncidentManager historicIncidentManager = commandContext.getHistoricIncidentManager();
-        for (HistoricIncident incident : incidents) {
-          HistoricIncidentEntity incidentEntity = (HistoricIncidentEntity) incident;
-          historicIncidentManager.delete(incidentEntity);
-        }
-
-        commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(job.getId());
-        return null;
+      HistoricIncidentManager historicIncidentManager = commandContext.getHistoricIncidentManager();
+      for (HistoricIncident incident : incidents) {
+        HistoricIncidentEntity incidentEntity = (HistoricIncidentEntity) incident;
+        historicIncidentManager.delete(incidentEntity);
       }
+
+      commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(job.getId());
+      return null;
     });
   }
 
@@ -669,6 +666,7 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("timerOnTask");
     Job timerJob = managementService.createJobQuery().processInstanceId(processInstance.getId()).singleResult();
+    var timerJobId = timerJob.getId();
 
     // We need to move time at least one hour to make the timer executable
     ClockUtil.setCurrentTime(new Date(ClockUtil.getCurrentTime().getTime() + 7200000L));
@@ -682,7 +680,7 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
     // Try to delete the job. This should fail.
     try {
-      managementService.deleteJob(timerJob.getId());
+      managementService.deleteJob(timerJobId);
       fail();
     } catch (ProcessEngineException e) {
       // Exception is expected
@@ -747,8 +745,9 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testSetJobDuedateJobIdNull() {
+    Date duedate = new Date();
     try {
-      managementService.setJobDuedate(null, new Date());
+      managementService.setJobDuedate(null, duedate);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException re) {
       testRule.assertTextPresent("The job id is mandatory, but 'null' has been provided.", re.getMessage());
@@ -757,8 +756,9 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testSetJobDuedateEmptyJobId() {
+    Date duedate = new Date();
     try {
-      managementService.setJobDuedate("", new Date());
+      managementService.setJobDuedate("", duedate);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException re) {
       testRule.assertTextPresent("The job id is mandatory, but '' has been provided.", re.getMessage());
@@ -767,8 +767,9 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testSetJobDuedateUnexistingJobId() {
+    Date duedate = new Date();
     try {
-      managementService.setJobDuedate("unexistingjob", new Date());
+      managementService.setJobDuedate("unexistingjob", duedate);
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException re) {
       testRule.assertTextPresent("No job found with id 'unexistingjob'.", re.getMessage());
@@ -826,9 +827,8 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
 
   @Test
   public void testDeleteNonexistingProperty() {
-
-    managementService.deleteProperty("non existing");
-
+    assertThatCode(() -> managementService.deleteProperty("non existing"))
+      .doesNotThrowAnyException();
   }
 
   @Test
@@ -911,8 +911,8 @@ public class ManagementServiceTest extends PluggableProcessEngineTest {
     int assigneeIndex = tableMetaData.getColumnNames().indexOf("ASSIGNEE_");
     int createTimeIndex = tableMetaData.getColumnNames().indexOf("CREATE_TIME_");
 
-    assertThat(assigneeIndex >= 0).isTrue();
-    assertThat(createTimeIndex >= 0).isTrue();
+    assertThat(assigneeIndex).isPositive();
+    assertThat(createTimeIndex).isPositive();
 
     assertThat(tableMetaData.getColumnTypes().get(assigneeIndex)).isIn("CHARACTER VARYING", "VARCHAR", "NVARCHAR2", "nvarchar", "NVARCHAR");
     assertThat(tableMetaData.getColumnTypes().get(createTimeIndex)).isIn("TIMESTAMP", "TIMESTAMP(6)", "datetime", "DATETIME", "DATETIME2");

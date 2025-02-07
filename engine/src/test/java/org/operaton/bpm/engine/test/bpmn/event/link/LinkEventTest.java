@@ -94,25 +94,27 @@ public class LinkEventTest extends PluggableProcessEngineTest {
 
   @Test
   public void testInvalidEventLinkMultipleTargets() {
+    var deploymentBuilder = repositoryService.createDeployment().addClasspathResource("org/operaton/bpm/engine/test/bpmn/event/link/LinkEventTest.testInvalidEventLinkMultipleTargets.bpmn20.xml");
     try {
-      repositoryService.createDeployment().addClasspathResource("org/operaton/bpm/engine/test/bpmn/event/link/LinkEventTest.testInvalidEventLinkMultipleTargets.bpmn20.xml").deploy();
+      deploymentBuilder.deploy();
       fail("process should not deploy because it contains multiple event link targets which is invalid in the BPMN 2.0 spec");
     }
     catch (ParseException e) {
       assertTrue(e.getMessage().contains("Multiple Intermediate Catch Events with the same link event name ('LinkA') are not allowed"));
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("IntermediateCatchEvent_2");
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("IntermediateCatchEvent_2");
     }
   }
 
   @Test
   public void testCatchLinkEventAfterEventBasedGatewayNotAllowed() {
+    var deploymentBuilder = repositoryService.createDeployment().addClasspathResource("org/operaton/bpm/engine/test/bpmn/event/link/LinkEventTest.testCatchLinkEventAfterEventBasedGatewayNotAllowed.bpmn20.xml");
     try {
-      repositoryService.createDeployment().addClasspathResource("org/operaton/bpm/engine/test/bpmn/event/link/LinkEventTest.testCatchLinkEventAfterEventBasedGatewayNotAllowed.bpmn20.xml").deploy();
+      deploymentBuilder.deploy();
       fail("process should not deploy because it contains multiple event link targets which is invalid in the BPMN 2.0 spec");
     }
     catch (ParseException e) {
       assertTrue(e.getMessage().contains("IntermediateCatchLinkEvent is not allowed after an EventBasedGateway."));
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("IntermediateCatchEvent_2");
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("IntermediateCatchEvent_2");
     }
   }
 }

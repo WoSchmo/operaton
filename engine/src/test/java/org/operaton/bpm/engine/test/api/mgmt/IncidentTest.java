@@ -35,8 +35,6 @@ import org.operaton.bpm.engine.BadUserRequestException;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.exception.NotValidException;
 import org.operaton.bpm.engine.history.HistoricIncident;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.JobEntity;
 import org.operaton.bpm.engine.management.JobDefinition;
@@ -99,7 +97,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
     List<Incident> incidents = runtimeService.createIncidentQuery().processInstanceId(processInstance.getId()).list();
 
     assertFalse(incidents.isEmpty());
-    assertTrue(incidents.size() == 1);
+    assertEquals(1, incidents.size());
 
     Job job = managementService.createJobQuery().processInstanceId(processInstance.getId()).singleResult();
 
@@ -114,7 +112,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
 
     // There is still one incident
     assertFalse(incidents.isEmpty());
-    assertTrue(incidents.size() == 1);
+    assertEquals(1, incidents.size());
   }
 
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/mgmt/IncidentTest.testShouldCreateOneIncident.bpmn"})
@@ -127,15 +125,16 @@ public class IncidentTest extends PluggableProcessEngineTest {
     List<Incident> incidents = runtimeService.createIncidentQuery().processInstanceId(processInstance.getId()).list();
 
     assertFalse(incidents.isEmpty());
-    assertTrue(incidents.size() == 1);
+    assertEquals(1, incidents.size());
 
     Job job = managementService.createJobQuery().processInstanceId(processInstance.getId()).singleResult();
 
     assertNotNull(job);
+    var jobId = job.getId();
 
     // set job retries to 1 -> should fail again and a second incident should be created
     try {
-      managementService.executeJob(job.getId());
+      managementService.executeJob(jobId);
       fail("Exception was expected.");
     } catch (ProcessEngineException e) {
       // exception expected
@@ -145,7 +144,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
 
     // There is still one incident
     assertFalse(incidents.isEmpty());
-    assertTrue(incidents.size() == 1);
+    assertEquals(1, incidents.size());
   }
 
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/mgmt/IncidentTest.testShouldCreateOneIncidentForNestedExecution.bpmn"})
@@ -163,7 +162,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
 
     String executionIdOfNestedFailingExecution = job.getExecutionId();
 
-    assertFalse(processInstance.getId() == executionIdOfNestedFailingExecution);
+    assertNotSame(processInstance.getId(), executionIdOfNestedFailingExecution);
 
     assertNotNull(incident.getId());
     assertNotNull(incident.getIncidentTimestamp());
@@ -232,7 +231,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
 
     List<Incident> incidents = runtimeService.createIncidentQuery().list();
     assertFalse(incidents.isEmpty());
-    assertTrue(incidents.size() == 2);
+    assertEquals(2, incidents.size());
 
     ProcessInstance failingProcess = runtimeService.createProcessInstanceQuery().processDefinitionKey("failingProcess").singleResult();
     assertNotNull(failingProcess);
@@ -292,7 +291,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
 
     List<Incident> incidents = runtimeService.createIncidentQuery().list();
     assertFalse(incidents.isEmpty());
-    assertTrue(incidents.size() == 3);
+    assertEquals(3, incidents.size());
 
     // Root Cause Incident
     ProcessInstance failingProcess = runtimeService.createProcessInstanceQuery().processDefinitionKey("failingProcess").singleResult();
@@ -527,19 +526,18 @@ public class IncidentTest extends PluggableProcessEngineTest {
     final JobEntity jobEntity = (JobEntity) job;
     processEngineConfiguration
       .getCommandExecutorTxRequired()
-      .execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-          jobEntity.setRetries(-100);
-          return null;
-        }
-      });
+      .execute(commandContext -> {
+      jobEntity.setRetries(-100);
+      return null;
+    });
 
     assertEquals(0, job.getRetries());
+    var jobId = job.getJobDefinitionId();
+    var jobDefinitionId = job.getJobDefinitionId();
 
     // retries should still be 0 after execution this job again
     try {
-      managementService.executeJob(job.getId());
+      managementService.executeJob(jobId);
       fail("Exception expected");
     }
     catch (ProcessEngineException e) {
@@ -554,7 +552,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
 
     // it should not be possible to set the retries to a negative number with the management service
     try {
-      managementService.setJobRetries(job.getId(), -200);
+      managementService.setJobRetries(jobId, -200);
       fail("Exception expected");
     }
     catch (ProcessEngineException e) {
@@ -562,7 +560,7 @@ public class IncidentTest extends PluggableProcessEngineTest {
     }
 
     try {
-      managementService.setJobRetriesByJobDefinitionId(job.getJobDefinitionId(), -300);
+      managementService.setJobRetriesByJobDefinitionId(jobDefinitionId, -300);
       fail("Exception expected");
     }
     catch (ProcessEngineException e) {

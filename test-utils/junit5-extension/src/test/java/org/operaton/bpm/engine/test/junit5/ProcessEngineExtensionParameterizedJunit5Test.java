@@ -17,7 +17,6 @@
 package org.operaton.bpm.engine.test.junit5;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,29 +34,29 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @ExtendWith(ProcessEngineExtension.class)
-public class ProcessEngineExtensionParameterizedJunit5Test {
+class ProcessEngineExtensionParameterizedJunit5Test {
 
   ProcessEngine engine;
 
   @ParameterizedTest
   @ValueSource(ints = {1, 2})
   @Deployment
-  public void extensionUsageExample() {
+  void extensionUsageExample() {
     RuntimeService runtimeService = engine.getRuntimeService();
     runtimeService.startProcessInstanceByKey("extensionUsage");
 
     TaskService taskService = engine.getTaskService();
     Task task = taskService.createTaskQuery().singleResult();
-    assertEquals("My Task", task.getName());
+    assertThat(task.getName()).isEqualTo("My Task");
 
     taskService.complete(task.getId());
-    assertEquals(0, runtimeService.createProcessInstanceQuery().count());
+    assertThat(runtimeService.createProcessInstanceQuery().count()).isZero();
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"A", "B"})
   @Deployment(resources = "org/operaton/bpm/engine/test/junit5/ProcessEngineExtensionParameterizedJunit5Test.extensionUsageExample.bpmn20.xml")
-  public void extensionUsageExampleWithNamedAnnotation(String value) {
+  void extensionUsageExampleWithNamedAnnotation(String value) {
     Map<String,Object> variables = new HashMap<>();
     variables.put("key", value);
     RuntimeService runtimeService = engine.getRuntimeService();
@@ -65,10 +64,10 @@ public class ProcessEngineExtensionParameterizedJunit5Test {
 
     TaskService taskService = engine.getTaskService();
     Task task = taskService.createTaskQuery().singleResult();
-    assertEquals("My Task", task.getName());
+    assertThat(task.getName()).isEqualTo("My Task");
 
     taskService.complete(task.getId());
-    assertEquals(0, runtimeService.createProcessInstanceQuery().count());
+    assertThat(runtimeService.createProcessInstanceQuery().count()).isZero();
 
     HistoryService historyService = engine.getHistoryService();
     HistoricVariableInstance variableInstance = historyService.createHistoricVariableInstanceQuery().singleResult();
@@ -80,8 +79,8 @@ public class ProcessEngineExtensionParameterizedJunit5Test {
    */
   @ParameterizedTest
   @EmptySource
-  public void testWithoutDeploymentAnnotation(String argument) {
-    assertEquals("aString", "aString");
+  void testWithoutDeploymentAnnotation(String argument) {
+    assertThat(argument).isEmpty();
   }
 
 }

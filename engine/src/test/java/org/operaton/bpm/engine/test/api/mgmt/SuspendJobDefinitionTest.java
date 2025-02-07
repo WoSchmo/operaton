@@ -16,20 +16,7 @@
  */
 package org.operaton.bpm.engine.test.api.mgmt;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.operaton.bpm.engine.ProcessEngineException;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.jobexecutor.TimerSuspendJobDefinitionHandler;
 import org.operaton.bpm.engine.impl.util.ClockUtil;
@@ -41,8 +28,16 @@ import org.operaton.bpm.engine.runtime.JobQuery;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
 import org.operaton.bpm.engine.variable.Variables;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * @author roman.smirnov
@@ -52,12 +47,9 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
   @After
   public void tearDown() {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-        commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerSuspendJobDefinitionHandler.TYPE);
-        return null;
-      }
+    commandExecutor.execute(commandContext -> {
+      commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerSuspendJobDefinitionHandler.TYPE);
+      return null;
     });
 
   }
@@ -70,6 +62,7 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionById(null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
   }
 
@@ -79,12 +72,14 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionById(null, false);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
       managementService.suspendJobDefinitionById(null, true);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
   }
 
@@ -94,24 +89,29 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionById(null, false, null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
       managementService.suspendJobDefinitionById(null, true, null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
+    }
+
+    Date suspensionDate = new Date();
+    try {
+      managementService.suspendJobDefinitionById(null, false, suspensionDate);
+      fail("A ProcessEngineException was expected.");
+    } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
-      managementService.suspendJobDefinitionById(null, false, new Date());
+      managementService.suspendJobDefinitionById(null, true, suspensionDate);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
-    }
-
-    try {
-      managementService.suspendJobDefinitionById(null, true, new Date());
-      fail("A ProcessEngineException was expected.");
-    } catch (ProcessEngineException e) {
+      // expected
     }
 
   }
@@ -456,6 +456,7 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionByProcessDefinitionId(null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
   }
 
@@ -465,39 +466,47 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionByProcessDefinitionId(null, false);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
       managementService.suspendJobDefinitionByProcessDefinitionId(null, true);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
   }
 
   @Test
   public void testSuspensionByProcessDefinitionIdAndSuspendJobsFlagAndExecutionDate_shouldThrowProcessEngineException() {
+    Date suspensionDate = new Date();
+
     try {
       managementService.suspendJobDefinitionByProcessDefinitionId(null, false, null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
       managementService.suspendJobDefinitionByProcessDefinitionId(null, true, null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
-      managementService.suspendJobDefinitionByProcessDefinitionId(null, false, new Date());
+      managementService.suspendJobDefinitionByProcessDefinitionId(null, false, suspensionDate);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
-      managementService.suspendJobDefinitionByProcessDefinitionId(null, true, new Date());
+      managementService.suspendJobDefinitionByProcessDefinitionId(null, true, suspensionDate);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
   }
@@ -840,6 +849,7 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionByProcessDefinitionKey(null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
   }
 
@@ -849,39 +859,46 @@ public class SuspendJobDefinitionTest extends PluggableProcessEngineTest {
       managementService.suspendJobDefinitionByProcessDefinitionKey(null, false);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
       managementService.suspendJobDefinitionByProcessDefinitionKey(null, true);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
   }
 
   @Test
   public void testSuspensionByProcessDefinitionKeyAndSuspendJobsFlagAndExecutionDate_shouldThrowProcessEngineException() {
+    Date suspensionDate = new Date();
     try {
       managementService.suspendJobDefinitionByProcessDefinitionKey(null, false, null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
       managementService.suspendJobDefinitionByProcessDefinitionKey(null, true, null);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
-      managementService.suspendJobDefinitionByProcessDefinitionKey(null, false, new Date());
+      managementService.suspendJobDefinitionByProcessDefinitionKey(null, false, suspensionDate);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
     try {
-      managementService.suspendJobDefinitionByProcessDefinitionKey(null, true, new Date());
+      managementService.suspendJobDefinitionByProcessDefinitionKey(null, true, suspensionDate);
       fail("A ProcessEngineException was expected.");
     } catch (ProcessEngineException e) {
+      // expected
     }
 
   }

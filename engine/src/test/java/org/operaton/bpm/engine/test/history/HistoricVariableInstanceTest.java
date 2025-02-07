@@ -19,12 +19,7 @@ package org.operaton.bpm.engine.test.history;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -361,7 +356,7 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
      * execution id: On which execution it was set
      * activity id: in which activity was the process instance when setting the variable
      */
-      assertFalse(historicActivityInstance2.getExecutionId().equals(update2.getExecutionId()));
+      assertNotEquals(historicActivityInstance2.getExecutionId(), update2.getExecutionId());
     }
   }
 
@@ -451,17 +446,23 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
     // given
     Map<String, Object> vars = new HashMap<>();
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("myProc",vars);
+    var historicVariableInstanceQuery = historyService.createHistoricVariableInstanceQuery();
+    var processInstanceId = processInstance.getProcessInstanceId();
 
     // check existing variables for task ID
     try {
-      historyService.createHistoricVariableInstanceQuery().processInstanceIdIn(processInstance.getProcessInstanceId(),null);
+      historicVariableInstanceQuery.processInstanceIdIn(processInstanceId, null);
       fail("Search by process instance ID was finished");
-    } catch (ProcessEngineException e) { }
+    } catch (ProcessEngineException e) {
+      // expected
+    }
 
     try {
-      historyService.createHistoricVariableInstanceQuery().processInstanceIdIn(null,processInstance.getProcessInstanceId());
+      historicVariableInstanceQuery.processInstanceIdIn(null, processInstanceId);
       fail("Search by process instance ID was finished");
-    } catch (ProcessEngineException e) { }
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/oneTaskProcess.bpmn20.xml"})
@@ -494,32 +495,42 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
   public void testQueryByInvalidExecutionIdIn() {
     HistoricVariableInstanceQuery query = historyService.createHistoricVariableInstanceQuery().executionIdIn("invalid");
     assertEquals(0, query.count());
+    var historicVariableInstanceQuery = historyService.createHistoricVariableInstanceQuery();
 
     try {
-      historyService.createHistoricVariableInstanceQuery().executionIdIn((String[])null);
+      historicVariableInstanceQuery.executionIdIn((String[])null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
 
     try {
-      historyService.createHistoricVariableInstanceQuery().executionIdIn((String)null);
+      historicVariableInstanceQuery.executionIdIn((String)null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Test
   public void testQueryByInvalidTaskIdIn() {
     HistoricVariableInstanceQuery query = historyService.createHistoricVariableInstanceQuery().taskIdIn("invalid");
     assertEquals(0, query.count());
+    var historicVariableInstanceQuery = historyService.createHistoricVariableInstanceQuery();
 
     try {
-      historyService.createHistoricVariableInstanceQuery().taskIdIn((String[])null);
+      historicVariableInstanceQuery.taskIdIn((String[])null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
 
     try {
-      historyService.createHistoricVariableInstanceQuery().taskIdIn((String)null);
+      historicVariableInstanceQuery.taskIdIn((String)null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/oneTaskProcess.bpmn20.xml"})
@@ -558,12 +569,16 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
     try {
       query.taskIdIn((String[])null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
 
     try {
       query.taskIdIn((String)null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (ProcessEngineException e) {}
+    } catch (ProcessEngineException e) {
+      // expected
+    }
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/oneTaskProcess.bpmn20.xml"})
@@ -581,7 +596,7 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
     // then
     assertEquals(1, query.list().size());
     assertEquals(1, query.count());
-    assertEquals(query.list().get(0).getName(), "stringVar");
+    assertEquals("stringVar", query.list().get(0).getName());
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/oneTaskProcess.bpmn20.xml"})
@@ -600,7 +615,7 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
     // then
     assertEquals(1, query.list().size());
     assertEquals(1, query.count());
-    assertEquals(query.list().get(0).getName(), "boolVar");
+    assertEquals("boolVar", query.list().get(0).getName());
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/runtime/oneTaskProcess.bpmn20.xml"})
@@ -1056,9 +1071,9 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
     processEngine.getRuntimeService().startProcessInstanceByKey("process1", Variables.createVariables().putValue("var", new CustomVar("initialValue")));
 
     final HistoricVariableInstance historicVariableInstance = processEngine.getHistoryService().createHistoricVariableInstanceQuery().list().get(0);
-    CustomVar var = (CustomVar) historicVariableInstance.getTypedValue().getValue();
+    CustomVar customVar = (CustomVar) historicVariableInstance.getTypedValue().getValue();
 
-    assertEquals("newValue", var.getValue());
+    assertEquals("newValue", customVar.getValue());
 
     final List<HistoricDetail> historicDetails = processEngine.getHistoryService().createHistoricDetailQuery().orderPartiallyByOccurrence().desc().list();
     HistoricDetail historicDetail = historicDetails.get(0);
@@ -1912,22 +1927,28 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
 
     query.caseActivityIdIn("invalid");
     assertEquals(0, query.count());
+    String[] values = { "a", null, "b" };
 
     try {
       query.caseActivityIdIn((String[])null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (NullValueException e) {}
+    } catch (NullValueException e) {
+      // expected
+    }
 
     try {
       query.caseActivityIdIn((String)null);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (NullValueException e) {}
+    } catch (NullValueException e) {
+      // expected
+    }
 
     try {
-      String[] values = { "a", null, "b" };
       query.caseActivityIdIn(values);
       fail("A ProcessEngineExcpetion was expected.");
-    } catch (NullValueException e) {}
+    } catch (NullValueException e) {
+      // expected
+    }
   }
 
   @Test
@@ -2136,16 +2157,16 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
 
       // then the history contains one entry for each variable
       HistoricVariableInstanceQuery query = historyService.createHistoricVariableInstanceQuery();
-      assertEquals(query.count(), 2);
+      assertEquals(2, query.count());
 
       HistoricVariableInstance firstVariable = query.variableName("var1").singleResult();
       assertNotNull(firstVariable);
-      assertEquals(firstVariable.getValue(), "foo");
+      assertEquals("foo", firstVariable.getValue());
       assertNotNull(firstVariable.getActivityInstanceId());
 
       HistoricVariableInstance secondVariable = query.variableName("var2").singleResult();
       assertNotNull(secondVariable);
-      assertEquals(secondVariable.getValue(), "bar");
+      assertEquals("bar", secondVariable.getValue());
       assertNotNull(secondVariable.getActivityInstanceId());
     }
   }
@@ -2176,10 +2197,10 @@ public class HistoricVariableInstanceTest extends PluggableProcessEngineTest {
       // then the history contains only one entry for the latest update (value = "bar")
       // - the entry for the initial value (value = "foo") is lost because of current limitations
       HistoricVariableInstanceQuery query = historyService.createHistoricVariableInstanceQuery();
-      assertEquals(query.count(), 1);
+      assertEquals(1, query.count());
 
       HistoricVariableInstance variable = query.singleResult();
-      assertEquals(variable.getValue(), "bar");
+      assertEquals("bar", variable.getValue());
       assertNotNull(variable.getActivityInstanceId());
     }
   }

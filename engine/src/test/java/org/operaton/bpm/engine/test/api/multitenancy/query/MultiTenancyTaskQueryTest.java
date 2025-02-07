@@ -17,7 +17,6 @@
 package org.operaton.bpm.engine.test.api.multitenancy.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -116,9 +115,9 @@ public class MultiTenancyTaskQueryTest extends PluggableProcessEngineTest {
 
   @Test
   public void testQueryByTenantIdNullFails() {
+    var taskQuery = taskService.createTaskQuery();
     try {
-      assertEquals(0, taskService.createTaskQuery()
-          .tenantIdIn((String)null));
+      taskQuery.tenantIdIn((String)null);
 
       fail("Exception expected");
     }
