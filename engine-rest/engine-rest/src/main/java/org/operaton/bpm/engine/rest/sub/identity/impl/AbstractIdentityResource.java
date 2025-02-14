@@ -22,7 +22,7 @@ import org.operaton.bpm.engine.authorization.Resource;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.impl.AbstractAuthorizedRestResource;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * @author Daniel Meyer
@@ -32,7 +32,7 @@ public abstract class AbstractIdentityResource extends AbstractAuthorizedRestRes
 
   protected final IdentityService identityService;
 
-  public AbstractIdentityResource(String processEngineName, Resource resource, String resourceId, ObjectMapper objectMapper) {
+  protected AbstractIdentityResource(String processEngineName, Resource resource, String resourceId, ObjectMapper objectMapper) {
     super(processEngineName, resource, resourceId, objectMapper);
     this.identityService = getProcessEngine().getIdentityService();
   }

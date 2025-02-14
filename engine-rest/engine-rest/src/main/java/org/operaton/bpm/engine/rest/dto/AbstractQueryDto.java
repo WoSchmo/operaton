@@ -27,8 +27,8 @@ import org.operaton.bpm.engine.query.Query;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.exception.RestException;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response.Status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -60,11 +60,11 @@ public abstract class AbstractQueryDto<T extends Query<?, ?>>  extends AbstractS
   protected Map<String, String> expressions = new HashMap<>();
 
   // required for populating via jackson
-  public AbstractQueryDto() {
+  protected AbstractQueryDto() {
 
   }
 
-  public AbstractQueryDto(ObjectMapper objectMapper, MultivaluedMap<String, String> queryParameters) {
+  protected AbstractQueryDto(ObjectMapper objectMapper, MultivaluedMap<String, String> queryParameters) {
     super(objectMapper, queryParameters);
   }
 

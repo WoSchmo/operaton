@@ -17,7 +17,7 @@
 package org.operaton.bpm.engine.rest.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.util.EngineUtil;
@@ -34,7 +34,7 @@ public abstract class AbstractRestProcessEngineAware {
 
   protected String relativeRootResourcePath = "/";
 
-  public AbstractRestProcessEngineAware(String engineName, final ObjectMapper objectMapper) {
+  protected AbstractRestProcessEngineAware(String engineName, final ObjectMapper objectMapper) {
     this.processEngine = EngineUtil.lookupProcessEngine(engineName);
     this.objectMapper = objectMapper;
   }

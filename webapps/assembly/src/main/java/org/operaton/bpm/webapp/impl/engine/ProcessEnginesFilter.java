@@ -16,20 +16,6 @@
  */
 package org.operaton.bpm.webapp.impl.engine;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.operaton.bpm.admin.Admin;
 import org.operaton.bpm.admin.AdminRuntimeDelegate;
 import org.operaton.bpm.cockpit.Cockpit;
@@ -39,15 +25,29 @@ import org.operaton.bpm.engine.authorization.Groups;
 import org.operaton.bpm.engine.rest.util.WebApplicationUtil;
 import org.operaton.bpm.tasklist.Tasklist;
 import org.operaton.bpm.tasklist.TasklistRuntimeDelegate;
-import org.operaton.bpm.webapp.impl.security.filter.headersec.provider.impl.ContentSecurityPolicyProvider;
-import org.operaton.bpm.webapp.impl.util.ServletContextUtil;
 import org.operaton.bpm.webapp.impl.IllegalWebAppConfigurationException;
 import org.operaton.bpm.webapp.impl.filter.AbstractTemplateFilter;
 import org.operaton.bpm.webapp.impl.security.SecurityActions;
 import org.operaton.bpm.webapp.impl.security.SecurityActions.SecurityAction;
+import org.operaton.bpm.webapp.impl.security.filter.headersec.provider.impl.ContentSecurityPolicyProvider;
+import org.operaton.bpm.webapp.impl.util.ServletContextUtil;
 import org.operaton.bpm.webapp.plugin.spi.AppPlugin;
 import org.operaton.bpm.welcome.Welcome;
 import org.operaton.bpm.welcome.WelcomeRuntimeDelegate;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -312,7 +312,7 @@ public class ProcessEnginesFilter extends AbstractTemplateFilter {
     StringBuilder builder = new StringBuilder();
 
     for (T plugin : plugins) {
-      if (builder.length() > 0) {
+      if (!builder.isEmpty()) {
         builder.append(", ").append("\n");
       }
 
@@ -332,7 +332,7 @@ public class ProcessEnginesFilter extends AbstractTemplateFilter {
     StringBuilder builder = new StringBuilder();
 
     for (T plugin : plugins) {
-      if (builder.length() > 0) {
+      if (!builder.isEmpty()) {
         builder.append(", ").append("\n");
       }
 

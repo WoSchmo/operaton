@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.operaton.bpm.engine.delegate.Expression;
 import org.operaton.bpm.engine.impl.AbstractDefinitionDeployer;
 import org.operaton.bpm.engine.impl.ProcessEngineLogger;
@@ -70,7 +69,7 @@ import org.operaton.bpm.engine.task.IdentityLinkType;
  */
 public class BpmnDeployer extends AbstractDefinitionDeployer<ProcessDefinitionEntity> {
 
-  public static BpmnParseLogger LOG = ProcessEngineLogger.BPMN_PARSE_LOGGER;
+  public static final BpmnParseLogger LOG = ProcessEngineLogger.BPMN_PARSE_LOGGER;
 
   public static final String[] BPMN_RESOURCE_SUFFIXES = new String[] { "bpmn20.xml", "bpmn" };
 
@@ -296,7 +295,7 @@ public class BpmnDeployer extends AbstractDefinitionDeployer<ProcessDefinitionEn
     return getEventSubscriptionManager().findStartEventSubscriptionsByConfigurationLike(configurationLike)
         .stream()
         .filter(this::isOrphan)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   protected boolean isOrphan(EventSubscriptionEntity entity) {

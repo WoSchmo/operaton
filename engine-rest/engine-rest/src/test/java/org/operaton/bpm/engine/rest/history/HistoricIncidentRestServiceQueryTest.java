@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.history.HistoricIncident;
 import org.operaton.bpm.engine.history.HistoricIncidentQuery;
@@ -705,7 +705,7 @@ public class HistoricIncidentRestServiceQueryTest extends AbstractRestServiceTes
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test

@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.operaton.bpm.run;
 
-'use strict';
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-var Page = require('./system-base');
-
-var groupsSection = element(by.id('groups'));
-
-module.exports = Page.extend({
-  url: '/operaton/app/admin/default/#/system?section=system-settings-license'
-});
+@SpringBootApplication
+public class OperatonApp {
+  public static void main(String... args) {
+    SpringApplication.run(OperatonApp.class, args);
+  }
+}

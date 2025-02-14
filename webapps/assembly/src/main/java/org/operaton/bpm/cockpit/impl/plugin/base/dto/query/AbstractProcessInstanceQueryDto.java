@@ -28,7 +28,7 @@ import org.operaton.bpm.engine.rest.dto.converter.DateConverter;
 import org.operaton.bpm.engine.rest.dto.converter.StringArrayConverter;
 import org.operaton.bpm.engine.rest.dto.converter.VariableListConverter;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.util.*;
 
@@ -68,10 +68,10 @@ public abstract class AbstractProcessInstanceQueryDto<T extends ProcessInstanceD
    */
   private List<QueryVariableValue> queryVariableValues;
 
-  public AbstractProcessInstanceQueryDto() {
+  protected AbstractProcessInstanceQueryDto() {
   }
 
-  public AbstractProcessInstanceQueryDto(MultivaluedMap<String, String> queryParameter) {
+  protected AbstractProcessInstanceQueryDto(MultivaluedMap<String, String> queryParameter) {
     super(queryParameter);
   }
 
@@ -194,7 +194,7 @@ public abstract class AbstractProcessInstanceQueryDto<T extends ProcessInstanceD
 
   private List<QueryVariableValue> createQueryVariableValues(VariableSerializers variableTypes, List<VariableQueryParameterDto> variables, String dbType) {
 
-    List<QueryVariableValue> values = new ArrayList<QueryVariableValue>();
+    List<QueryVariableValue> values = new ArrayList<>();
 
     if (variables == null) {
       return values;

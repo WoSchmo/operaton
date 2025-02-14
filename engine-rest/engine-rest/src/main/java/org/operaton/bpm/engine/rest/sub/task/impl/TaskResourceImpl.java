@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Variant;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Variant;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.BadUserRequestException;
@@ -404,12 +404,10 @@ public class TaskResourceImpl implements TaskResource {
       return Response.ok(deployedTaskForm, getTaskFormMediaType(taskId)).build();
     } catch (NotFoundException e) {
       throw new InvalidRequestException(Status.NOT_FOUND, e.getMessage());
-    } catch (NullValueException e) {
+    } catch (NullValueException | BadUserRequestException e) {
       throw new InvalidRequestException(Status.BAD_REQUEST, e.getMessage());
     } catch (AuthorizationException e) {
       throw new InvalidRequestException(Status.FORBIDDEN, e.getMessage());
-    } catch (BadUserRequestException e) {
-      throw new InvalidRequestException(Status.BAD_REQUEST, e.getMessage());
     }
   }
 

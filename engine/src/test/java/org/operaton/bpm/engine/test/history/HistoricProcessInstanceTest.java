@@ -54,7 +54,6 @@ import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.verifySo
 import static org.operaton.bpm.engine.test.api.runtime.migration.ModifiableBpmnModelInstance.modify;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Before;
@@ -1965,7 +1964,7 @@ public class HistoricProcessInstanceTest {
     // then
     assertThat(queryByInnerServiceActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance.getId());
-    assertThat(queryBySubProcessActivityId).hasSize(0);
+    assertThat(queryBySubProcessActivityId).isEmpty();
     assertThat(queryByOuterProcessActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance2.getId());
     assertThat(queryByOuterAndInnedActivityId).extracting("id")
@@ -1996,7 +1995,7 @@ public class HistoricProcessInstanceTest {
     // then
     assertThat(queryByInnerServiceActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance.getId());
-    assertThat(queryBySubProcessActivityId).hasSize(0);
+    assertThat(queryBySubProcessActivityId).isEmpty();
     assertThat(queryByOuterProcessActivityId).extracting("id")
           .containsExactlyInAnyOrder(processInstance2.getId());
     assertThat(queryByOuterAndInnedActivityId).extracting("id")
@@ -2212,7 +2211,7 @@ public class HistoricProcessInstanceTest {
         .containsExactlyInAnyOrderElementsOf(
             processInstanceList.stream()
                 .map(HistoricProcessInstance::getId)
-                .collect(Collectors.toList()));
+                .toList());
   }
 
   @Test
@@ -2246,7 +2245,7 @@ public class HistoricProcessInstanceTest {
         .containsExactlyInAnyOrderElementsOf(
             processInstanceList.stream()
                 .map(HistoricProcessInstance::getId)
-                .collect(Collectors.toList()));
+                .toList());
   }
 
   @Test

@@ -35,8 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.history.HistoricActivityInstance;
 import org.operaton.bpm.engine.history.HistoricActivityInstanceQuery;
@@ -852,7 +852,7 @@ public class HistoricActivityInstanceRestServiceQueryTest extends AbstractRestSe
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -880,7 +880,7 @@ public class HistoricActivityInstanceRestServiceQueryTest extends AbstractRestSe
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   private List<HistoricActivityInstance> createMockHistoricActivityInstancesTwoTenants() {

@@ -64,7 +64,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.InOrder;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -321,7 +321,7 @@ public class HistoricDecisionInstanceRestServiceInteractionTest extends Abstract
 
     verifyBatchJson(response.asString());
 
-    verify(historyServiceMock, times(1)).deleteHistoricDecisionInstancesAsync(eq(ids), eq((HistoricDecisionInstanceQuery) null), eq("a-delete-reason"));
+    verify(historyServiceMock, times(1)).deleteHistoricDecisionInstancesAsync(ids, (HistoricDecisionInstanceQuery) null, "a-delete-reason");
   }
 
   @Test

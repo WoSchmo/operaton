@@ -44,7 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.BadUserRequestException;
 import org.operaton.bpm.engine.HistoryService;
@@ -223,7 +223,7 @@ public class HistoricProcessInstanceRestServiceInteractionTest extends AbstractR
     verifyBatchJson(response.asString());
 
     verify(historyServiceMock, times(1)).deleteHistoricProcessInstancesAsync(
-        eq(ids), eq((HistoricProcessInstanceQuery) null), eq(TEST_DELETE_REASON));
+        ids, (HistoricProcessInstanceQuery) null, TEST_DELETE_REASON);
   }
 
   @Test

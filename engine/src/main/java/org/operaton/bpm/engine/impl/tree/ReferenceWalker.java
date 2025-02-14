@@ -42,12 +42,12 @@ public abstract class ReferenceWalker<T> {
 
   protected abstract Collection<T> nextElements();
 
-  public ReferenceWalker(T initialElement) {
+  protected ReferenceWalker(T initialElement) {
     currentElements = new LinkedList<>();
     currentElements.add(initialElement);
   }
 
-  public ReferenceWalker(List<T> initialElements) {
+  protected ReferenceWalker(List<T> initialElements) {
     currentElements = new LinkedList<>(initialElements);
   }
 
@@ -62,11 +62,11 @@ public abstract class ReferenceWalker<T> {
   }
 
   public T walkWhile() {
-    return walkWhile(new ReferenceWalker.NullCondition<T>());
+    return walkWhile(new ReferenceWalker.NullCondition<>());
   }
 
   public T walkUntil() {
-    return walkUntil(new ReferenceWalker.NullCondition<T>());
+    return walkUntil(new ReferenceWalker.NullCondition<>());
   }
 
   public T walkWhile(ReferenceWalker.WalkCondition<T> condition) {

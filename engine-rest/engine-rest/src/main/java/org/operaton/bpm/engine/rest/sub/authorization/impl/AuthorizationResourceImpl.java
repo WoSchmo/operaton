@@ -26,9 +26,9 @@ import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.impl.AbstractAuthorizedRestResource;
 import org.operaton.bpm.engine.rest.sub.authorization.AuthorizationResource;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import static org.operaton.bpm.engine.authorization.Permissions.DELETE;
@@ -43,11 +43,10 @@ import static org.operaton.bpm.engine.authorization.Resources.AUTHORIZATION;
 public class AuthorizationResourceImpl extends AbstractAuthorizedRestResource implements AuthorizationResource {
 
   protected final AuthorizationService authorizationService;
-  protected String relativeRootResourcePath;
 
   public AuthorizationResourceImpl(String processEngineName, String resourceId, String relativeRootResourcePath, ObjectMapper objectMapper) {
     super(processEngineName, AUTHORIZATION, resourceId, objectMapper);
-    this.relativeRootResourcePath = relativeRootResourcePath;
+    setRelativeRootResourceUri(relativeRootResourcePath);
     authorizationService = getProcessEngine().getAuthorizationService();
   }
 

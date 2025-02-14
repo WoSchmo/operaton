@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -659,7 +659,7 @@ public class HistoricCaseActivityInstanceRestServiceQueryTest extends AbstractRe
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test

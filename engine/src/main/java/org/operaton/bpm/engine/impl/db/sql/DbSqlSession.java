@@ -80,13 +80,13 @@ public abstract class DbSqlSession extends AbstractPersistenceSession {
   protected String connectionMetadataDefaultCatalog = null;
   protected String connectionMetadataDefaultSchema = null;
 
-  public DbSqlSession(DbSqlSessionFactory dbSqlSessionFactory) {
+  protected DbSqlSession(DbSqlSessionFactory dbSqlSessionFactory) {
     this.dbSqlSessionFactory = dbSqlSessionFactory;
     SqlSessionFactory sqlSessionFactory = dbSqlSessionFactory.getSqlSessionFactory();
     this.sqlSession = ExceptionUtil.doWithExceptionWrapper(sqlSessionFactory::openSession);
   }
 
-  public DbSqlSession(DbSqlSessionFactory dbSqlSessionFactory, Connection connection, String catalog, String schema) {
+  protected DbSqlSession(DbSqlSessionFactory dbSqlSessionFactory, Connection connection, String catalog, String schema) {
     this.dbSqlSessionFactory = dbSqlSessionFactory;
     SqlSessionFactory sqlSessionFactory = dbSqlSessionFactory.getSqlSessionFactory();
     this.sqlSession = ExceptionUtil.doWithExceptionWrapper(() -> sqlSessionFactory.openSession(connection));
@@ -760,7 +760,7 @@ public abstract class DbSqlSession extends AbstractPersistenceSession {
           logLines.add(line.substring(2));
         } else if (line.startsWith("-- ")) {
           logLines.add(line.substring(3));
-        } else if (line.length()>0) {
+        } else if (!line.isEmpty()) {
 
           if (line.endsWith(";")) {
             sqlStatement = addSqlStatementPiece(sqlStatement, line.substring(0, line.length()-1));

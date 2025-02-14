@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.history.HistoricJobLog;
 import org.operaton.bpm.engine.history.HistoricJobLogQuery;
@@ -815,7 +815,7 @@ public class HistoricJobLogRestServiceQueryTest extends AbstractRestServiceTest 
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -843,7 +843,7 @@ public class HistoricJobLogRestServiceQueryTest extends AbstractRestServiceTest 
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   private List<HistoricJobLog> createMockHistoricJobLogsTwoTenants() {

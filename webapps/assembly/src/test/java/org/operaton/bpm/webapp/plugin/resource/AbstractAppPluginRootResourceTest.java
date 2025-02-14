@@ -27,11 +27,10 @@ import org.operaton.bpm.webapp.AppRuntimeDelegate;
 import org.operaton.bpm.webapp.plugin.AppPluginRegistry;
 import org.operaton.bpm.webapp.plugin.spi.AppPlugin;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.servlet.ServletContext;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -80,7 +79,7 @@ public class AbstractAppPluginRootResourceTest {
   }
 
   @Before
-  public void setup() throws ServletException {
+  public void setup() {
     runtimeDelegate = Mockito.mock(AppRuntimeDelegate.class);
     pluginRegistry = Mockito.mock(AppPluginRegistry.class);
     AppPlugin plugin = Mockito.mock(AppPlugin.class);

@@ -16,8 +16,7 @@
  */
 package org.operaton.bpm.engine.test.api.task;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -57,8 +56,6 @@ import org.operaton.bpm.engine.identity.Group;
 import org.operaton.bpm.engine.identity.User;
 import org.operaton.bpm.engine.impl.TaskServiceImpl;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.HistoricDetailVariableInstanceUpdateEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.VariableInstanceEntity;
 import org.operaton.bpm.engine.impl.util.ClockUtil;
@@ -309,7 +306,8 @@ public class TaskServiceTest {
     String taskId = task.getId();
 
     // Deleting non-existing comment should be silently ignored
-    taskService.deleteTaskComment(taskId, "notExistingCommentId");
+    assertThatCode(() -> taskService.deleteTaskComment(taskId, "notExistingCommentId"))
+      .doesNotThrowAnyException();
 
     // Finally, delete task
     taskService.deleteTask(taskId, true);
@@ -382,7 +380,8 @@ public class TaskServiceTest {
     String taskId = task.getId();
 
     // Deleting comments of a task that doesnt have any comments should silently ignored
-    taskService.deleteTaskComments(taskId);
+    assertThatCode(() -> taskService.deleteTaskComments(taskId))
+      .doesNotThrowAnyException();
 
     // Finally, delete task
     taskService.deleteTask(taskId, true);
@@ -545,9 +544,11 @@ public class TaskServiceTest {
   @Test
   public void testDeleteProcessInstanceCommentNotExistingCommentId() {
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess");
+    String processInstanceId = processInstance.getId();
 
     // Deleting non-existing comment should be silently ignored
-    taskService.deleteProcessInstanceComment(processInstance.getId(), "notExistingCommentId");
+    assertThatCode(() -> taskService.deleteProcessInstanceComment(processInstanceId, "notExistingCommentId"))
+      .doesNotThrowAnyException();
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml" })
@@ -609,11 +610,12 @@ public class TaskServiceTest {
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml" })
   @Test
   public void testDeleteProcessInstanceCommentsNoComments() {
-
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess");
+    String processInstanceId = processInstance.getId();
 
     // Deleting comments of a task that doesn't have any comments should silently ignored
-    taskService.deleteProcessInstanceComments(processInstance.getId());
+    assertThatCode(() -> taskService.deleteProcessInstanceComments(processInstanceId))
+      .doesNotThrowAnyException();
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml" })
@@ -731,7 +733,6 @@ public class TaskServiceTest {
 
     List<Comment> updateCommentLst = taskService.getProcessInstanceComments(processInstanceId);
 
-    assertThat(updateCommentLst).isNotEmpty();
     assertThat(updateCommentLst).hasSize(1);
 
     Comment actual = updateCommentLst.get(0);
@@ -751,7 +752,6 @@ public class TaskServiceTest {
 
     List<Comment> updateCommentLst = taskService.getProcessInstanceComments(processInstanceId);
 
-    assertThat(updateCommentLst).isNotEmpty();
     assertThat(updateCommentLst).hasSize(1);
 
     Comment actual = updateCommentLst.get(0);
@@ -1406,13 +1406,9 @@ public class TaskServiceTest {
 
     // when
     final boolean hasLoadedAnyVariables =
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Boolean>() {
-
-        @Override
-        public Boolean execute(CommandContext commandContext) {
-          taskService.complete(task.getId());
-          return !commandContext.getDbEntityManager().getCachedEntitiesByType(VariableInstanceEntity.class).isEmpty();
-        }
+      processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+        taskService.complete(task.getId());
+        return !commandContext.getDbEntityManager().getCachedEntitiesByType(VariableInstanceEntity.class).isEmpty();
       });
 
     // then

@@ -27,8 +27,8 @@ import org.operaton.bpm.engine.rest.util.OrderingBuilder;
 import org.operaton.bpm.engine.rest.util.container.TestContainerRule;
 import static org.operaton.bpm.engine.rest.util.QueryParamUtils.arrayAsCommaSeperatedList;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import java.util.*;
 
 import io.restassured.http.ContentType;
@@ -1502,7 +1502,7 @@ public class HistoricTaskInstanceRestServiceQueryTest extends AbstractRestServic
     assertThat(definitions).hasSize(1);
 
     String returnedTaskDueDate = from(content).getString("[0].due");
-    assertThat(returnedTaskDueDate).isEqualTo(null);
+    assertThat(returnedTaskDueDate).isNull();
   }
 
   @Test
@@ -1530,7 +1530,7 @@ public class HistoricTaskInstanceRestServiceQueryTest extends AbstractRestServic
     assertThat(definitions).hasSize(1);
 
     String returnedTaskDueDate = from(content).getString("[0].due");
-    assertThat(returnedTaskDueDate).isEqualTo(null);
+    assertThat(returnedTaskDueDate).isNull();
   }
 
   @Test
@@ -2387,7 +2387,7 @@ public class HistoricTaskInstanceRestServiceQueryTest extends AbstractRestServic
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -2414,7 +2414,7 @@ public class HistoricTaskInstanceRestServiceQueryTest extends AbstractRestServic
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test

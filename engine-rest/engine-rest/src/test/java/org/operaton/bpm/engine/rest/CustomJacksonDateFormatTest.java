@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.impl.RuntimeServiceImpl;
 import org.operaton.bpm.engine.rest.helper.variable.EqualsPrimitiveValue;
@@ -65,7 +65,7 @@ public class CustomJacksonDateFormatTest extends AbstractRestServiceTest {
   public void setUpRuntimeData() {
     runtimeServiceMock = mock(RuntimeServiceImpl.class);
 
-    when(runtimeServiceMock.getVariableTyped(eq(EXAMPLE_PROCESS_INSTANCE_ID), eq(EXAMPLE_VARIABLE_KEY), eq(true)))
+    when(runtimeServiceMock.getVariableTyped(EXAMPLE_PROCESS_INSTANCE_ID, EXAMPLE_VARIABLE_KEY, true))
       .thenReturn(Variables.dateValue(testDate));
 
     when(processEngine.getRuntimeService()).thenReturn(runtimeServiceMock);

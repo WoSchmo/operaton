@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.BadUserRequestException;
@@ -54,7 +54,7 @@ public abstract class AbstractVariablesResource implements VariableResource {
   protected String resourceId;
   protected ObjectMapper objectMapper;
 
-  public AbstractVariablesResource(ProcessEngine engine, String resourceId, ObjectMapper objectMapper) {
+  protected AbstractVariablesResource(ProcessEngine engine, String resourceId, ObjectMapper objectMapper) {
     this.engine = engine;
     this.resourceId = resourceId;
     this.objectMapper = objectMapper;

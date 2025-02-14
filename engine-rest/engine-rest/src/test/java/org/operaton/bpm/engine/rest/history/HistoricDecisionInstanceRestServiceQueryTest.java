@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.history.HistoricDecisionInstance;
 import org.operaton.bpm.engine.history.HistoricDecisionInstanceQuery;
@@ -536,7 +536,7 @@ public class HistoricDecisionInstanceRestServiceQueryTest extends AbstractRestSe
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId1 = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
   }
 
   private List<HistoricDecisionInstance> createMockHistoricDecisionInstancesTwoTenants() {

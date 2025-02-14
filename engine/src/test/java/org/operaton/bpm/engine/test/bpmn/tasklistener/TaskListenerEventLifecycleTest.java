@@ -16,15 +16,12 @@
  */
 package org.operaton.bpm.engine.test.bpmn.tasklistener;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
+import org.junit.Test;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.delegate.DelegateTask;
 import org.operaton.bpm.engine.delegate.TaskListener;
@@ -36,7 +33,13 @@ import org.operaton.bpm.engine.test.bpmn.tasklistener.util.CompletingTaskListene
 import org.operaton.bpm.engine.test.bpmn.tasklistener.util.RecorderTaskListener;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
-import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.operaton.bpm.engine.delegate.TaskListener.EVENTNAME_ASSIGNMENT;
+import static org.operaton.bpm.engine.delegate.TaskListener.EVENTNAME_COMPLETE;
+import static org.operaton.bpm.engine.delegate.TaskListener.EVENTNAME_CREATE;
+import static org.operaton.bpm.engine.delegate.TaskListener.EVENTNAME_UPDATE;
 
 public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
   /*
@@ -47,10 +50,10 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
    */
 
   protected static final String[] TRACKED_EVENTS = {
-      TaskListener.EVENTNAME_CREATE,
-      TaskListener.EVENTNAME_UPDATE,
-      TaskListener.EVENTNAME_ASSIGNMENT,
-      TaskListener.EVENTNAME_COMPLETE,
+      EVENTNAME_CREATE,
+      EVENTNAME_UPDATE,
+      EVENTNAME_ASSIGNMENT,
+      EVENTNAME_COMPLETE,
       TaskListener.EVENTNAME_DELETE
   };
 
@@ -66,9 +69,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
 
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
-    assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT);
+    assertThat(orderedEvents)
+      .hasSize(2)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_ASSIGNMENT);
   }
 
   @Test
@@ -76,7 +79,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_CREATE,
+                                                                                  EVENTNAME_CREATE,
                                                                                   CompletingTaskListener.class);
     testRule.deploy(model);
 
@@ -85,9 +88,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
 
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
-    assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents)
+      .hasSize(2)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -95,7 +98,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_ASSIGNMENT,
+                                                                                  EVENTNAME_ASSIGNMENT,
                                                                                   CompletingTaskListener.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
@@ -106,11 +109,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
 
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
-    assertThat(orderedEvents).hasSize(4);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT,
-                                              TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents)
+      .hasSize(4)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE, EVENTNAME_ASSIGNMENT, EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -122,7 +123,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     BpmnModelInstance model = Bpmn.createExecutableProcess("process")
         .startEvent()
           .userTask("task")
-            .operatonTaskListenerClass(TaskListener.EVENTNAME_CREATE, RecorderTaskListener.class)
+            .operatonTaskListenerClass(EVENTNAME_CREATE, RecorderTaskListener.class)
             .operatonTaskListenerClassTimeoutWithDate(TaskListener.EVENTNAME_TIMEOUT,
                                                      RecorderTaskListener.class,
                                                      sdf.format(now.getTime()))
@@ -136,13 +137,13 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
 
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
-    assertThat(orderedEvents).hasSize(2);
 
     // the TIMEOUT event will always fire after the CREATE event, since the Timer Job can't be
     // picked up by the JobExecutor before it's committed. And it is committed in the same
     // transaction as the task creation phase.
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_TIMEOUT);
+    assertThat(orderedEvents)
+      .hasSize(2)
+      .containsExactly(EVENTNAME_CREATE, TaskListener.EVENTNAME_TIMEOUT);
   }
 
   @Test
@@ -154,8 +155,8 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     BpmnModelInstance model = Bpmn.createExecutableProcess("process")
                                   .startEvent()
                                   .userTask("task")
-                                  .operatonTaskListenerClass(TaskListener.EVENTNAME_CREATE, RecorderTaskListener.class)
-                                  .operatonTaskListenerClass(TaskListener.EVENTNAME_COMPLETE, RecorderTaskListener.class)
+                                  .operatonTaskListenerClass(EVENTNAME_CREATE, RecorderTaskListener.class)
+                                  .operatonTaskListenerClass(EVENTNAME_COMPLETE, RecorderTaskListener.class)
                                   .operatonTaskListenerClassTimeoutWithDate(TaskListener.EVENTNAME_TIMEOUT,
                                                                            RecorderTaskListener.class,
                                                                            sdf.format(now.getTime()))
@@ -175,7 +176,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     assertThat(runningJobCount).isOne();
     assertThat(completedJobCount).isZero();
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(EVENTNAME_COMPLETE);
   }
 
   // UPDATE phase
@@ -193,9 +194,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
     // create event fired on task creation
-    assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE);
+    assertThat(orderedEvents)
+      .hasSize(2)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE);
   }
 
   @Test
@@ -211,10 +212,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(3);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT);
+    assertThat(orderedEvents)
+      .hasSize(3)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE, EVENTNAME_ASSIGNMENT);
   }
 
   @Test
@@ -222,7 +222,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_UPDATE,
+                                                                                  EVENTNAME_UPDATE,
                                                                                   CompletingTaskListener.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
@@ -235,10 +235,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     // assignment event should not be processed
-    assertThat(orderedEvents).hasSize(3);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE,
-                                              TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents)
+      .hasSize(3)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE, EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -246,7 +245,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_ASSIGNMENT,
+                                                                                  EVENTNAME_ASSIGNMENT,
                                                                                   CompletingTaskListener.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
@@ -258,11 +257,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(4);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT,
-                                              TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents)
+      .hasSize(4)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE, EVENTNAME_ASSIGNMENT, EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -270,7 +267,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance process = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_CREATE,
+                                                                                  EVENTNAME_CREATE,
                                                                                   ModifyingTaskListener.class);
     testRule.deploy(process);
 
@@ -280,11 +277,11 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(2);
     // ASSIGNMENT Event is fired, since the ModifyingTaskListener sets an assignee, and the
     // ASSIGNMENT Event evaluation happens after the CREATE Event evaluation
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT);
+    assertThat(orderedEvents)
+      .hasSize(2)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_ASSIGNMENT);
   }
 
   @Test
@@ -292,7 +289,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance process = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                     null,
-                                                                                    TaskListener.EVENTNAME_UPDATE,
+                                                                                    EVENTNAME_UPDATE,
                                                                                     ModifyingTaskListener.class);
     testRule.deploy(process);
     engineRule.getRuntimeService().startProcessInstanceByKey("process");
@@ -305,12 +302,11 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // only the initial, first update event is expected
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(3);
     // ASSIGNMENT Event is fired, since the ModifyingTaskListener sets an assignee, and the
     // ASSIGNMENT Event evaluation happens after the UPDATE Event evaluation
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT);
+    assertThat(orderedEvents)
+      .hasSize(3)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE, EVENTNAME_ASSIGNMENT);
   }
 
   @Test
@@ -318,7 +314,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance process = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                     null,
-                                                                                    TaskListener.EVENTNAME_ASSIGNMENT,
+                                                                                    EVENTNAME_ASSIGNMENT,
                                                                                     ModifyingTaskListener.class);
     testRule.deploy(process);
     engineRule.getRuntimeService().startProcessInstanceByKey("process");
@@ -331,10 +327,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // only one update event is expected, from the initial assignment
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(3);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_UPDATE,
-                                              TaskListener.EVENTNAME_ASSIGNMENT);
+    assertThat(orderedEvents)
+      .hasSize(3)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_UPDATE, EVENTNAME_ASSIGNMENT);
   }
 
   @Test
@@ -342,7 +337,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance process = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                     null,
-                                                                                    TaskListener.EVENTNAME_COMPLETE,
+                                                                                    EVENTNAME_COMPLETE,
                                                                                     ModifyingTaskListener.class);
     testRule.deploy(process);
     engineRule.getRuntimeService().startProcessInstanceByKey("process");
@@ -354,9 +349,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents)
+      .hasSize(2)
+      .containsExactly(EVENTNAME_CREATE, EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -376,9 +371,9 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     List<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_DELETE);
+    assertThat(orderedEvents)
+        .hasSize(2)
+        .containsExactly(EVENTNAME_CREATE, TaskListener.EVENTNAME_DELETE);
   }
 
   // COMPLETE phase
@@ -397,7 +392,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -405,7 +400,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_COMPLETE,
+                                                                                  EVENTNAME_COMPLETE,
                                                                                   CandidateUserAssignment.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
@@ -418,7 +413,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -426,7 +421,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_COMPLETE,
+                                                                                  EVENTNAME_COMPLETE,
                                                                                   AssigneeAssignment.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
@@ -439,7 +434,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_COMPLETE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -447,25 +442,21 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_COMPLETE,
+                                                                                  EVENTNAME_COMPLETE,
                                                                                   TaskDeleteTaskListener.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
-    Task task = taskService.createTaskQuery().singleResult();
+    String taskId = taskService.createTaskQuery().singleResult().getId();
 
     // when
-    try {
-      // when/then
-      assertThatThrownBy(() -> taskService.complete(task.getId()))
-        .isInstanceOf(ProcessEngineException.class)
-        .hasMessageContaining("The task cannot be deleted because is part of a running process");
-    } finally {
-      // then
-      LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+    assertThatThrownBy(() -> taskService.complete(taskId))
+    // then
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The task cannot be deleted because is part of a running process");
 
-      assertThat(orderedEvents).hasSize(2);
-      assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_COMPLETE);
-    }
+    LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+    assertThat(orderedEvents).hasSize(2);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(EVENTNAME_COMPLETE);
   }
 
   @Test
@@ -473,7 +464,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_COMPLETE,
+                                                                                  EVENTNAME_COMPLETE,
                                                                                   ProcessInstanceDeleteTaskListener.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
@@ -485,10 +476,10 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // then
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-    assertThat(orderedEvents).hasSize(3);
-    assertThat(orderedEvents).containsExactly(TaskListener.EVENTNAME_CREATE,
-                                              TaskListener.EVENTNAME_COMPLETE,
-                                              TaskListener.EVENTNAME_DELETE);
+    assertThat(orderedEvents)
+      .hasSize(3).containsExactly(EVENTNAME_CREATE,
+        EVENTNAME_COMPLETE,
+        TaskListener.EVENTNAME_DELETE);
   }
 
   @Test
@@ -496,26 +487,23 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     // given
     BpmnModelInstance model = createModelWithTaskEventsRecorderOnAssignedUserTask(TRACKED_EVENTS,
                                                                                   null,
-                                                                                  TaskListener.EVENTNAME_COMPLETE,
+                                                                                  EVENTNAME_COMPLETE,
                                                                                   CompletingTaskListener.class);
     testRule.deploy(model);
     runtimeService.startProcessInstanceByKey("process");
     Task task = taskService.createTaskQuery().singleResult();
+    String taskId = task.getId();
 
     // when
-    try {
-      // when/then
-      assertThatThrownBy(() -> taskService.complete(task.getId()))
-        .isInstanceOf(ProcessEngineException.class)
-        .hasMessageContaining("invalid task state");
-    } finally {
-      // then
-      LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+    assertThatThrownBy(() -> taskService.complete(taskId))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("invalid task state");
+    // then
+    LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
-      assertThat(orderedEvents).hasSize(2);
-      assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
-      assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_COMPLETE);
-    }
+    assertThat(orderedEvents).hasSize(2);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(EVENTNAME_COMPLETE);
   }
 
   // DELETE phase
@@ -533,7 +521,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
     assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
   }
 
@@ -554,7 +542,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
     assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
   }
 
@@ -575,7 +563,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
     assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
   }
 
@@ -588,21 +576,18 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
                                                                                   CompletingTaskListener.class);
     testRule.deploy(model);
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("process");
+    String processInstanceId = processInstance.getId();
 
     // when
-    try {
-      // when/then
-      assertThatThrownBy(() -> runtimeService.deleteProcessInstance(processInstance.getId(), "Canceled!"))
-        .isInstanceOf(ProcessEngineException.class)
-        .hasMessageContaining("invalid task state");
-    } finally {
-      // then
-      LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+    assertThatThrownBy(() -> runtimeService.deleteProcessInstance(processInstanceId, "Canceled!"))
+    // then
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("invalid task state");
 
-      assertThat(orderedEvents).hasSize(2);
-      assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
-      assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
-    }
+    LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+    assertThat(orderedEvents).hasSize(2);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
   }
 
   @Test
@@ -613,22 +598,18 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
                                                                                   TaskListener.EVENTNAME_DELETE,
                                                                                   TaskDeleteTaskListener.class);
     testRule.deploy(model);
-    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("process");
+    String processInstanceId = runtimeService.startProcessInstanceByKey("process").getId();
 
     // when
-    try {
-      // when/then
-      assertThatThrownBy(() -> runtimeService.deleteProcessInstance(processInstance.getId(), "Canceled!"))
-        .isInstanceOf(ProcessEngineException.class)
-        .hasMessageContaining("The task cannot be deleted because is part of a running process");
-    } finally {
+    assertThatThrownBy(() -> runtimeService.deleteProcessInstance(processInstanceId, "Canceled!"))
       // then
-      LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The task cannot be deleted because is part of a running process");
 
-      assertThat(orderedEvents).hasSize(2);
-      assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
-      assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
-    }
+    LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
+    assertThat(orderedEvents).hasSize(2);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
+    assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
   }
 
   @Test
@@ -648,7 +629,7 @@ public class TaskListenerEventLifecycleTest extends AbstractTaskListenerTest{
     LinkedList<String> orderedEvents = RecorderTaskListener.getOrderedEvents();
 
     assertThat(orderedEvents).hasSize(2);
-    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(TaskListener.EVENTNAME_CREATE);
+    assertThat(orderedEvents.getFirst()).isEqualToIgnoringCase(EVENTNAME_CREATE);
     assertThat(orderedEvents.getLast()).isEqualToIgnoringCase(TaskListener.EVENTNAME_DELETE);
   }
 

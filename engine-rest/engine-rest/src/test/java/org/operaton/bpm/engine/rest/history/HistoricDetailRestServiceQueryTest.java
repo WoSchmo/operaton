@@ -40,8 +40,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import org.operaton.bpm.engine.history.HistoricDetail;
 import org.operaton.bpm.engine.history.HistoricDetailQuery;
 import org.operaton.bpm.engine.history.HistoricFormField;
@@ -1222,7 +1222,7 @@ public class HistoricDetailRestServiceQueryTest extends AbstractRestServiceTest 
     assertThat(definitions).hasSize(2);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -1258,7 +1258,7 @@ public class HistoricDetailRestServiceQueryTest extends AbstractRestServiceTest 
     assertThat(definitions).hasSize(2);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   private void verifyTenantIdListParameterResponse(Response response) {

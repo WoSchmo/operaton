@@ -17,6 +17,7 @@
 package org.operaton.bpm.engine.test.bpmn.gateway;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +36,7 @@ import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
+import org.operaton.bpm.engine.variable.VariableMap;
 import org.operaton.bpm.engine.variable.Variables;
 import org.junit.Test;
 
@@ -87,8 +89,9 @@ public class ExclusiveGatewayTest extends PluggableProcessEngineTest {
   @Test
   public void testWhitespaceInExpression() {
     // Starting a process instance will lead to an exception if whitespace are incorrectly handled
-    runtimeService.startProcessInstanceByKey("whiteSpaceInExpression",
-            CollectionUtil.singletonMap("input", 1));
+    Map<String, Object> variables = Map.of("input", 1);
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("whiteSpaceInExpression", variables))
+      .doesNotThrowAnyException();
   }
 
   @Deployment(resources = {"org/operaton/bpm/engine/test/bpmn/gateway/ExclusiveGatewayTest.testDivergingExclusiveGateway.bpmn20.xml"})
@@ -215,7 +218,7 @@ public class ExclusiveGatewayTest extends PluggableProcessEngineTest {
     }
     catch (ParseException e) {
       assertTrue(e.getMessage().contains("Exclusive Gateway 'exclusiveGw' has outgoing sequence flow 'flow3' without condition which is not the default flow."));
-      Problem error = e.getResorceReports().get(0).getErrors().get(0);
+      Problem error = e.getResourceReports().get(0).getErrors().get(0);
       assertThat(error.getMainElementId()).isEqualTo("exclusiveGw");
       assertThat(error.getElementIds()).containsExactlyInAnyOrder("exclusiveGw", "flow3");
     }
@@ -247,7 +250,7 @@ public class ExclusiveGatewayTest extends PluggableProcessEngineTest {
     }
     catch (ParseException e) {
       assertTrue(e.getMessage().contains("Exclusive Gateway 'exclusiveGw' has outgoing sequence flow 'flow3' which is the default flow but has a condition too."));
-      Problem error = e.getResorceReports().get(0).getErrors().get(0);
+      Problem error = e.getResourceReports().get(0).getErrors().get(0);
       assertThat(error.getMainElementId()).isEqualTo("exclusiveGw");
       assertThat(error.getElementIds()).containsExactlyInAnyOrder("exclusiveGw", "flow3");
     }
@@ -269,7 +272,7 @@ public class ExclusiveGatewayTest extends PluggableProcessEngineTest {
     }
     catch (ParseException e) {
       assertTrue(e.getMessage().contains("Exclusive Gateway 'exclusiveGw' has no outgoing sequence flows."));
-      assertThat(e.getResorceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("exclusiveGw");
+      assertThat(e.getResourceReports().get(0).getErrors().get(0).getMainElementId()).isEqualTo("exclusiveGw");
     }
 
   }
@@ -280,8 +283,10 @@ public class ExclusiveGatewayTest extends PluggableProcessEngineTest {
   public void testLoopWithManyIterations() {
     int numOfIterations = 1000;
 
+    VariableMap variables = Variables.createVariables().putValue("numOfIterations", numOfIterations);
     // this should not fail
-    runtimeService.startProcessInstanceByKey("testProcess", Variables.createVariables().putValue("numOfIterations", numOfIterations));
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("testProcess", variables))
+      .doesNotThrowAnyException();
   }
 
   /**
