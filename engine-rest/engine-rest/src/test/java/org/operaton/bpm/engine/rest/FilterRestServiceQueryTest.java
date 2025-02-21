@@ -23,7 +23,6 @@ import static io.restassured.path.json.JsonPath.from;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -76,10 +75,10 @@ public class FilterRestServiceQueryTest extends AbstractRestServiceTest {
     FilterService filterService = processEngine.getFilterService();
 
     when(filterService.createFilterQuery()).thenReturn(mockedQuery);
-    when(filterService.getFilter(eq(MockProvider.EXAMPLE_FILTER_ID))).thenReturn(mockedFilter);
-    when(filterService.count(eq(MockProvider.EXAMPLE_FILTER_ID))).thenReturn((long) mockedFilterItemCount);
-    when(filterService.getFilter(eq(MockProvider.ANOTHER_EXAMPLE_FILTER_ID))).thenReturn(anotherMockedFilter);
-    when(filterService.count(eq(MockProvider.ANOTHER_EXAMPLE_FILTER_ID))).thenReturn((long) anotherMockedFilterItemCount);
+    when(filterService.getFilter(MockProvider.EXAMPLE_FILTER_ID)).thenReturn(mockedFilter);
+    when(filterService.count(MockProvider.EXAMPLE_FILTER_ID)).thenReturn((long) mockedFilterItemCount);
+    when(filterService.getFilter(MockProvider.ANOTHER_EXAMPLE_FILTER_ID)).thenReturn(anotherMockedFilter);
+    when(filterService.count(MockProvider.ANOTHER_EXAMPLE_FILTER_ID)).thenReturn((long) anotherMockedFilterItemCount);
   }
 
   @Test
@@ -274,7 +273,7 @@ public class FilterRestServiceQueryTest extends AbstractRestServiceTest {
     assertThat(returnedResourceType).isEqualTo(MockProvider.EXAMPLE_FILTER_RESOURCE_TYPE);
     assertThat(returnedName).isEqualTo(MockProvider.EXAMPLE_FILTER_NAME);
     assertThat(returnedOwner).isEqualTo(MockProvider.EXAMPLE_FILTER_OWNER);
-    assertThat(returnedQuery.get("name")).isEqualTo(MockProvider.EXAMPLE_FILTER_QUERY_DTO.getName());
+    assertThat(returnedQuery).containsEntry("name", MockProvider.EXAMPLE_FILTER_QUERY_DTO.getName());
     assertThat((List<Map<String, String>>) returnedQuery.get("processVariables")).hasSize(1).containsExactly(expectedVariable);
     assertThat((List<Map<String, String>>) returnedQuery.get("taskVariables")).hasSize(1).containsExactly(expectedVariable);
     assertThat((List<Map<String, String>>) returnedQuery.get("caseInstanceVariables")).hasSize(1).containsExactly(expectedVariable);
@@ -293,7 +292,7 @@ public class FilterRestServiceQueryTest extends AbstractRestServiceTest {
     assertThat(returnedResourceType).isEqualTo(MockProvider.EXAMPLE_FILTER_RESOURCE_TYPE);
     assertThat(returnedName).isEqualTo(MockProvider.EXAMPLE_FILTER_NAME);
     assertThat(returnedOwner).isEqualTo(MockProvider.EXAMPLE_FILTER_OWNER);
-    assertThat(returnedQuery.get("name")).isEqualTo(MockProvider.EXAMPLE_FILTER_QUERY_DTO.getName());
+    assertThat(returnedQuery).containsEntry("name", MockProvider.EXAMPLE_FILTER_QUERY_DTO.getName());
     assertThat(returnedProperties).isEqualTo(MockProvider.EXAMPLE_FILTER_PROPERTIES);
   }
 

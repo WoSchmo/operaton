@@ -18,8 +18,8 @@ package org.operaton.bpm.engine.test.concurrency;
 
 import static org.operaton.bpm.engine.variable.Variables.createVariables;
 import static org.operaton.bpm.model.bpmn.Bpmn.createExecutableProcess;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -100,9 +100,10 @@ public class CompetingVariableFetchingAndDeletionTest extends ConcurrencyTestCas
     // make the second thread continue
     // => this will a flush the FetchVariableCmd Context.
     // if the flush performs an update to the variable, it will fail with an OLE
-    asyncThread.makeContinue();
-    asyncThread.waitUntilDone();
-
+    assertThatCode(() -> {
+      asyncThread.makeContinue();
+      asyncThread.waitUntilDone();
+    }).doesNotThrowAnyException();
   }
 
   static class FetchVariableCmd extends ControllableCommand<Void> {
@@ -124,18 +125,18 @@ public class CompetingVariableFetchingAndDeletionTest extends ConcurrencyTestCas
       // fetch the variable instance but not the value (make sure the byte array is lazily fetched)
       VariableInstanceEntity varInstance = (VariableInstanceEntity) execution.getVariableInstanceLocal(varName);
       String byteArrayValueId = varInstance.getByteArrayValueId();
-      assertNotNull("Byte array id is expected to be not null", byteArrayValueId);
+      assertThat(byteArrayValueId).as("Byte array id is expected to be not null").isNotNull();
 
       CachedDbEntity cachedByteArray = commandContext.getDbEntityManager().getDbEntityCache()
         .getCachedEntity(ByteArrayEntity.class, byteArrayValueId);
 
-      assertNull("Byte array is expected to be not fetched yet / lazily fetched.", cachedByteArray);
+      assertThat(cachedByteArray).as("Byte array is expected to be not fetched yet / lazily fetched.").isNull();
 
       monitor.sync();
 
       // now trigger the fetching of the byte array
       Object value = varInstance.getValue();
-      assertNull("Expecting the value to be null (deleted)", value);
+      assertThat(value).as("Expecting the value to be null (deleted)").isNull();
 
       return null;
     }

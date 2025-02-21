@@ -27,13 +27,8 @@ import org.operaton.bpm.model.bpmn.instance.MessageEventDefinition;
 
 public abstract class AbstractMessageEventDefinitionBuilder<B extends AbstractMessageEventDefinitionBuilder<B>> extends AbstractRootElementBuilder<B, MessageEventDefinition>{
 
-  public AbstractMessageEventDefinitionBuilder(BpmnModelInstance modelInstance, MessageEventDefinition element, Class<?> selfType) {
+  protected AbstractMessageEventDefinitionBuilder(BpmnModelInstance modelInstance, MessageEventDefinition element, Class<?> selfType) {
     super(modelInstance, element, selfType);
-  }
-
-  @Override
-  public B id(String identifier) {
-    return super.id(identifier);
   }
 
   /**

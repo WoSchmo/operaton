@@ -24,13 +24,8 @@ import org.operaton.bpm.model.bpmn.instance.Event;
 
 public abstract class AbstractCompensateEventDefinitionBuilder<B extends AbstractCompensateEventDefinitionBuilder<B>> extends AbstractRootElementBuilder<B, CompensateEventDefinition>{
 
-  public AbstractCompensateEventDefinitionBuilder(BpmnModelInstance modelInstance, CompensateEventDefinition element, Class<?> selfType) {
+  protected AbstractCompensateEventDefinitionBuilder(BpmnModelInstance modelInstance, CompensateEventDefinition element, Class<?> selfType) {
     super(modelInstance, element, selfType);
-  }
-
-  @Override
-  public B id(String identifier) {
-    return super.id(identifier);
   }
 
   public B activityRef(String activityId) {

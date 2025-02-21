@@ -16,13 +16,12 @@
  */
 package org.operaton.bpm.engine.test.api.variables.scope;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.operaton.bpm.engine.test.api.runtime.migration.ModifiableBpmnModelInstance.modify;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.operaton.bpm.engine.ProcessEngineException;
+import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.ScriptEvaluationException;
 import org.operaton.bpm.engine.delegate.DelegateExecution;
 import org.operaton.bpm.engine.delegate.DelegateTask;
@@ -39,8 +38,13 @@ import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 import org.operaton.bpm.model.bpmn.instance.SequenceFlow;
 import org.operaton.bpm.model.bpmn.instance.operaton.OperatonExecutionListener;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * @author Askar Akhmerov
@@ -52,12 +56,19 @@ public class TargetVariableScopeTest {
   @Rule
   public ProcessEngineTestRule testHelper = new ProcessEngineTestRule(engineRule);
 
+  RuntimeService runtimeService;
+
+  @Before
+  public void setUp() {
+    runtimeService = engineRule.getRuntimeService();
+  }
+
   @Test
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/variables/scope/TargetVariableScopeTest.testExecutionWithDelegateProcess.bpmn","org/operaton/bpm/engine/test/api/variables/scope/doer.bpmn"})
   public void testExecutionWithDelegateProcess() {
     // Given we create a new process instance
-    VariableMap variables = Variables.createVariables().putValue("orderIds", Arrays.asList(new int[]{1, 2, 3}));
-    ProcessInstance processInstance = engineRule.getRuntimeService().startProcessInstanceByKey("Process_MultiInstanceCallAcitivity",variables);
+    VariableMap variables = Variables.createVariables().putValue("orderIds", List.of(new int[] { 1, 2, 3 }));
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("Process_MultiInstanceCallActivity",variables);
 
     // it runs without any problems
     assertThat(processInstance.isEnded()).isTrue();
@@ -67,8 +78,8 @@ public class TargetVariableScopeTest {
   @Test
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/variables/scope/TargetVariableScopeTest.testExecutionWithScriptTargetScope.bpmn","org/operaton/bpm/engine/test/api/variables/scope/doer.bpmn"})
   public void testExecutionWithScriptTargetScope () {
-    VariableMap variables = Variables.createVariables().putValue("orderIds", Arrays.asList(new int[]{1, 2, 3}));
-    ProcessInstance processInstance = engineRule.getRuntimeService().startProcessInstanceByKey("Process_MultiInstanceCallAcitivity",variables);
+    VariableMap variables = Variables.createVariables().putValue("orderIds", List.of(new int[] { 1, 2, 3 }));
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("Process_MultiInstanceCallActivity",variables);
 
     // it runs without any problems
     assertThat(processInstance.isEnded()).isTrue();
@@ -78,12 +89,13 @@ public class TargetVariableScopeTest {
   @Test
   @Deployment(resources = {"org/operaton/bpm/engine/test/api/variables/scope/TargetVariableScopeTest.testExecutionWithoutProperTargetScope.bpmn","org/operaton/bpm/engine/test/api/variables/scope/doer.bpmn"})
   public void testExecutionWithoutProperTargetScope () {
-    VariableMap variables = Variables.createVariables().putValue("orderIds", Arrays.asList(new int[]{1, 2, 3}));
-    ProcessDefinition processDefinition = engineRule.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey("Process_MultiInstanceCallAcitivity").singleResult();
+    VariableMap variables = Variables.createVariables().putValue("orderIds", List.of(new int[] { 1, 2, 3 }));
+    ProcessDefinition processDefinition = engineRule.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey("Process_MultiInstanceCallActivity").singleResult();
+    RuntimeService runtimeService1 = runtimeService;
 
     // when/then
     //fails due to inappropriate variable scope target
-    assertThatThrownBy(() -> engineRule.getRuntimeService().startProcessInstanceByKey("Process_MultiInstanceCallAcitivity",variables))
+    assertThatThrownBy(() -> runtimeService1.startProcessInstanceByKey("Process_MultiInstanceCallActivity",variables))
       .isInstanceOf(ScriptEvaluationException.class)
       .hasMessageContaining("Unable to evaluate script while executing activity 'CallActivity_1' in the process definition with id '"
           + processDefinition.getId() + "': org.operaton.bpm.engine.ProcessEngineException: ENGINE-20011 "
@@ -116,8 +128,10 @@ public class TargetVariableScopeTest {
         .done();
 
     ProcessDefinition processDefinition = testHelper.deployAndGetDefinition(instance);
-    VariableMap variables = Variables.createVariables().putValue("orderIds", Arrays.asList(new int[]{1, 2, 3}));
-    engineRule.getRuntimeService().startProcessInstanceById(processDefinition.getId(),variables);
+    String processDefinitionId = processDefinition.getId();
+    VariableMap variables = Variables.createVariables().putValue("orderIds", List.of(new int[] { 1, 2, 3 }));
+    assertThatCode(() -> runtimeService.startProcessInstanceById(processDefinitionId,variables))
+      .doesNotThrowAnyException();
   }
 
   @Test
@@ -154,12 +168,13 @@ public class TargetVariableScopeTest {
         .done();
 
     ProcessDefinition processDefinition = testHelper.deployAndGetDefinition(instance);
+    String processDefinitionId = processDefinition.getId();
 
-    VariableMap variables = Variables.createVariables().putValue("orderIds", Arrays.asList(new int[]{1, 2, 3}));
+    VariableMap variables = Variables.createVariables().putValue("orderIds", List.of(new int[] { 1, 2, 3 }));
 
     // when/then
     //fails due to inappropriate variable scope target
-    assertThatThrownBy(() -> engineRule.getRuntimeService().startProcessInstanceById(processDefinition.getId(),variables))
+    assertThatThrownBy(() -> runtimeService.startProcessInstanceById(processDefinitionId, variables))
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("org.operaton.bpm.engine.ProcessEngineException: ENGINE-20011 Scope with specified activity Id SubProcess_2 and execution");
 
@@ -205,7 +220,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -216,7 +231,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -227,7 +242,7 @@ public class TargetVariableScopeTest {
         .operatonExecutionListenerClass(ExecutionListener.EVENTNAME_END, ExecutionListener.class)
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -244,7 +259,7 @@ public class TargetVariableScopeTest {
     modelInstance.<SequenceFlow>getModelElementById("sequenceFlow").builder().addExtensionElement(listener);
 
     testHelper.deploy(modelInstance);
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -256,7 +271,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -272,7 +287,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -287,7 +302,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -302,7 +317,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
   @Test
@@ -318,7 +333,7 @@ public class TargetVariableScopeTest {
       .endEvent()
       .done());
 
-    engineRule.getRuntimeService().startProcessInstanceByKey("process");
+    assertThatCode(() -> runtimeService.startProcessInstanceByKey("process")).doesNotThrowAnyException();
   }
 
 }

@@ -30,8 +30,6 @@ import org.operaton.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.operaton.bpm.engine.impl.repository.ResourceDefinitionEntity;
 import org.operaton.bpm.engine.impl.util.ClassLoaderUtil;
 
-import java.util.concurrent.Callable;
-
 public class ProcessApplicationContextUtil {
 
   private static final ProcessApplicationLogger LOG = ProcessEngineLogger.PROCESS_APPLICATION_LOGGER;
@@ -118,9 +116,7 @@ public class ProcessApplicationContextUtil {
     ProcessEngineConfigurationImpl processEngineConfiguration = Context.getProcessEngineConfiguration();
     ProcessApplicationManager processApplicationManager = processEngineConfiguration.getProcessApplicationManager();
 
-    ProcessApplicationReference processApplicationForDeployment = processApplicationManager.getProcessApplicationForDeployment(deploymentId);
-
-    return processApplicationForDeployment;
+    return processApplicationManager.getProcessApplicationForDeployment(deploymentId);
   }
 
   public static boolean areProcessApplicationsRegistered() {
@@ -181,13 +177,9 @@ public class ProcessApplicationContextUtil {
   public static void doContextSwitch(final Runnable runnable, ProcessDefinitionEntity contextDefinition) {
     ProcessApplicationReference processApplication = getTargetProcessApplication(contextDefinition);
     if (requiresContextSwitch(processApplication)) {
-      Context.executeWithinProcessApplication(new Callable<Void>() {
-
-        @Override
-        public Void call() throws Exception {
-          runnable.run();
-          return null;
-        }
+      Context.executeWithinProcessApplication(() -> {
+        runnable.run();
+        return null;
       }, processApplication);
     }
     else {

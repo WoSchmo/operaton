@@ -16,16 +16,8 @@
  */
 package org.operaton.bpm.engine.test.jobexecutor;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import org.operaton.bpm.engine.history.HistoricJobLog;
 import org.operaton.bpm.engine.impl.cmd.AcquireJobsCmd;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.jobexecutor.AcquiredJobs;
 import org.operaton.bpm.engine.impl.jobexecutor.ExecuteJobHelper;
@@ -33,7 +25,14 @@ import org.operaton.bpm.engine.impl.jobexecutor.JobExecutor;
 import org.operaton.bpm.engine.impl.persistence.entity.MessageEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.operaton.bpm.engine.impl.util.ClockUtil;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Tom Baeyens
@@ -44,32 +43,28 @@ public class JobExecutorCmdHappyTest extends JobExecutorTestCase {
   public void testJobCommandsWithMessage() {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
     JobExecutor jobExecutor = processEngineConfiguration.getJobExecutor();
-    String jobId = commandExecutor.execute(new Command<String>() {
-
-      @Override
-      public String execute(CommandContext commandContext) {
-        MessageEntity message = createTweetMessage("i'm coding a test");
-        commandContext.getJobManager().send(message);
-        return message.getId();
-      }
+    String jobId = commandExecutor.execute(commandContext -> {
+      MessageEntity message = createTweetMessage("i'm coding a test");
+      commandContext.getJobManager().send(message);
+      return message.getId();
     });
 
     AcquiredJobs acquiredJobs = commandExecutor.execute(new AcquireJobsCmd(jobExecutor));
     List<List<String>> jobIdsList = acquiredJobs.getJobIdBatches();
-    assertEquals(1, jobIdsList.size());
+    assertThat(jobIdsList).hasSize(1);
 
     List<String> jobIds = jobIdsList.get(0);
 
     List<String> expectedJobIds = new ArrayList<>();
     expectedJobIds.add(jobId);
 
-    assertEquals(expectedJobIds, new ArrayList<String>(jobIds));
-    assertEquals(0, tweetHandler.getMessages().size());
+    assertThat(new ArrayList<String>(jobIds)).isEqualTo(expectedJobIds);
+    assertThat(tweetHandler.getMessages()).isEmpty();
 
     ExecuteJobHelper.executeJob(jobId, commandExecutor);
 
-    assertEquals("i'm coding a test", tweetHandler.getMessages().get(0));
-    assertEquals(1, tweetHandler.getMessages().size());
+    assertThat(tweetHandler.getMessages().get(0)).isEqualTo("i'm coding a test");
+    assertThat(tweetHandler.getMessages()).hasSize(1);
 
     clearDatabase();
   }
@@ -85,19 +80,15 @@ public class JobExecutorCmdHappyTest extends JobExecutorTestCase {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
     JobExecutor jobExecutor = processEngineConfiguration.getJobExecutor();
 
-    String jobId = commandExecutor.execute(new Command<String>() {
-
-      @Override
-      public String execute(CommandContext commandContext) {
-        TimerEntity timer = createTweetTimer("i'm coding a test", new Date(SOME_TIME + (10 * SECOND)));
-        commandContext.getJobManager().schedule(timer);
-        return timer.getId();
-      }
+    String jobId = commandExecutor.execute(commandContext -> {
+      TimerEntity timer = createTweetTimer("i'm coding a test", new Date(SOME_TIME + (10 * SECOND)));
+      commandContext.getJobManager().schedule(timer);
+      return timer.getId();
     });
 
     AcquiredJobs acquiredJobs = commandExecutor.execute(new AcquireJobsCmd(jobExecutor));
     List<List<String>> jobIdsList = acquiredJobs.getJobIdBatches();
-    assertEquals(0, jobIdsList.size());
+    assertThat(jobIdsList).isEmpty();
 
     List<String> expectedJobIds = new ArrayList<>();
 
@@ -105,41 +96,38 @@ public class JobExecutorCmdHappyTest extends JobExecutorTestCase {
 
     acquiredJobs = commandExecutor.execute(new AcquireJobsCmd(jobExecutor, jobExecutor.getMaxJobsPerAcquisition()));
     jobIdsList = acquiredJobs.getJobIdBatches();
-    assertEquals(1, jobIdsList.size());
+    assertThat(jobIdsList).hasSize(1);
 
     List<String> jobIds = jobIdsList.get(0);
 
     expectedJobIds.add(jobId);
-    assertEquals(expectedJobIds, new ArrayList<String>(jobIds));
+    assertThat(new ArrayList<String>(jobIds)).isEqualTo(expectedJobIds);
 
-    assertEquals(0, tweetHandler.getMessages().size());
+    assertThat(tweetHandler.getMessages()).isEmpty();
 
     ExecuteJobHelper.executeJob(jobId, commandExecutor);
 
-    assertEquals("i'm coding a test", tweetHandler.getMessages().get(0));
-    assertEquals(1, tweetHandler.getMessages().size());
+    assertThat(tweetHandler.getMessages().get(0)).isEqualTo("i'm coding a test");
+    assertThat(tweetHandler.getMessages()).hasSize(1);
 
     clearDatabase();
   }
 
   protected void clearDatabase() {
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
 
-        List<HistoricJobLog> historicJobLogs = processEngineConfiguration
-            .getHistoryService()
-            .createHistoricJobLogQuery()
-            .list();
+      List<HistoricJobLog> historicJobLogs = processEngineConfiguration
+          .getHistoryService()
+          .createHistoricJobLogQuery()
+          .list();
 
-        for (HistoricJobLog historicJobLog : historicJobLogs) {
-          commandContext
+      for (HistoricJobLog historicJobLog : historicJobLogs) {
+        commandContext
             .getHistoricJobLogManager()
             .deleteHistoricJobLogById(historicJobLog.getId());
-        }
-
-        return null;
       }
+
+      return null;
     });
   }
 

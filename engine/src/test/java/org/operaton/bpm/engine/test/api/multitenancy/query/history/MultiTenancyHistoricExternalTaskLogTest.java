@@ -163,10 +163,10 @@ public class MultiTenancyHistoricExternalTaskLogTest {
 
   @Test
   public void shouldFailQueryByTenantIdNull() {
+    var historicExternalTaskLogQuery = historyService.createHistoricExternalTaskLogQuery();
     try {
       // when
-      historyService.createHistoricExternalTaskLogQuery()
-        .tenantIdIn((String) null);
+      historicExternalTaskLogQuery.tenantIdIn((String) null);
 
       fail("expected exception");
 
@@ -315,7 +315,6 @@ public class MultiTenancyHistoricExternalTaskLogTest {
     String stacktrace = historyService.getHistoricExternalTaskLogErrorDetails(failedHistoricExternalTaskLogId);
 
     // then
-    assertThat(stacktrace).isNotNull();
     assertThat(stacktrace).isEqualTo(ERROR_DETAILS);
   }
 
@@ -343,9 +342,7 @@ public class MultiTenancyHistoricExternalTaskLogTest {
     String stacktrace2 = historyService.getHistoricExternalTaskLogErrorDetails(logIdTenant2);
 
     // then
-    assertThat(stacktrace1).isNotNull();
     assertThat(stacktrace1).isEqualTo(ERROR_DETAILS);
-    assertThat(stacktrace2).isNotNull();
     assertThat(stacktrace2).isEqualTo(ERROR_DETAILS);
   }
 

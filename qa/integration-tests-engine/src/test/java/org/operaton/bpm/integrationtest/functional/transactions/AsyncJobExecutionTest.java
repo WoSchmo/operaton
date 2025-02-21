@@ -36,6 +36,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @RunWith(Arquillian.class)
 public class AsyncJobExecutionTest extends AbstractFoxPlatformIntegrationTest {
@@ -70,7 +71,7 @@ public class AsyncJobExecutionTest extends AbstractFoxPlatformIntegrationTest {
 
     // when
     // all jobs are executed
-    waitForJobExecutorToProcessAllJobs();
+    assertDoesNotThrow(() -> waitForJobExecutorToProcessAllJobs());
 
     // then
     // there are no failures
@@ -86,7 +87,7 @@ public class AsyncJobExecutionTest extends AbstractFoxPlatformIntegrationTest {
 
     // then
     // the job exists with no retries, and an incident is raised
-    Job job = managementService.createJobQuery().singleResult();
+    Job job = managementService.createJobQuery().processDefinitionKey("failingTransactionListener").singleResult();
 
     assertNotNull(job);
     assertEquals(0, job.getRetries());

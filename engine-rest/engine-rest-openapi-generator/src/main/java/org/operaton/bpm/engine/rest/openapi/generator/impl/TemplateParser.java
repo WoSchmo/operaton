@@ -111,11 +111,8 @@ public class TemplateParser {
         .setPrettyPrinting()
         .create();
 
-    JsonParser jsonParser = new JsonParser();
-    JsonElement json = jsonParser.parse(jsonString);
-    String formattedJson = gson.toJson(json);
-
-    return formattedJson;
+    JsonElement json = JsonParser.parseString(jsonString);
+    return gson.toJson(json);
   }
 
   protected static String createOutputFile(String debugFile) {

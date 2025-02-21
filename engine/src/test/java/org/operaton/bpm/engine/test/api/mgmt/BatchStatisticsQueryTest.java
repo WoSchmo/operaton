@@ -21,9 +21,8 @@ import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.batchSta
 import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.batchStatisticsByStartTime;
 import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.inverted;
 import static org.operaton.bpm.engine.test.api.runtime.TestOrderingUtil.verifySorting;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,9 +41,7 @@ import org.operaton.bpm.engine.test.ProcessEngineRule;
 import org.operaton.bpm.engine.test.api.runtime.migration.MigrationTestRule;
 import org.operaton.bpm.engine.test.api.runtime.migration.batch.BatchMigrationHelper;
 import org.operaton.bpm.engine.test.util.ProvidedProcessEngineRule;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,59 +87,59 @@ public class BatchStatisticsQueryTest {
   @Test
   public void testQuery() {
     List<BatchStatistics> statistics = managementService.createBatchStatisticsQuery().list();
-    assertEquals(0, statistics.size());
+    assertThat(statistics).isEmpty();
 
     Batch batch1 = helper.createMigrationBatchWithSize(1);
 
     statistics = managementService.createBatchStatisticsQuery().list();
-    assertEquals(1, statistics.size());
-    assertEquals(batch1.getId(), statistics.get(0).getId());
+    assertThat(statistics).hasSize(1);
+    assertThat(statistics.get(0).getId()).isEqualTo(batch1.getId());
 
     Batch batch2 = helper.createMigrationBatchWithSize(1);
     Batch batch3 = helper.createMigrationBatchWithSize(1);
 
     statistics = managementService.createBatchStatisticsQuery().list();
-    assertEquals(3, statistics.size());
+    assertThat(statistics).hasSize(3);
 
     helper.completeBatch(batch1);
     helper.completeBatch(batch3);
 
     statistics = managementService.createBatchStatisticsQuery().list();
-    assertEquals(1, statistics.size());
-    assertEquals(batch2.getId(), statistics.get(0).getId());
+    assertThat(statistics).hasSize(1);
+    assertThat(statistics.get(0).getId()).isEqualTo(batch2.getId());
 
     helper.completeBatch(batch2);
 
     statistics = managementService.createBatchStatisticsQuery().list();
-    assertEquals(0, statistics.size());
+    assertThat(statistics).isEmpty();
   }
 
   @Test
   public void testQueryCount() {
     long count = managementService.createBatchStatisticsQuery().count();
-    assertEquals(0, count);
+    assertThat(count).isZero();
 
     Batch batch1 = helper.createMigrationBatchWithSize(1);
 
     count = managementService.createBatchStatisticsQuery().count();
-    assertEquals(1, count);
+    assertThat(count).isEqualTo(1);
 
     Batch batch2 = helper.createMigrationBatchWithSize(1);
     Batch batch3 = helper.createMigrationBatchWithSize(1);
 
     count = managementService.createBatchStatisticsQuery().count();
-    assertEquals(3, count);
+    assertThat(count).isEqualTo(3);
 
     helper.completeBatch(batch1);
     helper.completeBatch(batch3);
 
     count = managementService.createBatchStatisticsQuery().count();
-    assertEquals(1, count);
+    assertThat(count).isEqualTo(1);
 
     helper.completeBatch(batch2);
 
     count = managementService.createBatchStatisticsQuery().count();
-    assertEquals(0, count);
+    assertThat(count).isZero();
   }
 
   @Test
@@ -157,20 +154,18 @@ public class BatchStatisticsQueryTest {
       .singleResult();
 
     // then
-    assertEquals(batch.getId(), statistics.getId());
+    assertThat(statistics.getId()).isEqualTo(batch.getId());
   }
 
   @Test
   public void testQueryByNullId() {
-    try {
-      managementService.createBatchStatisticsQuery()
-        .batchId(null)
-        .singleResult();
-      Assert.fail("exception expected");
-    }
-    catch (NullValueException e) {
-      Assert.assertThat(e.getMessage(), CoreMatchers.containsString("Batch id is null"));
-    }
+    // given
+    var batchStatisticsQuery = managementService.createBatchStatisticsQuery();
+    // when
+    assertThatThrownBy(() -> batchStatisticsQuery.batchId(null))
+      // then
+      .isInstanceOf(NullValueException.class)
+      .hasMessageContaining("Batch id is null");
   }
 
   @Test
@@ -185,7 +180,7 @@ public class BatchStatisticsQueryTest {
       .list();
 
     // then
-    assertEquals(0, statistics.size());
+    assertThat(statistics).isEmpty();
   }
 
   @Test
@@ -200,20 +195,18 @@ public class BatchStatisticsQueryTest {
       .list();
 
     // then
-    assertEquals(2, statistics.size());
+    assertThat(statistics).hasSize(2);
   }
 
   @Test
   public void testQueryByNullType() {
-    try {
-      managementService.createBatchStatisticsQuery()
-        .type(null)
-        .list();
-      Assert.fail("exception expected");
-    }
-    catch (NullValueException e) {
-      Assert.assertThat(e.getMessage(), CoreMatchers.containsString("Type is null"));
-    }
+    // given
+    var batchStatisticsQuery = managementService.createBatchStatisticsQuery();
+    // when
+    assertThatThrownBy(() -> batchStatisticsQuery.type(null))
+      // then
+      .isInstanceOf(NullValueException.class)
+      .hasMessageContaining("Type is null");
   }
 
   @Test
@@ -228,7 +221,7 @@ public class BatchStatisticsQueryTest {
       .list();
 
     // then
-    assertEquals(0, statistics.size());
+    assertThat(statistics).isEmpty();
   }
 
   @Test
@@ -297,30 +290,24 @@ public class BatchStatisticsQueryTest {
 
   @Test
   public void testQueryOrderingPropertyWithoutOrder() {
-    try {
-      managementService.createBatchStatisticsQuery()
-        .orderById()
-        .list();
-      Assert.fail("exception expected");
-    }
-    catch (NotValidException e) {
-      Assert.assertThat(e.getMessage(), CoreMatchers.containsString("Invalid query: "
-        + "call asc() or desc() after using orderByXX()"));
-    }
+    // given
+    var batchStatisticsQuery = managementService.createBatchStatisticsQuery().orderById();
+    // when
+    assertThatThrownBy(batchStatisticsQuery::list)
+      // then
+      .isInstanceOf(NotValidException.class)
+      .hasMessageContaining("Invalid query: call asc() or desc() after using orderByXX()");
   }
 
   @Test
   public void testQueryOrderWithoutOrderingProperty() {
-    try {
-      managementService.createBatchStatisticsQuery()
-        .asc()
-        .list();
-      Assert.fail("exception expected");
-    }
-    catch (NotValidException e) {
-      Assert.assertThat(e.getMessage(), CoreMatchers.containsString("You should call any of the orderBy methods "
-        + "first before specifying a direction"));
-    }
+    // given
+    BatchStatisticsQuery batchStatisticsQuery = managementService.createBatchStatisticsQuery();
+    // when
+    assertThatThrownBy(batchStatisticsQuery::asc)
+      // then
+      .isInstanceOf(NotValidException.class)
+      .hasMessageContaining("You should call any of the orderBy methods first before specifying a direction");
   }
 
   @Test
@@ -333,11 +320,11 @@ public class BatchStatisticsQueryTest {
       .singleResult();
 
     // then
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(0, batchStatistics.getJobsCreated());
-    assertEquals(3, batchStatistics.getRemainingJobs());
-    assertEquals(0, batchStatistics.getCompletedJobs());
-    assertEquals(0, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isZero();
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getCompletedJobs()).isZero();
+    assertThat(batchStatistics.getFailedJobs()).isZero();
   }
 
   @Test
@@ -352,11 +339,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(13, batchStatistics.getTotalJobs());
-    assertEquals(10, batchStatistics.getJobsCreated());
-    assertEquals(13, batchStatistics.getRemainingJobs());
-    assertEquals(0, batchStatistics.getCompletedJobs());
-    assertEquals(0, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(13);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(10);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(13);
+    assertThat(batchStatistics.getCompletedJobs()).isZero();
+    assertThat(batchStatistics.getFailedJobs()).isZero();
   }
 
   @Test
@@ -371,11 +358,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(3, batchStatistics.getJobsCreated());
-    assertEquals(3, batchStatistics.getRemainingJobs());
-    assertEquals(0, batchStatistics.getCompletedJobs());
-    assertEquals(0, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(3);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getCompletedJobs()).isZero();
+    assertThat(batchStatistics.getFailedJobs()).isZero();
   }
 
   @Test
@@ -391,11 +378,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(3, batchStatistics.getJobsCreated());
-    assertEquals(2, batchStatistics.getRemainingJobs());
-    assertEquals(1, batchStatistics.getCompletedJobs());
-    assertEquals(0, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(3);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(2);
+    assertThat(batchStatistics.getCompletedJobs()).isEqualTo(1);
+    assertThat(batchStatistics.getFailedJobs()).isZero();
   }
 
   @Test
@@ -411,11 +398,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(3, batchStatistics.getJobsCreated());
-    assertEquals(3, batchStatistics.getRemainingJobs());
-    assertEquals(0, batchStatistics.getCompletedJobs());
-    assertEquals(1, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(3);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getCompletedJobs()).isZero();
+    assertThat(batchStatistics.getFailedJobs()).isEqualTo(1);
   }
 
   @Test
@@ -432,11 +419,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(3, batchStatistics.getJobsCreated());
-    assertEquals(2, batchStatistics.getRemainingJobs());
-    assertEquals(1, batchStatistics.getCompletedJobs());
-    assertEquals(1, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(3);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(2);
+    assertThat(batchStatistics.getCompletedJobs()).isEqualTo(1);
+    assertThat(batchStatistics.getFailedJobs()).isEqualTo(1);
   }
 
   @Test
@@ -452,11 +439,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(3, batchStatistics.getJobsCreated());
-    assertEquals(3, batchStatistics.getRemainingJobs());
-    assertEquals(0, batchStatistics.getCompletedJobs());
-    assertEquals(3, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(3);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getCompletedJobs()).isZero();
+    assertThat(batchStatistics.getFailedJobs()).isEqualTo(3);
 
     // when
     helper.setRetries(batch, 3, 1);
@@ -466,11 +453,11 @@ public class BatchStatisticsQueryTest {
     batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(3, batchStatistics.getTotalJobs());
-    assertEquals(3, batchStatistics.getJobsCreated());
-    assertEquals(0, batchStatistics.getRemainingJobs());
-    assertEquals(3, batchStatistics.getCompletedJobs());
-    assertEquals(0, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(3);
+    assertThat(batchStatistics.getRemainingJobs()).isZero();
+    assertThat(batchStatistics.getCompletedJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getFailedJobs()).isZero();
   }
 
   @Test
@@ -486,11 +473,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(13, batchStatistics.getTotalJobs());
-    assertEquals(10, batchStatistics.getJobsCreated());
-    assertEquals(3, batchStatistics.getRemainingJobs());
-    assertEquals(10, batchStatistics.getCompletedJobs());
-    assertEquals(0, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(13);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(10);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+    assertThat(batchStatistics.getCompletedJobs()).isEqualTo(10);
+    assertThat(batchStatistics.getFailedJobs()).isZero();
   }
 
   @Test
@@ -507,11 +494,11 @@ public class BatchStatisticsQueryTest {
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery()
       .singleResult();
 
-    assertEquals(13, batchStatistics.getTotalJobs());
-    assertEquals(10, batchStatistics.getJobsCreated());
-    assertEquals(11, batchStatistics.getRemainingJobs());
-    assertEquals(2, batchStatistics.getCompletedJobs());
-    assertEquals(2, batchStatistics.getFailedJobs());
+    assertThat(batchStatistics.getTotalJobs()).isEqualTo(13);
+    assertThat(batchStatistics.getJobsCreated()).isEqualTo(10);
+    assertThat(batchStatistics.getRemainingJobs()).isEqualTo(11);
+    assertThat(batchStatistics.getCompletedJobs()).isEqualTo(2);
+    assertThat(batchStatistics.getFailedJobs()).isEqualTo(2);
   }
 
   @Test
@@ -539,27 +526,27 @@ public class BatchStatisticsQueryTest {
     for (BatchStatistics batchStatistics : batchStatisticsList) {
       if (batch1.getId().equals(batchStatistics.getId())) {
         // batch 1
-        assertEquals(3, batchStatistics.getTotalJobs());
-        assertEquals(0, batchStatistics.getJobsCreated());
-        assertEquals(3, batchStatistics.getRemainingJobs());
-        assertEquals(0, batchStatistics.getCompletedJobs());
-        assertEquals(0, batchStatistics.getFailedJobs());
+        assertThat(batchStatistics.getTotalJobs()).isEqualTo(3);
+        assertThat(batchStatistics.getJobsCreated()).isZero();
+        assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+        assertThat(batchStatistics.getCompletedJobs()).isZero();
+        assertThat(batchStatistics.getFailedJobs()).isZero();
       }
       else if (batch2.getId().equals(batchStatistics.getId())) {
         // batch 2
-        assertEquals(13, batchStatistics.getTotalJobs());
-        assertEquals(10, batchStatistics.getJobsCreated());
-        assertEquals(11, batchStatistics.getRemainingJobs());
-        assertEquals(2, batchStatistics.getCompletedJobs());
-        assertEquals(3, batchStatistics.getFailedJobs());
+        assertThat(batchStatistics.getTotalJobs()).isEqualTo(13);
+        assertThat(batchStatistics.getJobsCreated()).isEqualTo(10);
+        assertThat(batchStatistics.getRemainingJobs()).isEqualTo(11);
+        assertThat(batchStatistics.getCompletedJobs()).isEqualTo(2);
+        assertThat(batchStatistics.getFailedJobs()).isEqualTo(3);
       }
       else if (batch3.getId().equals(batchStatistics.getId())) {
         // batch 3
-        assertEquals(15, batchStatistics.getTotalJobs());
-        assertEquals(15, batchStatistics.getJobsCreated());
-        assertEquals(3, batchStatistics.getRemainingJobs());
-        assertEquals(12, batchStatistics.getCompletedJobs());
-        assertEquals(3, batchStatistics.getFailedJobs());
+        assertThat(batchStatistics.getTotalJobs()).isEqualTo(15);
+        assertThat(batchStatistics.getJobsCreated()).isEqualTo(15);
+        assertThat(batchStatistics.getRemainingJobs()).isEqualTo(3);
+        assertThat(batchStatistics.getCompletedJobs()).isEqualTo(12);
+        assertThat(batchStatistics.getFailedJobs()).isEqualTo(3);
       }
     }
   }
@@ -575,7 +562,7 @@ public class BatchStatisticsQueryTest {
     // then
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery().batchId(batch.getId()).singleResult();
 
-    assertTrue(batchStatistics.isSuspended());
+    assertThat(batchStatistics.isSuspended()).isTrue();
   }
 
   @Test
@@ -590,7 +577,7 @@ public class BatchStatisticsQueryTest {
     // then
     BatchStatistics batchStatistics = managementService.createBatchStatisticsQuery().batchId(batch.getId()).singleResult();
 
-    assertFalse(batchStatistics.isSuspended());
+    assertThat(batchStatistics.isSuspended()).isFalse();
   }
 
   @Test
@@ -607,9 +594,9 @@ public class BatchStatisticsQueryTest {
 
     // then
     BatchStatisticsQuery query = managementService.createBatchStatisticsQuery().suspended();
-    Assert.assertEquals(1, query.count());
-    Assert.assertEquals(1, query.list().size());
-    Assert.assertEquals(batch2.getId(), query.singleResult().getId());
+    assertThat(query.count()).isEqualTo(1);
+    assertThat(query.list()).hasSize(1);
+    assertThat(query.singleResult().getId()).isEqualTo(batch2.getId());
   }
 
   @Test
@@ -626,8 +613,8 @@ public class BatchStatisticsQueryTest {
 
     // then
     BatchStatisticsQuery query = managementService.createBatchStatisticsQuery().active();
-    Assert.assertEquals(2, query.count());
-    Assert.assertEquals(2, query.list().size());
+    assertThat(query.count()).isEqualTo(2);
+    assertThat(query.list()).hasSize(2);
 
     List<String> foundIds = new ArrayList<>();
     for (Batch batch : query.list()) {

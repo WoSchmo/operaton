@@ -17,12 +17,9 @@
 package org.operaton.bpm.engine.test.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.operaton.bpm.engine.HistoryService;
 import org.operaton.bpm.engine.ManagementService;
@@ -79,7 +76,7 @@ public abstract class AbstractAsyncOperationsTest {
   }
 
   protected List<String> getJobIdsByDeployment(List<Job> jobs, String deploymentId) {
-    return jobs.stream().filter(j -> deploymentId.equals(j.getDeploymentId())).map(Job::getId).collect(Collectors.toList());
+    return jobs.stream().filter(j -> deploymentId.equals(j.getDeploymentId())).map(Job::getId).toList();
   }
 
   protected void completeSeedJobs(Batch batch) {
@@ -90,7 +87,7 @@ public abstract class AbstractAsyncOperationsTest {
 
   protected void executeSeedJob(Batch batch) {
     Job seedJob = getSeedJob(batch);
-    assertNotNull(seedJob);
+    assertThat(seedJob).isNotNull();
     managementService.executeJob(seedJob.getId());
   }
 
@@ -98,13 +95,12 @@ public abstract class AbstractAsyncOperationsTest {
     for (int i = 0; i < expectedSeedJobsCount; i++) {
       executeSeedJob(batch);
     }
-    assertNull(getSeedJob(batch));
+    assertThat(getSeedJob(batch)).isNull();
   }
 
   protected Job getSeedJob(Batch batch) {
     String seedJobDefinitionId = batch.getSeedJobDefinitionId();
-    Job seedJob = managementService.createJobQuery().jobDefinitionId(seedJobDefinitionId).singleResult();
-    return seedJob;
+    return managementService.createJobQuery().jobDefinitionId(seedJobDefinitionId).singleResult();
   }
 
   /**

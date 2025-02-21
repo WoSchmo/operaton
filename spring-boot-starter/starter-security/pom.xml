@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.operaton.bpm.springboot.project</groupId>
     <artifactId>operaton-bpm-spring-boot-starter-root</artifactId>
-    <version>1.0.0-beta-3-SNAPSHOT</version>
+    <version>1.0.0-beta-4-SNAPSHOT</version>
   </parent>
 
   <groupId>org.operaton.bpm.springboot</groupId>
@@ -57,6 +57,17 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.operaton.commons</groupId>
+      <artifactId>operaton-commons-testing</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -18,7 +18,6 @@ package org.operaton.bpm.engine.impl.pvm.runtime.operation;
 
 import org.operaton.bpm.engine.delegate.ExecutionListener;
 import org.operaton.bpm.engine.impl.pvm.process.ScopeImpl;
-import org.operaton.bpm.engine.impl.pvm.runtime.Callback;
 import org.operaton.bpm.engine.impl.pvm.runtime.LegacyBehavior;
 import org.operaton.bpm.engine.impl.pvm.runtime.PvmExecutionImpl;
 
@@ -48,6 +47,7 @@ public class PvmAtomicOperationProcessStart extends AbstractPvmEventAtomicOperat
     return ExecutionListener.EVENTNAME_START;
   }
 
+  @Override
   protected PvmExecutionImpl eventNotificationsStarted(PvmExecutionImpl execution) {
 
     // restoring the starting flag in case this operation is executed
@@ -63,21 +63,15 @@ public class PvmAtomicOperationProcessStart extends AbstractPvmEventAtomicOperat
 
   protected void eventNotificationsCompleted(PvmExecutionImpl execution) {
 
-    execution.continueIfExecutionDoesNotAffectNextOperation(new Callback<>() {
-      @Override
-      public Void callback(PvmExecutionImpl execution) {
-        execution.dispatchEvent(null);
-        return null;
-      }
-    }, new Callback<>() {
-      @Override
-      public Void callback(PvmExecutionImpl execution) {
+    execution.continueIfExecutionDoesNotAffectNextOperation(execution1 -> {
+      execution1.dispatchEvent(null);
+      return null;
+    }, execution2 -> {
 
-        execution.setIgnoreAsync(true);
-        execution.performOperation(ACTIVITY_START_CREATE_SCOPE);
+      execution2.setIgnoreAsync(true);
+      execution2.performOperation(ACTIVITY_START_CREATE_SCOPE);
 
-        return null;
-      }
+      return null;
     }, execution);
 
   }

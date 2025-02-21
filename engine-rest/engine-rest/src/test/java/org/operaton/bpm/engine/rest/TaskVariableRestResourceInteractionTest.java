@@ -20,7 +20,6 @@ import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.TaskService;
 import org.operaton.bpm.engine.impl.TaskServiceImpl;
-import org.operaton.bpm.engine.impl.digest._apacheCommonsCodec.Base64;
 import org.operaton.bpm.engine.impl.util.IoUtil;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.exception.RestException;
@@ -271,7 +270,7 @@ public class TaskVariableRestResourceInteractionTest extends
     messageBodyJson.put("modifications", modifications);
 
     TaskServiceImpl taskService = mockTaskServiceImpl();
-    String message = "excpected exception";
+    String message = "expected exception";
     doThrow(new AuthorizationException(message)).when(taskService).updateVariables(any(), any(), any());
 
     given()
@@ -365,7 +364,7 @@ public class TaskVariableRestResourceInteractionTest extends
   }
 
   @Test
-  public void testGetSingleVariabledataNotBinary() {
+  public void testGetSingleVariableDataNotBinary() {
 
     when(taskServiceMock.getVariableTyped(anyString(), eq(EXAMPLE_VARIABLE_KEY), eq(false))).thenReturn(EXAMPLE_VARIABLE_VALUE);
 
@@ -445,7 +444,7 @@ public class TaskVariableRestResourceInteractionTest extends
   public void testNonExistingVariable() {
     String variableKey = "aVariableKey";
 
-    when(taskServiceMock.getVariable(eq(EXAMPLE_TASK_ID), eq(variableKey))).thenReturn(null);
+    when(taskServiceMock.getVariable(EXAMPLE_TASK_ID, variableKey)).thenReturn(null);
 
     given().pathParam("id", EXAMPLE_TASK_ID).pathParam("varId", variableKey)
       .header("accept", MediaType.APPLICATION_JSON)
@@ -474,7 +473,7 @@ public class TaskVariableRestResourceInteractionTest extends
   public void testGetSingleVariableThrowsAuthorizationException() {
     String variableKey = "aVariableKey";
 
-    String message = "excpected exception";
+    String message = "expected exception";
     when(taskServiceMock.getVariableTyped(anyString(), anyString(), anyBoolean())).thenThrow(new AuthorizationException(message));
 
     given()
@@ -1028,8 +1027,8 @@ public class TaskVariableRestResourceInteractionTest extends
     .when()
       .post(SINGLE_TASK_SINGLE_BINARY_VARIABLE_URL);
 
-    verify(taskServiceMock, never()).setVariable(eq(EXAMPLE_TASK_ID), eq(variableKey),
-        eq(serializable));
+    verify(taskServiceMock, never()).setVariable(EXAMPLE_TASK_ID, variableKey,
+        serializable);
   }
 
   @Test
@@ -1065,7 +1064,6 @@ public class TaskVariableRestResourceInteractionTest extends
   public void testPostSingleFileVariableWithMimeType() {
 
     byte[] value = "some text".getBytes();
-    String base64 = Base64.encodeBase64String(value);
     String variableKey = "aVariableKey";
     String filename = "test.txt";
     String mimetype = MediaType.TEXT_PLAIN;
@@ -1208,7 +1206,7 @@ public class TaskVariableRestResourceInteractionTest extends
       .then().expect().statusCode(Status.NO_CONTENT.getStatusCode())
       .when().delete(SINGLE_TASK_DELETE_SINGLE_VARIABLE_URL);
 
-    verify(taskServiceMock).removeVariable(eq(EXAMPLE_TASK_ID), eq(variableKey));
+    verify(taskServiceMock).removeVariable(EXAMPLE_TASK_ID, variableKey);
   }
 
   @Test
@@ -1216,7 +1214,7 @@ public class TaskVariableRestResourceInteractionTest extends
     String variableKey = "aVariableKey";
 
     doThrow(new ProcessEngineException("Cannot find task with id " + NON_EXISTING_ID))
-      .when(taskServiceMock).removeVariable(eq(NON_EXISTING_ID), eq(variableKey));
+      .when(taskServiceMock).removeVariable(NON_EXISTING_ID, variableKey);
 
     given().pathParam("id", NON_EXISTING_ID).pathParam("varId", variableKey)
       .header("accept", MediaType.APPLICATION_JSON)

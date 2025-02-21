@@ -246,10 +246,8 @@ public class TenantCommandChecker implements CommandChecker {
     String sourceTenant = processInstance.getTenantId();
     String targetTenant = targetProcessDefinition.getTenantId();
 
-    if (getTenantManager().isTenantCheckEnabled()) {
-      if (processInstance != null && !getTenantManager().isAuthenticatedTenant(processInstance.getTenantId())) {
-        throw LOG.exceptionCommandWithUnauthorizedTenant("migrate process instance '" + processInstance.getId() + "'");
-      }
+    if (getTenantManager().isTenantCheckEnabled() && !getTenantManager().isAuthenticatedTenant(processInstance.getTenantId())) {
+       throw LOG.exceptionCommandWithUnauthorizedTenant("migrate process instance '" + processInstance.getId() + "'");
     }
 
     if (targetTenant != null && (sourceTenant == null || !sourceTenant.equals(targetTenant))) {
@@ -550,18 +548,6 @@ public class TenantCommandChecker implements CommandChecker {
 
   @Override
   public void checkDeleteProperty() {
-  }
-
-  @Override
-  public void checkDeleteLicenseKey() {
-  }
-
-  @Override
-  public void checkSetLicenseKey() {
-  }
-
-  @Override
-  public void checkReadLicenseKey() {
   }
 
   @Override

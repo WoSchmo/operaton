@@ -24,12 +24,6 @@ import static org.operaton.bpm.engine.authorization.Permissions.DELETE;
 import static org.operaton.bpm.engine.authorization.Permissions.READ;
 import static org.operaton.bpm.engine.authorization.Permissions.UPDATE;
 import static org.operaton.bpm.engine.authorization.Resources.DEPLOYMENT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -173,21 +167,17 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
   @Test
   public void testCreateDeploymentWithoutAuthoriatzion() {
     // given
+    var deploymentBuilder = repositoryService
+        .createDeployment()
+        .addClasspathResource(FIRST_RESOURCE);
 
-    try {
-      // when
-      repositoryService
-          .createDeployment()
-          .addClasspathResource(FIRST_RESOURCE)
-          .deploy();
-      fail("Exception expected: It should not be possible to create a new deployment");
-    } catch (AuthorizationException e) {
+    // when
+    assertThatThrownBy(deploymentBuilder::deploy)
       // then
-      String message = e.getMessage();
-      testRule.assertTextPresent(userId, message);
-      testRule.assertTextPresent(CREATE.getName(), message);
-      testRule.assertTextPresent(DEPLOYMENT.resourceName(), message);
-    }
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining(userId)
+      .hasMessageContaining(CREATE.getName())
+      .hasMessageContaining(DEPLOYMENT.resourceName());
   }
 
   @Test
@@ -218,17 +208,13 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     // given
     String deploymentId = createDeployment(null);
 
-    try {
-      // when
-      repositoryService.deleteDeployment(deploymentId);
-      fail("Exception expected: it should not be possible to delete a deployment");
-    } catch (AuthorizationException e) {
+    // when
+    assertThatThrownBy(() -> repositoryService.deleteDeployment(deploymentId))
       // then
-      String message = e.getMessage();
-      testRule.assertTextPresent(userId, message);
-      testRule.assertTextPresent(DELETE.getName(), message);
-      testRule.assertTextPresent(DEPLOYMENT.resourceName(), message);
-    }
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining(userId)
+      .hasMessageContaining(DELETE.getName())
+      .hasMessageContaining(DEPLOYMENT.resourceName());
   }
 
   @Test
@@ -270,17 +256,13 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     // given
     String deploymentId = createDeployment(null);
 
-    try {
-      // when
-      repositoryService.getDeploymentResourceNames(deploymentId);
-      fail("Exception expected: it should not be possible to retrieve deployment resource names");
-    } catch (AuthorizationException e) {
+    // when
+    assertThatThrownBy(() -> repositoryService.getDeploymentResourceNames(deploymentId))
       // then
-      String message = e.getMessage();
-      testRule.assertTextPresent(userId, message);
-      testRule.assertTextPresent(READ.getName(), message);
-      testRule.assertTextPresent(DEPLOYMENT.resourceName(), message);
-    }
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining(userId)
+      .hasMessageContaining(READ.getName())
+      .hasMessageContaining(DEPLOYMENT.resourceName());
   }
 
   @Test
@@ -293,10 +275,11 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     List<String> names = repositoryService.getDeploymentResourceNames(deploymentId);
 
     // then
-    assertFalse(names.isEmpty());
-    assertEquals(2, names.size());
-    assertTrue(names.contains(FIRST_RESOURCE));
-    assertTrue(names.contains(SECOND_RESOURCE));
+    assertThat(names)
+            .isNotEmpty()
+            .hasSize(2)
+            .contains(FIRST_RESOURCE)
+            .contains(SECOND_RESOURCE);
   }
 
   @Test
@@ -309,10 +292,11 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     List<String> names = repositoryService.getDeploymentResourceNames(deploymentId);
 
     // then
-    assertFalse(names.isEmpty());
-    assertEquals(2, names.size());
-    assertTrue(names.contains(FIRST_RESOURCE));
-    assertTrue(names.contains(SECOND_RESOURCE));
+    assertThat(names)
+            .isNotEmpty()
+            .hasSize(2)
+            .contains(FIRST_RESOURCE)
+            .contains(SECOND_RESOURCE);
   }
 
   // get deployment resources //////////////////////////////////
@@ -322,17 +306,12 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     // given
     String deploymentId = createDeployment(null);
 
-    try {
-      // when
-      repositoryService.getDeploymentResources(deploymentId);
-      fail("Exception expected: it should not be possible to retrieve deployment resources");
-    } catch (AuthorizationException e) {
-      // then
-      String message = e.getMessage();
-      testRule.assertTextPresent(userId, message);
-      testRule.assertTextPresent(READ.getName(), message);
-      testRule.assertTextPresent(DEPLOYMENT.resourceName(), message);
-    }
+    // when
+    assertThatThrownBy(() -> repositoryService.getDeploymentResources(deploymentId))
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining(userId)
+      .hasMessageContaining(READ.getName())
+      .hasMessageContaining(DEPLOYMENT.resourceName());
   }
 
   @Test
@@ -345,8 +324,9 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     List<Resource> resources = repositoryService.getDeploymentResources(deploymentId);
 
     // then
-    assertFalse(resources.isEmpty());
-    assertEquals(2, resources.size());
+    assertThat(resources)
+            .isNotEmpty()
+            .hasSize(2);
   }
 
   @Test
@@ -359,8 +339,9 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     List<Resource> resources = repositoryService.getDeploymentResources(deploymentId);
 
     // then
-    assertFalse(resources.isEmpty());
-    assertEquals(2, resources.size());
+    assertThat(resources)
+            .isNotEmpty()
+            .hasSize(2);
   }
 
   // get resource as stream //////////////////////////////////
@@ -370,17 +351,11 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     // given
     String deploymentId = createDeployment(null);
 
-    try {
-      // when
-      repositoryService.getResourceAsStream(deploymentId, FIRST_RESOURCE);
-      fail("Exception expected: it should not be possible to retrieve a resource as stream");
-    } catch (AuthorizationException e) {
-      // then
-      String message = e.getMessage();
-      testRule.assertTextPresent(userId, message);
-      testRule.assertTextPresent(READ.getName(), message);
-      testRule.assertTextPresent(DEPLOYMENT.resourceName(), message);
-    }
+    assertThatThrownBy(() -> repositoryService.getResourceAsStream(deploymentId, FIRST_RESOURCE))
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining(userId)
+      .hasMessageContaining(READ.getName())
+      .hasMessageContaining(DEPLOYMENT.resourceName());
   }
 
   @Test
@@ -393,7 +368,7 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     InputStream stream = repositoryService.getResourceAsStream(deploymentId, FIRST_RESOURCE);
 
     // then
-    assertNotNull(stream);
+    assertThat(stream).isNotNull();
   }
 
   @Test
@@ -406,7 +381,7 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     InputStream stream = repositoryService.getResourceAsStream(deploymentId, FIRST_RESOURCE);
 
     // then
-    assertNotNull(stream);
+    assertThat(stream).isNotNull();
   }
 
   // get resource as stream by id//////////////////////////////////
@@ -421,17 +396,11 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     enableAuthorization();
     String resourceId = resources.get(0).getId();
 
-    try {
-      // when
-      repositoryService.getResourceAsStreamById(deploymentId, resourceId);
-      fail("Exception expected: it should not be possible to retrieve a resource as stream");
-    } catch (AuthorizationException e) {
-      // then
-      String message = e.getMessage();
-      testRule.assertTextPresent(userId, message);
-      testRule.assertTextPresent(READ.getName(), message);
-      testRule.assertTextPresent(DEPLOYMENT.resourceName(), message);
-    }
+    assertThatThrownBy(() -> repositoryService.getResourceAsStreamById(deploymentId, resourceId))
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining(userId)
+      .hasMessageContaining(READ.getName())
+      .hasMessageContaining(DEPLOYMENT.resourceName());
   }
 
   @Test
@@ -449,7 +418,7 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     InputStream stream = repositoryService.getResourceAsStreamById(deploymentId, resourceId);
 
     // then
-    assertNotNull(stream);
+    assertThat(stream).isNotNull();
   }
 
   @Test
@@ -467,7 +436,7 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
     InputStream stream = repositoryService.getResourceAsStreamById(deploymentId, resourceId);
 
     // then
-    assertNotNull(stream);
+    assertThat(stream).isNotNull();
   }
 
   // should create authorization /////////////////////////////////////
@@ -492,10 +461,10 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
       .singleResult();
 
     // then
-    assertNotNull(authorization);
-    assertTrue(authorization.isPermissionGranted(READ));
-    assertTrue(authorization.isPermissionGranted(DELETE));
-    assertFalse(authorization.isPermissionGranted(UPDATE));
+    assertThat(authorization).isNotNull();
+    assertThat(authorization.isPermissionGranted(READ)).isTrue();
+    assertThat(authorization.isPermissionGranted(DELETE)).isTrue();
+    assertThat(authorization.isPermissionGranted(UPDATE)).isFalse();
   }
 
   // clear authorization /////////////////////////////////////
@@ -517,13 +486,13 @@ public class DeploymentAuthorizationTest extends AuthorizationTest {
       .resourceId(deploymentId);
 
     Authorization authorization = query.singleResult();
-    assertNotNull(authorization);
+    assertThat(authorization).isNotNull();
 
     // when
     repositoryService.deleteDeployment(deploymentId);
 
     authorization = query.singleResult();
-    assertNull(authorization);
+    assertThat(authorization).isNull();
   }
 
   // register process application ///////////////////////////////////

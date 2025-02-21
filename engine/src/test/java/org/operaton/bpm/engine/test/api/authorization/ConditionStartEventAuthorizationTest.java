@@ -22,17 +22,18 @@ import static org.operaton.bpm.engine.authorization.Permissions.CREATE_INSTANCE;
 import static org.operaton.bpm.engine.authorization.Permissions.READ;
 import static org.operaton.bpm.engine.authorization.Resources.PROCESS_DEFINITION;
 import static org.operaton.bpm.engine.authorization.Resources.PROCESS_INSTANCE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.ProcessEngineException;
+import org.operaton.bpm.engine.runtime.ConditionEvaluationBuilder;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.test.Deployment;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ConditionStartEventAuthorizationTest extends AuthorizationTest {
 
@@ -57,7 +58,7 @@ public class ConditionStartEventAuthorizationTest extends AuthorizationTest {
         .evaluateStartConditions();
 
     // then
-    assertEquals(1, instances.size());
+    assertThat(instances).hasSize(1);
   }
 
   @Deployment(resources = { SINGLE_CONDITIONAL_XML })
@@ -69,16 +70,12 @@ public class ConditionStartEventAuthorizationTest extends AuthorizationTest {
     createGrantAuthorization(PROCESS_INSTANCE, ANY, userId, CREATE);
 
     // when
-    try {
-      runtimeService
-          .createConditionEvaluation()
-          .setVariable("foo", 42)
-          .evaluateStartConditions();
-      fail("expected exception");
-    } catch (ProcessEngineException e) {
-      assertTrue(e.getMessage().contains("No subscriptions were found during evaluation of the conditional start events."));
-    }
-
+    ConditionEvaluationBuilder evaluationBuilder = runtimeService
+        .createConditionEvaluation()
+        .setVariable("foo", 42);
+    assertThatThrownBy(evaluationBuilder::evaluateStartConditions)
+        .isInstanceOf(ProcessEngineException.class)
+        .hasMessageContaining("No subscriptions were found during evaluation of the conditional start events.");
   }
 
   @Deployment(resources = { SINGLE_CONDITIONAL_XML })
@@ -91,37 +88,30 @@ public class ConditionStartEventAuthorizationTest extends AuthorizationTest {
     createGrantAuthorization(PROCESS_INSTANCE, ANY, userId, CREATE);
 
     // when
-    try {
-      runtimeService
-          .createConditionEvaluation()
-          .setVariable("foo", 42)
-          .evaluateStartConditions();
-      fail("expected exception");
-    } catch (AuthorizationException e) {
-      assertTrue(e.getMessage().contains("The user with id 'test' does not have 'CREATE_INSTANCE' permission on resource 'conditionalEventProcess' of type 'ProcessDefinition'."));
-    }
-
+    ConditionEvaluationBuilder evaluationBuilder = runtimeService
+        .createConditionEvaluation()
+        .setVariable("foo", 42);
+    assertThatThrownBy(evaluationBuilder::evaluateStartConditions)
+        .isInstanceOf(AuthorizationException.class)
+        .hasMessageContaining("The user with id 'test' does not have 'CREATE_INSTANCE' permission on resource 'conditionalEventProcess' of type 'ProcessDefinition'.");
   }
 
+  @SuppressWarnings("GrazieInspection")
   @Deployment(resources = { SINGLE_CONDITIONAL_XML })
   @Test
-  public void testWithoutProcessInstanccePermission() {
+  public void testWithoutProcessInstancePermission() {
     // given deployed process with conditional start event
 
     // the user doesn't have CREATE permission for process instances
     createGrantAuthorization(PROCESS_DEFINITION, PROCESS_KEY, userId, READ, CREATE_INSTANCE);
 
     // when
-    try {
-      runtimeService
-          .createConditionEvaluation()
-          .setVariable("foo", 42)
-          .evaluateStartConditions();
-      fail("expected exception");
-    } catch (AuthorizationException e) {
-      assertTrue(e.getMessage().contains("The user with id 'test' does not have 'CREATE' permission on resource 'ProcessInstance'."));
-    }
-
+    var evaluationBuilder = runtimeService
+        .createConditionEvaluation()
+        .setVariable("foo", 42);
+    assertThatThrownBy(evaluationBuilder::evaluateStartConditions)
+        .isInstanceOf(AuthorizationException.class)
+        .hasMessageContaining("The user with id 'test' does not have 'CREATE' permission on resource 'ProcessInstance'.");
   }
 
   @Deployment(resources = { SINGLE_CONDITIONAL_XML })
@@ -134,14 +124,11 @@ public class ConditionStartEventAuthorizationTest extends AuthorizationTest {
     createGrantAuthorization(PROCESS_INSTANCE, ANY, userId, CREATE);
 
     // when
-    try {
-      runtimeService
-          .createConditionEvaluation()
-          .setVariable("foo", 42)
-          .evaluateStartConditions();
-      fail("expected exception");
-    } catch (ProcessEngineException e) {
-      assertTrue(e.getMessage().contains("No subscriptions were found during evaluation of the conditional start events."));
-    }
+    var evaluationBuilder = runtimeService
+        .createConditionEvaluation()
+        .setVariable("foo", 42);
+    assertThatThrownBy(evaluationBuilder::evaluateStartConditions)
+        .isInstanceOf(ProcessEngineException.class)
+        .hasMessageContaining("No subscriptions were found during evaluation of the conditional start events.");
   }
 }

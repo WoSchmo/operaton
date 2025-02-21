@@ -16,6 +16,8 @@
  */
 package org.operaton.bpm.application.impl.context;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -35,11 +37,10 @@ import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.delegate.BaseDelegateExecution;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.operaton.bpm.engine.impl.context.Context;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
+import static org.operaton.bpm.application.ProcessApplicationContext.withProcessApplicationContext;
+
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,110 +65,84 @@ public class ProcessApplicationContextTest extends PluggableProcessEngineTest {
 
   @Test
   public void testSetPAContextByName() throws ProcessApplicationUnavailableException {
-
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
 
     try {
       ProcessApplicationContext.setCurrentProcessApplication(pa.getName());
 
-      Assert.assertEquals(getCurrentContextApplication().getProcessApplication(), pa);
+      assertThat(pa).isEqualTo(getCurrentContextApplication().getProcessApplication());
     } finally {
       ProcessApplicationContext.clear();
     }
 
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
   }
 
   @Test
   public void testExecutionInPAContextByName() throws Exception {
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
 
-    ProcessApplicationReference contextPA = ProcessApplicationContext.withProcessApplicationContext(
-        new Callable<ProcessApplicationReference>() {
+    ProcessApplicationReference contextPA = withProcessApplicationContext(this::getCurrentContextApplication, pa.getName());
 
-          @Override
-          public ProcessApplicationReference call() throws Exception {
-            return getCurrentContextApplication();
-          }
-        },
-        pa.getName());
+    assertThat(pa).isEqualTo(contextPA.getProcessApplication());
 
-    Assert.assertEquals(contextPA.getProcessApplication(), pa);
-
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
   }
 
   @Test
   public void testSetPAContextByReference() throws ProcessApplicationUnavailableException {
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
 
     try {
       ProcessApplicationContext.setCurrentProcessApplication(pa.getReference());
 
-      Assert.assertEquals(getCurrentContextApplication().getProcessApplication(), pa);
+      assertThat(pa).isEqualTo(getCurrentContextApplication().getProcessApplication());
     } finally {
       ProcessApplicationContext.clear();
     }
 
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
   }
 
   @Test
   public void testExecutionInPAContextByReference() throws Exception {
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
 
-    ProcessApplicationReference contextPA = ProcessApplicationContext.withProcessApplicationContext(
-        new Callable<ProcessApplicationReference>() {
+    ProcessApplicationReference contextPA = withProcessApplicationContext(this::getCurrentContextApplication, pa.getReference());
 
-          @Override
-          public ProcessApplicationReference call() throws Exception {
-            return getCurrentContextApplication();
-          }
-        },
-        pa.getReference());
+    assertThat(pa).isEqualTo(contextPA.getProcessApplication());
 
-    Assert.assertEquals(contextPA.getProcessApplication(), pa);
-
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
   }
 
   @Test
   public void testSetPAContextByRawPA() throws ProcessApplicationUnavailableException {
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
 
     try {
       ProcessApplicationContext.setCurrentProcessApplication(pa);
 
-      Assert.assertEquals(pa, getCurrentContextApplication().getProcessApplication());
+      assertThat(getCurrentContextApplication().getProcessApplication()).isEqualTo(pa);
     } finally {
       ProcessApplicationContext.clear();
     }
 
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
   }
 
   @Test
-  public void testExecutionInPAContextbyRawPA() throws Exception {
-    Assert.assertNull(Context.getCurrentProcessApplication());
+  public void testExecutionInPAContextByRawPA() throws Exception {
+    assertThat(Context.getCurrentProcessApplication()).isNull();
 
-    ProcessApplicationReference contextPA = ProcessApplicationContext.withProcessApplicationContext(
-        new Callable<ProcessApplicationReference>() {
+    ProcessApplicationReference contextPA = withProcessApplicationContext(this::getCurrentContextApplication, pa);
 
-          @Override
-          public ProcessApplicationReference call() throws Exception {
-            return getCurrentContextApplication();
-          }
-        },
-        pa);
+    assertThat(pa).isEqualTo(contextPA.getProcessApplication());
 
-    Assert.assertEquals(contextPA.getProcessApplication(), pa);
-
-    Assert.assertNull(Context.getCurrentProcessApplication());
+    assertThat(Context.getCurrentProcessApplication()).isNull();
   }
 
   @Test
   public void testCannotSetUnregisteredProcessApplicationName() {
-
     String nonExistingName = pa.getName() + pa.getName();
 
     try {
@@ -187,25 +162,16 @@ public class ProcessApplicationContextTest extends PluggableProcessEngineTest {
   }
 
   @Test
-  public void testCannotExecuteInUnregisteredPaContext() throws Exception {
+  public void testCannotExecuteInUnregisteredPaContext() {
     String nonExistingName = pa.getName() + pa.getName();
+    Callable<Void> callable = () -> {
+      getCurrentContextApplication();
+      return null;
+    };
 
-    try {
-      ProcessApplicationContext.withProcessApplicationContext(new Callable<Void>() {
-
-        @Override
-        public Void call() throws Exception {
-          getCurrentContextApplication();
-          return null;
-        }
-
-      }, nonExistingName);
-      fail("should not succeed");
-
-    } catch (ProcessEngineException e) {
-      testRule.assertTextPresent("A process application with name '" + nonExistingName + "' is not registered", e.getMessage());
-    }
-
+    assertThatThrownBy(() -> withProcessApplicationContext(callable, nonExistingName))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("A process application with name '" + nonExistingName + "' is not registered");
   }
 
   @SuppressWarnings("unchecked")
@@ -229,13 +195,7 @@ public class ProcessApplicationContextTest extends PluggableProcessEngineTest {
 
   protected ProcessApplicationReference getCurrentContextApplication() {
     ProcessEngineConfigurationImpl engineConfiguration = (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();
-    return engineConfiguration.getCommandExecutorTxRequired().execute(new Command<ProcessApplicationReference>() {
-
-      @Override
-      public ProcessApplicationReference execute(CommandContext commandContext) {
-        return Context.getCurrentProcessApplication();
-      }
-    });
+    return engineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> Context.getCurrentProcessApplication());
   }
 
 }

@@ -39,7 +39,6 @@ import org.operaton.bpm.engine.impl.pvm.process.ScopeImpl;
 import org.operaton.bpm.engine.impl.pvm.process.TransitionImpl;
 import org.operaton.bpm.engine.impl.tree.ActivityStackCollector;
 import org.operaton.bpm.engine.impl.tree.FlowScopeWalker;
-import org.operaton.bpm.engine.impl.tree.ReferenceWalker;
 import org.operaton.bpm.engine.impl.util.EnsureUtil;
 import org.operaton.bpm.engine.runtime.ActivityInstance;
 import org.operaton.bpm.engine.variable.VariableMap;
@@ -55,7 +54,7 @@ public abstract class AbstractInstantiationCmd extends AbstractProcessInstanceMo
   protected VariableMap variablesLocal;
   protected String ancestorActivityInstanceId;
 
-  public AbstractInstantiationCmd(String processInstanceId, String ancestorActivityInstanceId) {
+  protected AbstractInstantiationCmd(String processInstanceId, String ancestorActivityInstanceId) {
     super(processInstanceId);
     this.ancestorActivityInstanceId = ancestorActivityInstanceId;
     this.variables = new VariableMapImpl();
@@ -84,6 +83,14 @@ public abstract class AbstractInstantiationCmd extends AbstractProcessInstanceMo
 
   public VariableMap getVariablesLocal() {
     return variablesLocal;
+  }
+
+  public String getAncestorActivityInstanceId() {
+    return ancestorActivityInstanceId;
+  }
+
+  public void setAncestorActivityInstanceId(String ancestorActivityInstanceId) {
+    this.ancestorActivityInstanceId = ancestorActivityInstanceId;
   }
 
   @Override
@@ -130,12 +137,7 @@ public abstract class AbstractInstantiationCmd extends AbstractProcessInstanceMo
     // if no explicit ancestor activity instance is set
     if (ancestorActivityInstanceId == null) {
       // walk until a scope is reached for which executions exist
-      walker.walkWhile(new ReferenceWalker.WalkCondition<ScopeImpl>() {
-        @Override
-        public boolean isFulfilled(ScopeImpl element) {
-          return !mapping.getExecutions(element).isEmpty() || element == processDefinition;
-        }
-      });
+      walker.walkWhile(element -> !mapping.getExecutions(element).isEmpty() || element == processDefinition);
 
       Set<ExecutionEntity> flowScopeExecutions = mapping.getExecutions(walker.getCurrentElement());
 
@@ -160,15 +162,10 @@ public abstract class AbstractInstantiationCmd extends AbstractProcessInstanceMo
       final PvmScope ancestorScope = getScopeForActivityInstance(processDefinition, ancestorInstance);
 
       // walk until the scope of the ancestor scope execution is reached
-      walker.walkWhile(new ReferenceWalker.WalkCondition<ScopeImpl>() {
-        @Override
-        public boolean isFulfilled(ScopeImpl element) {
-          return (
-              mapping.getExecutions(element).contains(ancestorScopeExecution)
+      walker.walkWhile(element -> (
+          mapping.getExecutions(element).contains(ancestorScopeExecution)
               && element == ancestorScope)
-            || element == processDefinition;
-        }
-      });
+          || element == processDefinition);
 
       Set<ExecutionEntity> flowScopeExecutions = mapping.getExecutions(walker.getCurrentElement());
 
@@ -291,7 +288,7 @@ public abstract class AbstractInstantiationCmd extends AbstractProcessInstanceMo
    */
   protected boolean supportsConcurrentChildInstantiation(ScopeImpl flowScope) {
     CoreActivityBehavior<?> behavior = flowScope.getActivityBehavior();
-    return behavior == null || !(behavior instanceof SequentialMultiInstanceActivityBehavior);
+    return !(behavior instanceof SequentialMultiInstanceActivityBehavior);
   }
 
   protected ExecutionEntity getSingleExecutionForScope(ActivityExecutionTreeMapping mapping, ScopeImpl scope) {
@@ -328,7 +325,6 @@ public abstract class AbstractInstantiationCmd extends AbstractProcessInstanceMo
       throw new ProcessEngineException("Cannot instantiate element " + targetElement);
     }
   }
-
 
   protected void instantiateConcurrent(ExecutionEntity ancestorScopeExecution, List<PvmActivity> parentFlowScopes, CoreModelElement targetElement) {
     if (PvmTransition.class.isAssignableFrom(targetElement.getClass())) {

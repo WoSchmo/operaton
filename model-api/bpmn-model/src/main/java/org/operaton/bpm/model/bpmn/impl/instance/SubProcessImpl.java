@@ -29,7 +29,6 @@ import org.operaton.bpm.model.xml.type.child.SequenceBuilder;
 import java.util.Collection;
 
 import static org.operaton.bpm.model.bpmn.impl.BpmnModelConstants.*;
-import static org.operaton.bpm.model.xml.type.ModelElementTypeBuilder.ModelTypeInstanceProvider;
 
 /**
  * The BPMN subProcess element
@@ -50,12 +49,7 @@ public class SubProcessImpl extends ActivityImpl implements SubProcess {
     ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(SubProcess.class, BPMN_ELEMENT_SUB_PROCESS)
       .namespaceUri(BPMN20_NS)
       .extendsType(Activity.class)
-      .instanceProvider(new ModelTypeInstanceProvider<SubProcess>() {
-      @Override
-      public SubProcess newInstance(ModelTypeInstanceContext instanceContext) {
-          return new SubProcessImpl(instanceContext);
-        }
-      });
+      .instanceProvider(SubProcessImpl::new);
 
     triggeredByEventAttribute = typeBuilder.booleanAttribute(BPMN_ATTRIBUTE_TRIGGERED_BY_EVENT)
       .defaultValue(false)
@@ -121,7 +115,7 @@ public class SubProcessImpl extends ActivityImpl implements SubProcess {
   /**
    * @deprecated use isOperatonAsyncBefore() instead.
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   @Override
   public boolean isOperatonAsync() {
     return operatonAsyncAttribute.getValue(this);
@@ -130,7 +124,7 @@ public class SubProcessImpl extends ActivityImpl implements SubProcess {
   /**
    * @deprecated use setOperatonAsyncBefore(isOperatonAsyncBefore) instead.
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   @Override
   public void setOperatonAsync(boolean isOperatonAsync) {
     operatonAsyncAttribute.setValue(this, isOperatonAsync);

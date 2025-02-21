@@ -89,7 +89,7 @@ public class RestIT extends AbstractWebIntegrationTest {
       if (definitionJson.getString("key").equals("ReviewInvoice")) {
         assertEquals("http://bpmn.io/schema/bpmn", definitionJson.getString("category"));
         assertEquals("Review Invoice", definitionJson.getString("name"));
-        assertTrue(definitionJson.getString("resource").equals("reviewInvoice.bpmn"));
+        assertEquals("reviewInvoice.bpmn", definitionJson.getString("resource"));
       } else if (definitionJson.getString("key").equals("invoice")) {
         assertEquals("http://www.omg.org/spec/BPMN/20100524/MODEL", definitionJson.getString("category"));
         assertEquals("Invoice Receipt", definitionJson.getString("name"));
@@ -272,7 +272,7 @@ public class RestIT extends AbstractWebIntegrationTest {
   }
 
   @Test
-  public void testEmptyBodyFilterIsActive() throws JSONException {
+  public void testEmptyBodyFilterIsActive() {
     ClientResponse response = client.resource(appBasePath + FILTER_PATH + "/create").accept(MediaType.APPLICATION_JSON)
       .entity(null, MediaType.APPLICATION_JSON_TYPE)
       .post(ClientResponse.class);
@@ -320,7 +320,8 @@ public class RestIT extends AbstractWebIntegrationTest {
 
     if (postSupported) {
       // test POST request
-      response = resource.accept(acceptMediaTypes).entity(Collections.EMPTY_MAP, MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class);
+      response =
+        resource.accept(acceptMediaTypes).entity(Collections.emptyMap(), MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class);
       assertMediaType(response, expectedMediaType);
       response.close();
     }
@@ -330,7 +331,7 @@ public class RestIT extends AbstractWebIntegrationTest {
     MediaType actual = response.getType();
     assertEquals(200, response.getStatus());
     // use startsWith cause sometimes server also returns quality parameters (e.g. websphere/wink)
-    assertTrue("Expected: " + expected + " Actual: " + actual, actual.toString().startsWith(expected.toString()));
+    assertTrue("Expected: " + expected + " Actual: " + actual, actual.toString().startsWith(expected));
   }
 
 }

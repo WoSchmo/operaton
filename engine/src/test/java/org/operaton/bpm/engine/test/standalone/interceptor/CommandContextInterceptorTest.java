@@ -16,11 +16,8 @@
  */
 package org.operaton.bpm.engine.test.standalone.interceptor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.operaton.bpm.engine.ProcessEngineConfiguration;
 import org.operaton.bpm.engine.impl.context.Context;
@@ -40,12 +37,10 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
 
   @Test
   public void testCommandContextGetCurrentAfterException() {
+    var commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
     try {
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-        @Override
-        public Object execute(CommandContext commandContext) {
-          throw new IllegalStateException("here i come!");
-        }
+      commandExecutor.execute(commandContext -> {
+        throw new IllegalStateException("here i come!");
       });
 
       fail("expected exception");
@@ -53,56 +48,48 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
       // OK
     }
 
-    assertNull(Context.getCommandContext());
+    assertThat(Context.getCommandContext()).isNull();
   }
 
   @Test
   public void testCommandContextNestedFailingCommands() {
     final ExceptionThrowingCmd innerCommand1 = new ExceptionThrowingCmd(new IdentifiableRuntimeException(1));
     final ExceptionThrowingCmd innerCommand2 = new ExceptionThrowingCmd(new IdentifiableRuntimeException(2));
+    var commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
 
     try {
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-        @Override
-        public Object execute(CommandContext commandContext) {
-          CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutorTxRequired();
+      commandExecutor.execute(commandContext -> {
+        commandExecutor.execute(innerCommand1);
+        commandExecutor.execute(innerCommand2);
 
-          commandExecutor.execute(innerCommand1);
-          commandExecutor.execute(innerCommand2);
-
-          return null;
-        }
+        return null;
       });
 
       fail("Exception expected");
     } catch (IdentifiableRuntimeException e) {
-      assertEquals(1, e.id);
+      assertThat(e.id).isEqualTo(1);
     }
 
-    assertTrue(innerCommand1.executed);
-    assertFalse(innerCommand2.executed);
+    assertThat(innerCommand1.executed).isTrue();
+    assertThat(innerCommand2.executed).isFalse();
   }
 
   @Test
   public void testCommandContextNestedTryCatch() {
     final ExceptionThrowingCmd innerCommand = new ExceptionThrowingCmd(new IdentifiableRuntimeException(1));
 
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-        CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutorTxRequired();
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutorTxRequired();
 
-        try {
-          commandExecutor.execute(innerCommand);
-          fail("exception expected to pop up during execution of inner command");
-        } catch (IdentifiableRuntimeException e) {
-          // happy path
-          assertNull("the exception should not have been propagated to this command's context",
-              Context.getCommandInvocationContext().getThrowable());
-        }
-
-        return null;
+      try {
+        commandExecutor.execute(innerCommand);
+        fail("exception expected to pop up during execution of inner command");
+      } catch (IdentifiableRuntimeException e) {
+        // happy path
+        assertThat(Context.getCommandInvocationContext().getThrowable()).as("the exception should not have been propagated to this command's context").isNull();
       }
+
+      return null;
     });
   }
 
@@ -119,14 +106,12 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
    testRule.deploy(modelInstance);
 
     boolean errorThrown = false;
+    var commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
     try {
-      processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Object>() {
-        @Override
-        public Object execute(CommandContext commandContext) {
+      commandExecutor.execute(commandContext -> {
 
-          runtimeService.startProcessInstanceByKey("processThrowingThrowable");
-          return null;
-        }
+        runtimeService.startProcessInstanceByKey("processThrowingThrowable");
+        return null;
       });
       fail("Exception expected");
     } catch (StackOverflowError t) {
@@ -134,11 +119,11 @@ public class CommandContextInterceptorTest extends PluggableProcessEngineTest {
       errorThrown = true;
     }
 
-    assertTrue(ThrowErrorJavaDelegate.executed);
-    assertTrue(errorThrown);
+    assertThat(ThrowErrorJavaDelegate.executed).isTrue();
+    assertThat(errorThrown).isTrue();
 
     // Check data base consistency
-    assertEquals(0, historyService.createHistoricProcessInstanceQuery().count());
+    assertThat(historyService.createHistoricProcessInstanceQuery().count()).isZero();
   }
 
   protected class ExceptionThrowingCmd implements Command<Void> {

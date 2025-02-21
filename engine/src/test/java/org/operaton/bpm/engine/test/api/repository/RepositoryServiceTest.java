@@ -28,11 +28,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.assertj.core.groups.Tuple;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -86,15 +84,9 @@ import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  * @author Frederik Heremans
@@ -130,7 +122,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     deployedResource.read(deployedBytes);
 
     for (int i = 0; i < utf8Bytes.length; i++) {
-      assertEquals(utf8Bytes[i], deployedBytes[i]);
+      assertThat(deployedBytes[i]).isEqualTo(utf8Bytes[i]);
     }
   }
 
@@ -175,11 +167,11 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   @Test
   public void testStartProcessInstanceById() {
     List<ProcessDefinition> processDefinitions = repositoryService.createProcessDefinitionQuery().list();
-    assertEquals(1, processDefinitions.size());
+    assertThat(processDefinitions).hasSize(1);
 
     ProcessDefinition processDefinition = processDefinitions.get(0);
-    assertEquals("oneTaskProcess", processDefinition.getKey());
-    assertNotNull(processDefinition.getId());
+    assertThat(processDefinition.getKey()).isEqualTo("oneTaskProcess");
+    assertThat(processDefinition.getId()).isNotNull();
   }
 
   @Deployment(resources={
@@ -187,30 +179,31 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   @Test
   public void testFindProcessDefinitionById() {
     List<ProcessDefinition> definitions = repositoryService.createProcessDefinitionQuery().list();
-    assertEquals(1, definitions.size());
+    assertThat(definitions).hasSize(1);
 
     ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(definitions.get(0).getId()).singleResult();
     runtimeService.startProcessInstanceByKey("oneTaskProcess");
-    assertNotNull(processDefinition);
-    assertEquals("oneTaskProcess", processDefinition.getKey());
-    assertEquals("The One Task Process", processDefinition.getName());
+    assertThat(processDefinition).isNotNull();
+    assertThat(processDefinition.getKey()).isEqualTo("oneTaskProcess");
+    assertThat(processDefinition.getName()).isEqualTo("The One Task Process");
 
     processDefinition = repositoryService.getProcessDefinition(definitions.get(0).getId());
-    assertEquals("This is a process for testing purposes", processDefinition.getDescription());
+    assertThat(processDefinition.getDescription()).isEqualTo("This is a process for testing purposes");
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml" })
   @Test
   public void testDeleteDeploymentWithRunningInstances() {
     List<ProcessDefinition> processDefinitions = repositoryService.createProcessDefinitionQuery().list();
-    assertEquals(1, processDefinitions.size());
+    assertThat(processDefinitions).hasSize(1);
     ProcessDefinition processDefinition = processDefinitions.get(0);
+    var deploymentId = processDefinition.getDeploymentId();
 
     runtimeService.startProcessInstanceById(processDefinition.getId());
 
     // Try to delete the deployment
     try {
-      repositoryService.deleteDeployment(processDefinition.getDeploymentId());
+      repositoryService.deleteDeployment(deploymentId);
       fail("Exception expected");
     } catch (ProcessEngineException pex) {
       // Exception expected when deleting deployment with running process
@@ -230,7 +223,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     runtimeService.startProcessInstanceByKey("testProcess");
 
     repositoryService.deleteDeployment(deploymentId, true, false);
-    assertEquals(1, TestExecutionListener.collectedEvents.size());
+    assertThat(TestExecutionListener.collectedEvents).hasSize(1);
     TestExecutionListener.reset();
 
     deploymentId = deploymentBuilder.deploy().getId();
@@ -238,7 +231,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     runtimeService.startProcessInstanceByKey("testProcess");
 
     repositoryService.deleteDeployment(deploymentId, true, true);
-    assertTrue(TestExecutionListener.collectedEvents.isEmpty());
+    assertThat(TestExecutionListener.collectedEvents).isEmpty();
     TestExecutionListener.reset();
 
   }
@@ -257,7 +250,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     RecorderTaskListener.getRecordedEvents().clear();
 
     repositoryService.deleteDeployment(deploymentId, true, false);
-    assertEquals(1, RecorderTaskListener.getRecordedEvents().size());
+    assertThat(RecorderTaskListener.getRecordedEvents()).hasSize(1);
     RecorderTaskListener.clear();
 
     deploymentId = deploymentBuilder.deploy().getId();
@@ -265,7 +258,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     runtimeService.startProcessInstanceByKey("testProcess");
 
     repositoryService.deleteDeployment(deploymentId, true, true);
-    assertTrue(RecorderTaskListener.getRecordedEvents().isEmpty());
+    assertThat(RecorderTaskListener.getRecordedEvents()).isEmpty();
     RecorderTaskListener.clear();
   }
 
@@ -278,11 +271,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     runtimeService.startProcessInstanceByKey("ioMappingProcess");
 
     // Try to delete the deployment
-    try {
-      repositoryService.deleteDeployment(deploymentId, true, false, true);
-    } catch (Exception e) {
-      throw new ProcessEngineException("Exception is not expected when deleting deployment with running process", e);
-    }
+    assertDoesNotThrow(() -> repositoryService.deleteDeployment(deploymentId, true, false, true));
   }
 
   @Test
@@ -330,7 +319,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   @Test
   public void testDeleteDeploymentCascadeWithRunningInstances() {
     List<ProcessDefinition> processDefinitions = repositoryService.createProcessDefinitionQuery().list();
-    assertEquals(1, processDefinitions.size());
+    assertThat(processDefinitions).hasSize(1);
     ProcessDefinition processDefinition = processDefinitions.get(0);
 
     runtimeService.startProcessInstanceById(processDefinition.getId());
@@ -355,19 +344,19 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     DeploymentCache deploymentCache = processEngineConfiguration.getDeploymentCache();
 
     // ensure definitions and models are part of the cache
-    assertNotNull(deploymentCache.getProcessDefinitionCache().get(processDefinitionId));
-    assertNotNull(deploymentCache.getBpmnModelInstanceCache().get(processDefinitionId));
-    assertNotNull(deploymentCache.getCaseDefinitionCache().get(caseDefinitionId));
-    assertNotNull(deploymentCache.getCmmnModelInstanceCache().get(caseDefinitionId));
+    assertThat(deploymentCache.getProcessDefinitionCache().get(processDefinitionId)).isNotNull();
+    assertThat(deploymentCache.getBpmnModelInstanceCache().get(processDefinitionId)).isNotNull();
+    assertThat(deploymentCache.getCaseDefinitionCache().get(caseDefinitionId)).isNotNull();
+    assertThat(deploymentCache.getCmmnModelInstanceCache().get(caseDefinitionId)).isNotNull();
 
     // when the deployment is deleted
     repositoryService.deleteDeployment(deploymentId, true);
 
     // then the definitions and models are removed from the cache
-    assertNull(deploymentCache.getProcessDefinitionCache().get(processDefinitionId));
-    assertNull(deploymentCache.getBpmnModelInstanceCache().get(processDefinitionId));
-    assertNull(deploymentCache.getCaseDefinitionCache().get(caseDefinitionId));
-    assertNull(deploymentCache.getCmmnModelInstanceCache().get(caseDefinitionId));
+    assertThat(deploymentCache.getProcessDefinitionCache().get(processDefinitionId)).isNull();
+    assertThat(deploymentCache.getBpmnModelInstanceCache().get(processDefinitionId)).isNull();
+    assertThat(deploymentCache.getCaseDefinitionCache().get(caseDefinitionId)).isNull();
+    assertThat(deploymentCache.getCmmnModelInstanceCache().get(caseDefinitionId)).isNull();
   }
 
   @Test
@@ -405,15 +394,15 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
             .activateProcessDefinitionsOn(inThreeDays)
             .deploy();
 
-    assertEquals(1, repositoryService.createDeploymentQuery().count());
-    assertEquals(2, repositoryService.createProcessDefinitionQuery().count());
-    assertEquals(2, repositoryService.createProcessDefinitionQuery().suspended().count());
-    assertEquals(0, repositoryService.createProcessDefinitionQuery().active().count());
+    assertThat(repositoryService.createDeploymentQuery().count()).isEqualTo(1);
+    assertThat(repositoryService.createProcessDefinitionQuery().count()).isEqualTo(2);
+    assertThat(repositoryService.createProcessDefinitionQuery().suspended().count()).isEqualTo(2);
+    assertThat(repositoryService.createProcessDefinitionQuery().active().count()).isZero();
 
     // Shouldn't be able to start a process instance
     try {
       runtimeService.startProcessInstanceByKey("oneTaskProcess");
-      fail();
+      fail("");
     } catch (ProcessEngineException e) {
       testRule.assertTextPresentIgnoreCase("suspended", e.getMessage());
     }
@@ -422,14 +411,14 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     managementService.executeJob(jobs.get(0).getId());
     managementService.executeJob(jobs.get(1).getId());
 
-    assertEquals(1, repositoryService.createDeploymentQuery().count());
-    assertEquals(2, repositoryService.createProcessDefinitionQuery().count());
-    assertEquals(0, repositoryService.createProcessDefinitionQuery().suspended().count());
-    assertEquals(2, repositoryService.createProcessDefinitionQuery().active().count());
+    assertThat(repositoryService.createDeploymentQuery().count()).isEqualTo(1);
+    assertThat(repositoryService.createProcessDefinitionQuery().count()).isEqualTo(2);
+    assertThat(repositoryService.createProcessDefinitionQuery().suspended().count()).isZero();
+    assertThat(repositoryService.createProcessDefinitionQuery().active().count()).isEqualTo(2);
 
     // Should be able to start process instance
     runtimeService.startProcessInstanceByKey("oneTaskProcess");
-    assertEquals(1, runtimeService.createProcessInstanceQuery().count());
+    assertThat(runtimeService.createProcessInstanceQuery().count()).isEqualTo(1);
 
     // Cleanup
     repositoryService.deleteDeployment(deployment.getId(), true);
@@ -448,20 +437,20 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
             .activateProcessDefinitionsOn(inThreeDays)
             .deploy();
 
-    assertEquals(1, repositoryService.createDeploymentQuery().count());
+    assertThat(repositoryService.createDeploymentQuery().count()).isEqualTo(1);
 
-    assertEquals(1, repositoryService.createProcessDefinitionQuery().count());
-    assertEquals(1, repositoryService.createProcessDefinitionQuery().suspended().count());
-    assertEquals(0, repositoryService.createProcessDefinitionQuery().active().count());
+    assertThat(repositoryService.createProcessDefinitionQuery().count()).isEqualTo(1);
+    assertThat(repositoryService.createProcessDefinitionQuery().suspended().count()).isEqualTo(1);
+    assertThat(repositoryService.createProcessDefinitionQuery().active().count()).isZero();
 
-    assertEquals(1, managementService.createJobDefinitionQuery().count());
-    assertEquals(1, managementService.createJobDefinitionQuery().suspended().count());
-    assertEquals(0, managementService.createJobDefinitionQuery().active().count());
+    assertThat(managementService.createJobDefinitionQuery().count()).isEqualTo(1);
+    assertThat(managementService.createJobDefinitionQuery().suspended().count()).isEqualTo(1);
+    assertThat(managementService.createJobDefinitionQuery().active().count()).isZero();
 
     // Shouldn't be able to start a process instance
     try {
       runtimeService.startProcessInstanceByKey("oneTaskProcess");
-      fail();
+      fail("");
     } catch (ProcessEngineException e) {
       testRule.assertTextPresentIgnoreCase("suspended", e.getMessage());
     }
@@ -469,19 +458,19 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     Job job = managementService.createJobQuery().singleResult();
     managementService.executeJob(job.getId());
 
-    assertEquals(1, repositoryService.createDeploymentQuery().count());
+    assertThat(repositoryService.createDeploymentQuery().count()).isEqualTo(1);
 
-    assertEquals(1, repositoryService.createProcessDefinitionQuery().count());
-    assertEquals(0, repositoryService.createProcessDefinitionQuery().suspended().count());
-    assertEquals(1, repositoryService.createProcessDefinitionQuery().active().count());
+    assertThat(repositoryService.createProcessDefinitionQuery().count()).isEqualTo(1);
+    assertThat(repositoryService.createProcessDefinitionQuery().suspended().count()).isZero();
+    assertThat(repositoryService.createProcessDefinitionQuery().active().count()).isEqualTo(1);
 
-    assertEquals(1, managementService.createJobDefinitionQuery().count());
-    assertEquals(0, managementService.createJobDefinitionQuery().suspended().count());
-    assertEquals(1, managementService.createJobDefinitionQuery().active().count());
+    assertThat(managementService.createJobDefinitionQuery().count()).isEqualTo(1);
+    assertThat(managementService.createJobDefinitionQuery().suspended().count()).isZero();
+    assertThat(managementService.createJobDefinitionQuery().active().count()).isEqualTo(1);
 
     // Should be able to start process instance
     runtimeService.startProcessInstanceByKey("oneTaskProcess");
-    assertEquals(1, runtimeService.createProcessInstanceQuery().count());
+    assertThat(runtimeService.createProcessInstanceQuery().count()).isEqualTo(1);
 
     // Cleanup
     repositoryService.deleteDeployment(deployment.getId(), true);
@@ -492,9 +481,10 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   public void testGetResourceAsStreamUnexistingResourceInExistingDeployment() {
     // Get hold of the deployment id
     org.operaton.bpm.engine.repository.Deployment deployment = repositoryService.createDeploymentQuery().singleResult();
+    var deploymentId = deployment.getId();
 
     try {
-      repositoryService.getResourceAsStream(deployment.getId(), "org/operaton/bpm/engine/test/api/unexistingProcess.bpmn.xml");
+      repositoryService.getResourceAsStream(deploymentId, "org/operaton/bpm/engine/test/api/unexistingProcess.bpmn.xml");
       fail("ProcessEngineException expected");
     } catch (ProcessEngineException ae) {
       testRule.assertTextPresent("no resource found with name", ae.getMessage());
@@ -541,8 +531,8 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     CaseDefinition definition = repositoryService.getCaseDefinition(caseDefinitionId);
 
-    assertNotNull(definition);
-    assertEquals(caseDefinitionId, definition.getId());
+    assertThat(definition).isNotNull();
+    assertThat(definition.getId()).isEqualTo(caseDefinitionId);
   }
 
   @Test
@@ -555,7 +545,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     try {
       repositoryService.getCaseDefinition(null);
-      fail();
+      fail("");
     } catch (NotValidException e) {
       testRule.assertTextPresent("caseDefinitionId is null", e.getMessage());
     }
@@ -571,12 +561,12 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     InputStream caseModel = repositoryService.getCaseModel(caseDefinitionId);
 
-    assertNotNull(caseModel);
+    assertThat(caseModel).isNotNull();
 
     byte[] readInputStream = IoUtil.readInputStream(caseModel, "caseModel");
     String model = new String(readInputStream, UTF_8);
 
-    assertTrue(model.contains("<case id=\"one\" name=\"One\">"));
+    assertThat(model).contains("<case id=\"one\" name=\"One\">");
 
     IoUtil.closeSilently(caseModel);
   }
@@ -591,7 +581,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     try {
       repositoryService.getCaseModel(null);
-      fail();
+      fail("");
     } catch (NotValidException e) {
       testRule.assertTextPresent("caseDefinitionId is null", e.getMessage());
     }
@@ -607,22 +597,22 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     DecisionDefinition definition = repositoryService.getDecisionDefinition(decisionDefinitionId);
 
-    assertNotNull(definition);
-    assertEquals(decisionDefinitionId, definition.getId());
+    assertThat(definition).isNotNull();
+    assertThat(definition.getId()).isEqualTo(decisionDefinitionId);
   }
 
   @Test
   public void testGetDecisionDefinitionByInvalidId() {
     try {
       repositoryService.getDecisionDefinition("invalid");
-      fail();
+      fail("");
     } catch (NotFoundException e) {
       testRule.assertTextPresent("no deployed decision definition found with id 'invalid'", e.getMessage());
     }
 
     try {
       repositoryService.getDecisionDefinition(null);
-      fail();
+      fail("");
     } catch (NotValidException e) {
       testRule.assertTextPresent("decisionDefinitionId is null", e.getMessage());
     }
@@ -638,22 +628,22 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     DecisionRequirementsDefinition definition = repositoryService.getDecisionRequirementsDefinition(decisionRequirementsDefinitionId);
 
-    assertNotNull(definition);
-    assertEquals(decisionRequirementsDefinitionId, definition.getId());
+    assertThat(definition).isNotNull();
+    assertThat(definition.getId()).isEqualTo(decisionRequirementsDefinitionId);
   }
 
   @Test
   public void testGetDecisionRequirementsDefinitionByInvalidId() {
     try {
       repositoryService.getDecisionRequirementsDefinition("invalid");
-      fail();
+      fail("");
     } catch (Exception e) {
       testRule.assertTextPresent("no deployed decision requirements definition found with id 'invalid'", e.getMessage());
     }
 
     try {
       repositoryService.getDecisionRequirementsDefinition(null);
-      fail();
+      fail("");
     } catch (NotValidException e) {
       testRule.assertTextPresent("decisionRequirementsDefinitionId is null", e.getMessage());
     }
@@ -669,12 +659,12 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     InputStream decisionModel = repositoryService.getDecisionModel(decisionDefinitionId);
 
-    assertNotNull(decisionModel);
+    assertThat(decisionModel).isNotNull();
 
     byte[] readInputStream = IoUtil.readInputStream(decisionModel, "decisionModel");
     String model = new String(readInputStream, UTF_8);
 
-    assertTrue(model.contains("<decision id=\"one\" name=\"One\">"));
+    assertThat(model).contains("<decision id=\"one\" name=\"One\">");
 
     IoUtil.closeSilently(decisionModel);
   }
@@ -689,7 +679,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     try {
       repositoryService.getDecisionModel(null);
-      fail();
+      fail("");
     } catch (NotValidException e) {
       testRule.assertTextPresent("decisionDefinitionId is null", e.getMessage());
     }
@@ -705,12 +695,12 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     InputStream decisionRequirementsModel = repositoryService.getDecisionRequirementsModel(decisionRequirementsDefinitionId);
 
-    assertNotNull(decisionRequirementsModel);
+    assertThat(decisionRequirementsModel).isNotNull();
 
     byte[] readInputStream = IoUtil.readInputStream(decisionRequirementsModel, "decisionRequirementsModel");
     String model = new String(readInputStream, UTF_8);
 
-    assertTrue(model.contains("<definitions id=\"dish\" name=\"Dish\" namespace=\"test-drg\""));
+    assertThat(model).contains("<definitions id=\"dish\" name=\"Dish\" namespace=\"test-drg\"");
     IoUtil.closeSilently(decisionRequirementsModel);
   }
 
@@ -724,7 +714,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     try {
       repositoryService.getDecisionRequirementsModel(null);
-      fail();
+      fail("");
     } catch (NotValidException e) {
       testRule.assertTextPresent("decisionRequirementsDefinitionId is null", e.getMessage());
     }
@@ -742,7 +732,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     InputStream actualDrd = repositoryService.getDecisionRequirementsDiagram(decisionRequirementsDefinitionId);
 
-    assertNotNull(actualDrd);
+    assertThat(actualDrd).isNotNull();
   }
 
   @Test
@@ -794,12 +784,12 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     String processDefinitionId = repositoryService2.createProcessDefinitionQuery().singleResult().getId();
     runtimeService2.startProcessInstanceById(processDefinitionId);
     Task task = taskService2.createTaskQuery().singleResult();
-    assertEquals("original task", task.getName());
+    assertThat(task.getName()).isEqualTo("original task");
 
     // Delete the deployment on second process engine
     repositoryService2.deleteDeployment(deploymentId, true);
-    assertEquals(0, repositoryService2.createDeploymentQuery().count());
-    assertEquals(0, runtimeService2.createProcessInstanceQuery().count());
+    assertThat(repositoryService2.createDeploymentQuery().count()).isZero();
+    assertThat(runtimeService2.createProcessInstanceQuery().count()).isZero();
 
     // deploy a revised version of the process: start->revisedTask->end on first process engine
     //
@@ -816,7 +806,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     processDefinitionId = repositoryService2.createProcessDefinitionQuery().singleResult().getId();
     runtimeService2.startProcessInstanceByKey("oneTaskProcess");
     task = taskService2.createTaskQuery().singleResult();
-    assertEquals("revised task", task.getName());
+    assertThat(task.getName()).isEqualTo("revised task");
 
     // cleanup
     repositoryService1.deleteDeployment(deploymentId, true);
@@ -835,24 +825,24 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     List<org.operaton.bpm.engine.repository.Deployment> deployments
       = repositoryService.createDeploymentQuery().list();
-    assertEquals(1, deployments.size());
+    assertThat(deployments).hasSize(1);
     deployment = deployments.get(0);
 
-    assertEquals("strings", deployment.getName());
-    assertNotNull(deployment.getDeploymentTime());
+    assertThat(deployment.getName()).isEqualTo("strings");
+    assertThat(deployment.getDeploymentTime()).isNotNull();
 
     String deploymentId = deployment.getId();
     List<String> resourceNames = repositoryService.getDeploymentResourceNames(deploymentId);
     Set<String> expectedResourceNames = new HashSet<>();
     expectedResourceNames.add("org/operaton/bpm/engine/test/test/HelloWorld.string");
     expectedResourceNames.add("org/operaton/bpm/engine/test/test/TheAnswer.string");
-    assertEquals(expectedResourceNames, new HashSet<>(resourceNames));
+    assertThat(new HashSet<>(resourceNames)).isEqualTo(expectedResourceNames);
 
     InputStream resourceStream = repositoryService.getResourceAsStream(deploymentId, "org/operaton/bpm/engine/test/test/HelloWorld.string");
-    assertTrue(Arrays.equals("hello world".getBytes(), IoUtil.readInputStream(resourceStream, "test")));
+    assertThat(IoUtil.readInputStream(resourceStream, "test")).containsExactly("hello world".getBytes());
 
     resourceStream = repositoryService.getResourceAsStream(deploymentId, "org/operaton/bpm/engine/test/test/TheAnswer.string");
-    assertTrue(Arrays.equals("42".getBytes(), IoUtil.readInputStream(resourceStream, "test")));
+    assertThat(IoUtil.readInputStream(resourceStream, "test")).containsExactly("42".getBytes());
 
     repositoryService.deleteDeployment(deploymentId);
   }
@@ -870,7 +860,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
       .createProcessDefinitionQuery()
       .list();
 
-    assertEquals(2, processDefinitions.size());
+    assertThat(processDefinitions).hasSize(2);
 
     repositoryService.deleteDeployment(deploymentId);
   }
@@ -889,7 +879,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     //then
     decisionDefinition = findOnlyDecisionDefinition();
-    assertEquals(6, decisionDefinition.getHistoryTimeToLive().intValue());
+    assertThat(decisionDefinition.getHistoryTimeToLive().intValue()).isEqualTo(6);
 
     UserOperationLogQuery operationLogQuery = historyService.createUserOperationLogQuery()
       .operationType(UserOperationLogEntry.OPERATION_TYPE_UPDATE_HISTORY_TIME_TO_LIVE)
@@ -899,18 +889,18 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     UserOperationLogEntry definitionIdEntry = operationLogQuery.property("decisionDefinitionId").singleResult();
     UserOperationLogEntry definitionKeyEntry = operationLogQuery.property("decisionDefinitionKey").singleResult();
 
-    assertNotNull(ttlEntry);
-    assertNotNull(definitionIdEntry);
-    assertNotNull(definitionKeyEntry);
+    assertThat(ttlEntry).isNotNull();
+    assertThat(definitionIdEntry).isNotNull();
+    assertThat(definitionKeyEntry).isNotNull();
 
-    assertEquals(orgTtl.toString(), ttlEntry.getOrgValue());
-    assertEquals("6", ttlEntry.getNewValue());
-    assertEquals(decisionDefinition.getId(), definitionIdEntry.getNewValue());
-    assertEquals(decisionDefinition.getKey(), definitionKeyEntry.getNewValue());
+    assertThat(ttlEntry.getOrgValue()).isEqualTo(orgTtl.toString());
+    assertThat(ttlEntry.getNewValue()).isEqualTo("6");
+    assertThat(definitionIdEntry.getNewValue()).isEqualTo(decisionDefinition.getId());
+    assertThat(definitionKeyEntry.getNewValue()).isEqualTo(decisionDefinition.getKey());
 
-    assertEquals(UserOperationLogEntry.CATEGORY_OPERATOR, ttlEntry.getCategory());
-    assertEquals(UserOperationLogEntry.CATEGORY_OPERATOR, definitionIdEntry.getCategory());
-    assertEquals(UserOperationLogEntry.CATEGORY_OPERATOR, definitionKeyEntry.getCategory());
+    assertThat(ttlEntry.getCategory()).isEqualTo(UserOperationLogEntry.CATEGORY_OPERATOR);
+    assertThat(definitionIdEntry.getCategory()).isEqualTo(UserOperationLogEntry.CATEGORY_OPERATOR);
+    assertThat(definitionKeyEntry.getCategory()).isEqualTo(UserOperationLogEntry.CATEGORY_OPERATOR);
   }
 
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/dmn/Example.dmn"})
@@ -924,7 +914,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     //then
     decisionDefinition = repositoryService.getDecisionDefinition(decisionDefinition.getId());
-    assertEquals(null, decisionDefinition.getHistoryTimeToLive());
+    assertThat(decisionDefinition.getHistoryTimeToLive()).isNull();
 
   }
 
@@ -933,13 +923,14 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   public void testDecisionDefinitionUpdateTimeToLiveNegative() {
     //given
     DecisionDefinition decisionDefinition = findOnlyDecisionDefinition();
+    var decisionDefinitionId = decisionDefinition.getId();
 
     //when
     try {
-      repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinition.getId(), -1);
+      repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinitionId, -1);
       fail("Exception is expected, that negative value is not allowed.");
     } catch (BadUserRequestException ex) {
-      assertTrue(ex.getMessage().contains("greater than"));
+      assertThat(ex.getMessage()).contains("greater than");
     }
 
   }
@@ -955,7 +946,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     //then
     processDefinition = findOnlyProcessDefinition();
-    assertEquals(6, processDefinition.getHistoryTimeToLive().intValue());
+    assertThat(processDefinition.getHistoryTimeToLive().intValue()).isEqualTo(6);
 
   }
 
@@ -970,7 +961,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     //then
     processDefinition = findOnlyProcessDefinition();
-    assertEquals(null, processDefinition.getHistoryTimeToLive());
+    assertThat(processDefinition.getHistoryTimeToLive()).isNull();
 
   }
 
@@ -979,13 +970,14 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   public void testProcessDefinitionUpdateTimeToLiveNegative() {
     //given
     ProcessDefinition processDefinition = findOnlyProcessDefinition();
+    var processDefinitionId = processDefinition.getId();
 
     //when
     try {
-      repositoryService.updateProcessDefinitionHistoryTimeToLive(processDefinition.getId(), -1);
+      repositoryService.updateProcessDefinitionHistoryTimeToLive(processDefinitionId, -1);
       fail("Exception is expected, that negative value is not allowed.");
     } catch (BadUserRequestException ex) {
-      assertTrue(ex.getMessage().contains("greater than"));
+      assertThat(ex.getMessage()).contains("greater than");
     }
 
   }
@@ -1005,15 +997,15 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
 
     //then
     List<UserOperationLogEntry> opLogEntries = processEngine.getHistoryService().createUserOperationLogQuery().list();
-    Assert.assertEquals(1, opLogEntries.size());
+    assertThat(opLogEntries).hasSize(1);
     final UserOperationLogEntryEventEntity userOperationLogEntry = (UserOperationLogEntryEventEntity)opLogEntries.get(0);
 
-    assertEquals(UserOperationLogEntry.OPERATION_TYPE_UPDATE_HISTORY_TIME_TO_LIVE, userOperationLogEntry.getOperationType());
-    assertEquals(processDefinition.getKey(), userOperationLogEntry.getProcessDefinitionKey());
-    assertEquals(processDefinition.getId(), userOperationLogEntry.getProcessDefinitionId());
-    assertEquals("historyTimeToLive", userOperationLogEntry.getProperty());
-    assertEquals(timeToLiveOrgValue, Integer.valueOf(userOperationLogEntry.getOrgValue()));
-    assertEquals(timeToLiveNewValue, Integer.valueOf(userOperationLogEntry.getNewValue()));
+    assertThat(userOperationLogEntry.getOperationType()).isEqualTo(UserOperationLogEntry.OPERATION_TYPE_UPDATE_HISTORY_TIME_TO_LIVE);
+    assertThat(userOperationLogEntry.getProcessDefinitionKey()).isEqualTo(processDefinition.getKey());
+    assertThat(userOperationLogEntry.getProcessDefinitionId()).isEqualTo(processDefinition.getId());
+    assertThat(userOperationLogEntry.getProperty()).isEqualTo("historyTimeToLive");
+    assertThat(Integer.valueOf(userOperationLogEntry.getOrgValue())).isEqualTo(timeToLiveOrgValue);
+    assertThat(Integer.valueOf(userOperationLogEntry.getNewValue())).isEqualTo(timeToLiveNewValue);
 
   }
 
@@ -1021,7 +1013,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   public void testGetProcessModelByInvalidId() {
     try {
       repositoryService.getProcessModel("invalid");
-      fail();
+      fail("");
     } catch (NotFoundException e) {
       testRule.assertTextPresent("no deployed process definition found with id 'invalid'", e.getMessage());
     }
@@ -1031,7 +1023,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   public void testGetProcessModelByNullId() {
     try {
       repositoryService.getProcessModel(null);
-      fail();
+      fail("");
     } catch (ProcessEngineException e) {
       testRule.assertTextPresent("The process definition id is mandatory", e.getMessage());
     }
@@ -1053,7 +1045,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     // then
     caseDefinition = findOnlyCaseDefinition();
 
-    assertEquals(6, caseDefinition.getHistoryTimeToLive().intValue());
+    assertThat(caseDefinition.getHistoryTimeToLive().intValue()).isEqualTo(6);
 
     UserOperationLogQuery operationLogQuery = historyService.createUserOperationLogQuery()
       .operationType(UserOperationLogEntry.OPERATION_TYPE_UPDATE_HISTORY_TIME_TO_LIVE)
@@ -1063,16 +1055,16 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     UserOperationLogEntry ttlEntry = operationLogQuery.property("historyTimeToLive").singleResult();
     UserOperationLogEntry definitionKeyEntry = operationLogQuery.property("caseDefinitionKey").singleResult();
 
-    assertNotNull(ttlEntry);
-    assertNotNull(definitionKeyEntry);
+    assertThat(ttlEntry).isNotNull();
+    assertThat(definitionKeyEntry).isNotNull();
 
     // original time-to-live value is null
-    assertNull(ttlEntry.getOrgValue());
-    assertEquals("6", ttlEntry.getNewValue());
-    assertEquals(caseDefinition.getKey(), definitionKeyEntry.getNewValue());
+    assertThat(ttlEntry.getOrgValue()).isNull();
+    assertThat(ttlEntry.getNewValue()).isEqualTo("6");
+    assertThat(definitionKeyEntry.getNewValue()).isEqualTo(caseDefinition.getKey());
 
-    assertEquals(UserOperationLogEntry.CATEGORY_OPERATOR, ttlEntry.getCategory());
-    assertEquals(UserOperationLogEntry.CATEGORY_OPERATOR, definitionKeyEntry.getCategory());
+    assertThat(ttlEntry.getCategory()).isEqualTo(UserOperationLogEntry.CATEGORY_OPERATOR);
+    assertThat(definitionKeyEntry.getCategory()).isEqualTo(UserOperationLogEntry.CATEGORY_OPERATOR);
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneTaskCase.cmmn"})
@@ -1089,20 +1081,18 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     // then
     caseDefinition = findOnlyCaseDefinition();
 
-    assertEquals(null, caseDefinition.getHistoryTimeToLive());
+    assertThat(caseDefinition.getHistoryTimeToLive()).isNull();
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneTaskCase.cmmn"})
   @Test
   public void shouldFailToUpdateHistoryTimeToLiveOnCaseDefinitionHTTLUpdate() {
-    assertThatThrownBy(() -> {
-      // given
-      CaseDefinition caseDefinition = findOnlyCaseDefinition();
-      processEngineConfiguration.setEnforceHistoryTimeToLive(true);
-
-      // when
-      repositoryService.updateCaseDefinitionHistoryTimeToLive(caseDefinition.getId(), null);
-    })
+    // given
+    CaseDefinition caseDefinition = findOnlyCaseDefinition();
+    processEngineConfiguration.setEnforceHistoryTimeToLive(true);
+    String caseDefinitionId = caseDefinition.getId();
+    // when
+    assertThatThrownBy(() -> repositoryService.updateCaseDefinitionHistoryTimeToLive(caseDefinitionId, null))
         // then
         .isInstanceOf(NotAllowedException.class)
         .hasMessage("Null historyTimeToLive values are not allowed");
@@ -1111,13 +1101,13 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/oneTaskProcess.bpmn20.xml"})
   @Test
   public void shouldFailToUpdateHistoryTimeToLiveOnProcessDefinitionHTTLUpdate() {
-    assertThatThrownBy(() -> {
-      // given
-      ProcessDefinition processDefinition = findOnlyProcessDefinition();
-      processEngineConfiguration.setEnforceHistoryTimeToLive(true);
+    // given
+    ProcessDefinition processDefinition = findOnlyProcessDefinition();
+    processEngineConfiguration.setEnforceHistoryTimeToLive(true);
+    String processDefinitionId = processDefinition.getId();
 
-      // when
-      repositoryService.updateProcessDefinitionHistoryTimeToLive(processDefinition.getId(), null);})
+    // when
+    assertThatThrownBy(() -> repositoryService.updateProcessDefinitionHistoryTimeToLive(processDefinitionId, null))
         // then
         .isInstanceOf(NotAllowedException.class)
         .hasMessage("Null historyTimeToLive values are not allowed");
@@ -1126,13 +1116,13 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
   @Deployment(resources = { "org/operaton/bpm/engine/test/api/dmn/Example.dmn"})
   @Test
   public void shouldFailToUpdateHistoryTimeToLiveOnDecisionDefinitionHTTLUpdate() {
-    assertThatThrownBy(() -> {
-      // given
-      DecisionDefinition decisionDefinition = findOnlyDecisionDefinition();
-      processEngineConfiguration.setEnforceHistoryTimeToLive(true);
+    // given
+    DecisionDefinition decisionDefinition = findOnlyDecisionDefinition();
+    String decisionDefinitionId = decisionDefinition.getId();
+    processEngineConfiguration.setEnforceHistoryTimeToLive(true);
 
-      // when
-      repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinition.getId(), null);})
+    // when
+    assertThatThrownBy(() -> repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinitionId, null))
         // then
         .isInstanceOf(NotAllowedException.class)
         .hasMessage("Null historyTimeToLive values are not allowed");
@@ -1145,13 +1135,14 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     // there exists a deployment containing a case definition with key "oneTaskCase"
 
     CaseDefinition caseDefinition = findOnlyCaseDefinition();
+    var caseDefinitionId = caseDefinition.getId();
 
     // when
     try {
-      repositoryService.updateCaseDefinitionHistoryTimeToLive(caseDefinition.getId(), -1);
+      repositoryService.updateCaseDefinitionHistoryTimeToLive(caseDefinitionId, -1);
       fail("Exception is expected, that negative value is not allowed.");
     } catch (BadUserRequestException ex) {
-      assertTrue(ex.getMessage().contains("greater than"));
+      assertThat(ex.getMessage()).contains("greater than");
     }
   }
 
@@ -1164,33 +1155,36 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     CaseDefinition caseDefinition = findOnlyCaseDefinition();
 
     // assume
-    assertNull(caseDefinition.getHistoryTimeToLive());
+    assertThat(caseDefinition.getHistoryTimeToLive()).isNull();
 
     // when
     repositoryService.updateCaseDefinitionHistoryTimeToLive(caseDefinition.getId(), 10);
 
     CaseDefinition definition = repositoryService.getCaseDefinition(caseDefinition.getId());
-    assertEquals(Integer.valueOf(10), definition.getHistoryTimeToLive());
+    assertThat(definition.getHistoryTimeToLive()).isEqualTo(Integer.valueOf(10));
   }
 
   private CaseDefinition findOnlyCaseDefinition() {
     List<CaseDefinition> caseDefinitions = repositoryService.createCaseDefinitionQuery().list();
-    assertNotNull(caseDefinitions);
-    assertEquals(1, caseDefinitions.size());
+    assertThat(caseDefinitions)
+            .isNotNull()
+            .hasSize(1);
     return caseDefinitions.get(0);
   }
 
   private ProcessDefinition findOnlyProcessDefinition() {
     List<ProcessDefinition> processDefinitions = repositoryService.createProcessDefinitionQuery().list();
-    assertNotNull(processDefinitions);
-    assertEquals(1, processDefinitions.size());
+    assertThat(processDefinitions)
+            .isNotNull()
+            .hasSize(1);
     return processDefinitions.get(0);
   }
 
   private DecisionDefinition findOnlyDecisionDefinition() {
     List<DecisionDefinition> decisionDefinitions = repositoryService.createDecisionDefinitionQuery().list();
-    assertNotNull(decisionDefinitions);
-    assertEquals(1, decisionDefinitions.size());
+    assertThat(decisionDefinitions)
+            .isNotNull()
+            .hasSize(1);
     return decisionDefinitions.get(0);
   }
 
@@ -1205,30 +1199,30 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     String procDefId = repositoryService.createProcessDefinitionQuery().singleResult().getId();
     ReadOnlyProcessDefinition processDefinition = ((RepositoryServiceImpl)repositoryService).getDeployedProcessDefinition(procDefId);
 
-    assertEquals(procDefId, processDefinition.getId());
-    assertEquals("Process One", processDefinition.getName());
-    assertEquals("the first process", processDefinition.getProperty("documentation"));
+    assertThat(processDefinition.getId()).isEqualTo(procDefId);
+    assertThat(processDefinition.getName()).isEqualTo("Process One");
+    assertThat(processDefinition.getProperty("documentation")).isEqualTo("the first process");
 
     PvmActivity start = processDefinition.findActivity("start");
-    assertNotNull(start);
-    assertEquals("start", start.getId());
-    assertEquals("S t a r t", start.getProperty("name"));
-    assertEquals("the start event", start.getProperty("documentation"));
-    assertEquals(Collections.EMPTY_LIST, start.getActivities());
+    assertThat(start).isNotNull();
+    assertThat(start.getId()).isEqualTo("start");
+    assertThat(start.getProperty("name")).isEqualTo("S t a r t");
+    assertThat(start.getProperty("documentation")).isEqualTo("the start event");
+    assertThat(start.getActivities()).isEqualTo(Collections.EMPTY_LIST);
     List<PvmTransition> outgoingTransitions = start.getOutgoingTransitions();
-    assertEquals(1, outgoingTransitions.size());
-    assertEquals("${a == b}", outgoingTransitions.get(0).getProperty(BpmnParse.PROPERTYNAME_CONDITION_TEXT));
+    assertThat(outgoingTransitions).hasSize(1);
+    assertThat(outgoingTransitions.get(0).getProperty(BpmnParse.PROPERTYNAME_CONDITION_TEXT)).isEqualTo("${a == b}");
 
     PvmActivity end = processDefinition.findActivity("end");
-    assertNotNull(end);
-    assertEquals("end", end.getId());
+    assertThat(end).isNotNull();
+    assertThat(end.getId()).isEqualTo("end");
 
     PvmTransition transition = outgoingTransitions.get(0);
-    assertEquals("flow1", transition.getId());
-    assertEquals("Flow One", transition.getProperty("name"));
-    assertEquals("The only transitions in the process", transition.getProperty("documentation"));
-    assertSame(start, transition.getSource());
-    assertSame(end, transition.getDestination());
+    assertThat(transition.getId()).isEqualTo("flow1");
+    assertThat(transition.getProperty("name")).isEqualTo("Flow One");
+    assertThat(transition.getProperty("documentation")).isEqualTo("The only transitions in the process");
+    assertThat(transition.getSource()).isSameAs(start);
+    assertThat(transition.getDestination()).isSameAs(end);
 
     repositoryService.deleteDeployment(deploymentId);
   }
@@ -1247,7 +1241,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
       .orderByProcessDefinitionName().asc().orderByProcessDefinitionVersion().asc()
       .list();
 
-    assertEquals(2, processDefinitions.size());
+    assertThat(processDefinitions).hasSize(2);
 
     String deployment2Id = repositoryService
             .createDeployment()
@@ -1256,8 +1250,8 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
             .deploy()
             .getId();
 
-    assertEquals(4, repositoryService.createProcessDefinitionQuery().orderByProcessDefinitionName().asc().count());
-    assertEquals(2, repositoryService.createProcessDefinitionQuery().latestVersion().orderByProcessDefinitionName().asc().count());
+    assertThat(repositoryService.createProcessDefinitionQuery().orderByProcessDefinitionName().asc().count()).isEqualTo(4);
+    assertThat(repositoryService.createProcessDefinitionQuery().latestVersion().orderByProcessDefinitionName().asc().count()).isEqualTo(2);
 
     deleteDeployments(Arrays.asList(deployment1Id, deployment2Id));
   }
@@ -1277,39 +1271,39 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
       .orderByProcessDefinitionVersion().desc()
       .list();
 
-    assertNotNull(processDefinitions);
-
-    assertEquals(5, processDefinitions.size());
+    assertThat(processDefinitions)
+            .isNotNull()
+            .hasSize(5);
 
     ProcessDefinition processDefinition = processDefinitions.get(0);
-    assertEquals("EN", processDefinition.getKey());
-    assertEquals("Expense Note 2", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("EN:2"));
-    assertEquals(2, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("EN");
+    assertThat(processDefinition.getName()).isEqualTo("Expense Note 2");
+    assertThat(processDefinition.getId()).startsWith("EN:2");
+    assertThat(processDefinition.getVersion()).isEqualTo(2);
 
     processDefinition = processDefinitions.get(1);
-    assertEquals("EN", processDefinition.getKey());
-    assertEquals("Expense Note 1", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("EN:1"));
-    assertEquals(1, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("EN");
+    assertThat(processDefinition.getName()).isEqualTo("Expense Note 1");
+    assertThat(processDefinition.getId()).startsWith("EN:1");
+    assertThat(processDefinition.getVersion()).isEqualTo(1);
 
     processDefinition = processDefinitions.get(2);
-    assertEquals("IDR", processDefinition.getKey());
-    assertEquals("Insurance Damage Report 3", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("IDR:3"));
-    assertEquals(3, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("IDR");
+    assertThat(processDefinition.getName()).isEqualTo("Insurance Damage Report 3");
+    assertThat(processDefinition.getId()).startsWith("IDR:3");
+    assertThat(processDefinition.getVersion()).isEqualTo(3);
 
     processDefinition = processDefinitions.get(3);
-    assertEquals("IDR", processDefinition.getKey());
-    assertEquals("Insurance Damage Report 2", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("IDR:2"));
-    assertEquals(2, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("IDR");
+    assertThat(processDefinition.getName()).isEqualTo("Insurance Damage Report 2");
+    assertThat(processDefinition.getId()).startsWith("IDR:2");
+    assertThat(processDefinition.getVersion()).isEqualTo(2);
 
     processDefinition = processDefinitions.get(4);
-    assertEquals("IDR", processDefinition.getKey());
-    assertEquals("Insurance Damage Report 1", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("IDR:1"));
-    assertEquals(1, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("IDR");
+    assertThat(processDefinition.getName()).isEqualTo("Insurance Damage Report 1");
+    assertThat(processDefinition.getId()).startsWith("IDR:1");
+    assertThat(processDefinition.getVersion()).isEqualTo(1);
 
     deleteDeployments(deploymentIds);
   }
@@ -1326,20 +1320,21 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
       .orderByProcessDefinitionVersion().desc()
       .list();
 
-    assertNotNull(processDefinitions);
-    assertEquals(2, processDefinitions.size());
+    assertThat(processDefinitions)
+            .isNotNull()
+            .hasSize(2);
 
     ProcessDefinition processDefinition = processDefinitions.get(0);
-    assertEquals("IDR", processDefinition.getKey());
-    assertEquals("Insurance Damage Report", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("IDR:2"));
-    assertEquals(2, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("IDR");
+    assertThat(processDefinition.getName()).isEqualTo("Insurance Damage Report");
+    assertThat(processDefinition.getId()).startsWith("IDR:2");
+    assertThat(processDefinition.getVersion()).isEqualTo(2);
 
     processDefinition = processDefinitions.get(1);
-    assertEquals("IDR", processDefinition.getKey());
-    assertEquals("Insurance Damage Report", processDefinition.getName());
-    assertTrue(processDefinition.getId().startsWith("IDR:1"));
-    assertEquals(1, processDefinition.getVersion());
+    assertThat(processDefinition.getKey()).isEqualTo("IDR");
+    assertThat(processDefinition.getName()).isEqualTo("Insurance Damage Report");
+    assertThat(processDefinition.getId()).startsWith("IDR:1");
+    assertThat(processDefinition.getVersion()).isEqualTo(1);
 
     deleteDeployments(deploymentIds);
   }
@@ -1373,14 +1368,14 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     assertThat(mappings.stream()
       .filter(def -> def.getId().startsWith("process:1:"))
       .flatMap(def -> def.getCalledFromActivityIds().stream())
-      .collect(Collectors.toList()))
+      .toList())
       .containsExactlyInAnyOrder("deployment_1", "version_1");
 
     assertThat(mappings).extracting("name", "version", "key","calledFromActivityIds", "versionTag", "callingProcessDefinitionId")
       .contains(
-        Tuple.tuple("Process One", 1, "processOne", Arrays.asList("tenant_reference_1"), null, callingProcessId),
-        Tuple.tuple("Second Test Process", 2, "process", Arrays.asList("latest_reference_1"), null, callingProcessId),
-        Tuple.tuple("Failing Process", 1, "failingProcess", Arrays.asList("version_tag_reference_1"), "ver_tag_2", callingProcessId));
+        Tuple.tuple("Process One", 1, "processOne", List.of("tenant_reference_1"), null, callingProcessId),
+        Tuple.tuple("Second Test Process", 2, "process", List.of("latest_reference_1"), null, callingProcessId),
+        Tuple.tuple("Failing Process", 1, "failingProcess", List.of("version_tag_reference_1"), "ver_tag_2", callingProcessId));
 
     for (CalledProcessDefinition called : mappings) {
       assertThat(called).isEqualToIgnoringGivenFields(repositoryService.getProcessDefinition(called.getId()), "calledFromActivityIds", "callingProcessDefinitionId");
@@ -1399,12 +1394,11 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     List<ActivityImpl> callActivities = ((ProcessDefinitionImpl) repositoryService
       .getProcessDefinition(processDefinition.getId())).getActivities().stream()
       .filter(act -> act.getActivityBehavior() instanceof CallActivityBehavior)
-      .map(activity -> {
+      .peek(activity -> {
         CallableElement callableElement = ((CallActivityBehavior) activity.getActivityBehavior()).getCallableElement();
         CallableElement spy = Mockito.spy(callableElement);
         ((CallActivityBehavior) activity.getActivityBehavior()).setCallableElement(spy);
-        return activity;
-      }).collect(Collectors.toList());
+      }).toList();
 
     //when
     Collection<CalledProcessDefinition> mappings = repositoryService.getStaticCalledProcessDefinitions(processDefinition.getId());
@@ -1457,7 +1451,7 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     CalledProcessDefinition calledProcessDefinition = new ArrayList<>(calledProcessDefinitions).get(0);
     assertThat(calledProcessDefinition.getKey()).isEqualTo("failingProcess");
     assertThat(
-        calledProcessDefinition.getCalledFromActivityIds().stream().distinct().collect(Collectors.toList())).hasSize(8);
+        calledProcessDefinition.getCalledFromActivityIds().stream().distinct().toList()).hasSize(8);
   }
 
   @Test
@@ -1493,12 +1487,12 @@ public class RepositoryServiceTest extends PluggableProcessEngineTest {
     assertThat(mappings.stream()
       .filter(def -> def.getId().equals(sameTenantProcessOne))
       .flatMap(def -> def.getCalledFromActivityIds().stream())
-      .collect(Collectors.toList()))
+      .toList())
       .containsExactlyInAnyOrder("null_tenant_reference_same_tenant", "explicit_same_tenant_reference");
 
     assertThat(mappings).extracting("id","calledFromActivityIds", "callingProcessDefinitionId")
       .contains(
-        Tuple.tuple(otherTenantProcessOne, Arrays.asList("explicit_other_tenant_reference"), id));
+        Tuple.tuple(otherTenantProcessOne, List.of("explicit_other_tenant_reference"), id));
   }
 
   private String deployProcessString(String processString) {

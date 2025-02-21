@@ -4,12 +4,15 @@
 [![sonarqube](https://img.shields.io/sonar/tests/operaton_operaton?server=https%3A%2F%2Fsonarcloud.io&logo=sonarcloud)](https://sonarcloud.io/project/overview?id=operaton_operaton)
 [![Maven Central Version](https://img.shields.io/maven-central/v/org.operaton.bpm/operaton-bom-root?color=blue&logo=apachemaven)](https://central.sonatype.com/search?q=org.operaton)
 
+![](https://tokei.rs/b1/github/operaton/operaton?label=Files&category=files)
+![](https://tokei.rs/b1/github/operaton/operaton?label=LOC&category=code)
+
 [![operaton manual latest](https://img.shields.io/badge/manual-latest-brown.svg)](https://docs.operaton.org/)
 [![License](https://img.shields.io/github/license/operaton/operaton?color=blue&logo=apache)](https://github.com/operaton/operaton/blob/main/LICENSE)
 
 
 [![Forum](https://img.shields.io/badge/forum-Operaton-green)](https://forum.operaton.org/)
-[![Slack](https://img.shields.io/badge/chat-Slack-purple)](https://join.slack.com/t/operaton/shared_invite/zt-2v6umjt92-d2DRmsoR1fqDEVlJB5IkNA)
+[![Slack](https://img.shields.io/badge/chat-Slack-purple)](https://join.slack.com/t/operaton/shared_invite/zt-2yubtdpwm-GvmBCzyx1OVihW3v2NnCvw)
 
 Operaton is a native BPMN 2.0 process engine that runs inside the Java Virtual Machine. It can be embedded inside any Java application and any Runtime Container. It integrates with Spring, Spring Boot, Quarkus and is a perfect match for Jakarta EE. On top of the process engine, you can choose from a stack of tools for human workflow management, operations and monitoring.
 
@@ -56,7 +59,7 @@ For a faster build you can add `-DskipTests` to skip test execution and `-Dskip.
 
 Get the latest release from the [Releases page](https://github.com/operaton/operaton/releases).
 
-To get the latest nightly build visit the [Nightly Build actions](https://github.com/operaton/operaton/actions/workflows/nighly-build.yml?query=branch%3Amain+event%3Aschedule+is%3Asuccess++), click on the latest available build and download from the _Artifacts_ section.
+To get the latest stable build visit the [Early Access release page]([https://github.com/operaton/operaton/actions/workflows/nighly-build.yml?query=branch%3Amain+event%3Aschedule+is%3Asuccess++](https://github.com/operaton/operaton/releases/tag/early-access)), click on _Assets_ and download the desired package.
 
 
 ## About Operaton

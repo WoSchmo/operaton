@@ -20,7 +20,6 @@ import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.TaskService;
 import org.operaton.bpm.engine.impl.TaskServiceImpl;
-import org.operaton.bpm.engine.impl.digest._apacheCommonsCodec.Base64;
 import org.operaton.bpm.engine.impl.util.IoUtil;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.exception.RestException;
@@ -271,7 +270,7 @@ public class TaskVariableLocalRestResourceInteractionTest extends
     messageBodyJson.put("modifications", modifications);
 
     TaskServiceImpl taskService = mockTaskServiceImpl();
-    String message = "excpected exception";
+    String message = "expected exception";
     doThrow(new AuthorizationException(message)).when(taskService).updateVariablesLocal(any(), any(), any());
 
     given()
@@ -341,7 +340,7 @@ public class TaskVariableLocalRestResourceInteractionTest extends
   }
 
   @Test
-  public void testGetSingleLocalVariabledataNotBinary() {
+  public void testGetSingleLocalVariableDataNotBinary() {
 
     when(taskServiceMock.getVariableLocalTyped(anyString(), eq(EXAMPLE_VARIABLE_KEY), eq(false))).thenReturn(EXAMPLE_VARIABLE_VALUE);
 
@@ -421,7 +420,7 @@ public class TaskVariableLocalRestResourceInteractionTest extends
   public void testNonExistingLocalVariable() {
     String variableKey = "aVariableKey";
 
-    when(taskServiceMock.getVariableLocal(eq(EXAMPLE_TASK_ID), eq(variableKey))).thenReturn(null);
+    when(taskServiceMock.getVariableLocal(EXAMPLE_TASK_ID, variableKey)).thenReturn(null);
 
     given().pathParam("id", EXAMPLE_TASK_ID).pathParam("varId", variableKey)
       .header("accept", MediaType.APPLICATION_JSON)
@@ -450,7 +449,7 @@ public class TaskVariableLocalRestResourceInteractionTest extends
   public void testGetSingleLocalVariableThrowsAuthorizationException() {
     String variableKey = "aVariableKey";
 
-    String message = "excpected exception";
+    String message = "expected exception";
     when(taskServiceMock.getVariableLocalTyped(anyString(), anyString(), anyBoolean())).thenThrow(new AuthorizationException(message));
 
     given()
@@ -1003,8 +1002,8 @@ public class TaskVariableLocalRestResourceInteractionTest extends
     .when()
       .post(SINGLE_TASK_SINGLE_BINARY_VARIABLE_URL);
 
-    verify(taskServiceMock, never()).setVariableLocal(eq(EXAMPLE_TASK_ID), eq(variableKey),
-        eq(serializable));
+    verify(taskServiceMock, never()).setVariableLocal(EXAMPLE_TASK_ID, variableKey,
+        serializable);
   }
 
   @Test
@@ -1040,7 +1039,6 @@ public class TaskVariableLocalRestResourceInteractionTest extends
   public void testPostSingleLocalFileVariableWithMimeType() {
 
     byte[] value = "some text".getBytes();
-    String base64 = Base64.encodeBase64String(value);
     String variableKey = "aVariableKey";
     String filename = "test.txt";
     String mimetype = MediaType.TEXT_PLAIN;
@@ -1183,7 +1181,7 @@ public class TaskVariableLocalRestResourceInteractionTest extends
       .then().expect().statusCode(Status.NO_CONTENT.getStatusCode())
       .when().delete(SINGLE_TASK_DELETE_SINGLE_VARIABLE_URL);
 
-    verify(taskServiceMock).removeVariableLocal(eq(EXAMPLE_TASK_ID), eq(variableKey));
+    verify(taskServiceMock).removeVariableLocal(EXAMPLE_TASK_ID, variableKey);
   }
 
   @Test
@@ -1191,7 +1189,7 @@ public class TaskVariableLocalRestResourceInteractionTest extends
     String variableKey = "aVariableKey";
 
     doThrow(new ProcessEngineException("Cannot find task with id " + NON_EXISTING_ID))
-      .when(taskServiceMock).removeVariableLocal(eq(NON_EXISTING_ID), eq(variableKey));
+      .when(taskServiceMock).removeVariableLocal(NON_EXISTING_ID, variableKey);
 
     given().pathParam("id", NON_EXISTING_ID).pathParam("varId", variableKey)
       .header("accept", MediaType.APPLICATION_JSON)

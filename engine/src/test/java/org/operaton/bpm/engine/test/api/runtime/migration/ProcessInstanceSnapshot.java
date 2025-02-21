@@ -148,11 +148,11 @@ public class ProcessInstanceSnapshot {
     List<EventSubscription> collectedEventsubscriptions = new ArrayList<>();
 
     for (EventSubscription eventSubscription : getEventSubscriptions()) {
-      if (activityId.equals(eventSubscription.getActivityId())) {
-        if ((eventName == null && eventSubscription.getEventName() == null)
-          || eventName != null && eventName.equals(eventSubscription.getEventName())) {
-          collectedEventsubscriptions.add(eventSubscription);
-        }
+      if (activityId.equals(eventSubscription.getActivityId())
+              && ((eventName == null && eventSubscription.getEventName() == null)
+              || eventName != null && eventName.equals(eventSubscription.getEventName()))
+      ) {
+        collectedEventsubscriptions.add(eventSubscription);
       }
     }
 
@@ -249,34 +249,16 @@ public class ProcessInstanceSnapshot {
   }
 
   public VariableInstance getSingleVariable(final String variableName) {
-    return getSingleVariable(new Condition<>() {
-
-      @Override
-      public boolean matches(VariableInstance variable) {
-        return variableName.equals(variable.getName());
-      }
-    });
+    return getSingleVariable(variable -> variableName.equals(variable.getName()));
   }
 
   public VariableInstance getSingleVariable(final String executionId, final String variableName) {
-    return getSingleVariable(new Condition<>() {
-
-      @Override
-      public boolean matches(VariableInstance variable) {
-        return executionId.equals(variable.getExecutionId()) && variableName.equals(variable.getName());
-      }
-    });
+    return getSingleVariable(variable -> executionId.equals(variable.getExecutionId()) && variableName.equals(variable.getName()));
   }
 
   public VariableInstance getSingleTaskVariable(final String taskId, final String variableName) {
-    return getSingleVariable(new Condition<>() {
-
-      @Override
-      public boolean matches(VariableInstance variable) {
-        return variableName.equals(variable.getName())
-            && taskId.equals(variable.getTaskId());
-      }
-    });
+    return getSingleVariable(variable -> variableName.equals(variable.getName())
+        && taskId.equals(variable.getTaskId()));
   }
 
   protected VariableInstance getSingleVariable(Condition<VariableInstance> condition) {

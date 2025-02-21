@@ -16,6 +16,8 @@
  */
 package org.operaton.commons.logging;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
@@ -73,7 +75,7 @@ public abstract class BaseLogger {
   /** the project code of the logger */
   protected String projectCode;
 
-  /** the component Id of the logger. */
+  /** the component id of the logger. */
   protected String componentId;
 
   protected BaseLogger() {
@@ -89,18 +91,15 @@ public abstract class BaseLogger {
    */
   public static <T extends BaseLogger> T createLogger(Class<T> loggerClass, String projectCode, String name, String componentId) {
     try {
-      T logger = loggerClass.newInstance();
+      T logger = loggerClass.getDeclaredConstructor().newInstance();
       logger.projectCode = projectCode;
       logger.componentId = componentId;
       logger.delegateLogger = LoggerFactory.getLogger(name);
 
       return logger;
 
-    } catch (InstantiationException e) {
-      throw new RuntimeException("Unable to instantiate logger '"+loggerClass.getName()+"'", e);
-
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException("Unable to instantiate logger '"+loggerClass.getName()+"'", e);
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+      throw new RuntimeException("Unable to instantiate logger '" + loggerClass.getName() + "'", e);
 
     }
   }
@@ -154,9 +153,9 @@ public abstract class BaseLogger {
    * @param parameters      a list of optional parameters
    */
   protected void logTrace(String id, String messageTemplate, Object... parameters) {
-    if (delegateLogger.isTraceEnabled()) {
+    if (isTraceEnabled()) {
       String msg = formatMessageTemplate(id, messageTemplate);
-      delegateLogger.trace(msg, parameters);
+      delegateLogger.trace(msg, sanitizeParameters(parameters));
     }
   }
 
@@ -168,9 +167,9 @@ public abstract class BaseLogger {
    * @param parameters a list of optional parameters
    */
   protected void logDebug(String id, String messageTemplate, Object... parameters) {
-    if(delegateLogger.isDebugEnabled()) {
+    if(isDebugEnabled()) {
       String msg = formatMessageTemplate(id, messageTemplate);
-      delegateLogger.debug(msg, parameters);
+      delegateLogger.debug(msg, sanitizeParameters(parameters));
     }
   }
 
@@ -182,9 +181,9 @@ public abstract class BaseLogger {
    * @param parameters a list of optional parameters
    */
   protected void logInfo(String id, String messageTemplate, Object... parameters) {
-    if(delegateLogger.isInfoEnabled()) {
+    if (isInfoEnabled()) {
       String msg = formatMessageTemplate(id, messageTemplate);
-      delegateLogger.info(msg, parameters);
+      delegateLogger.info(msg, sanitizeParameters(parameters));
     }
   }
 
@@ -196,9 +195,9 @@ public abstract class BaseLogger {
    * @param parameters a list of optional parameters
    */
   protected void logWarn(String id, String messageTemplate, Object... parameters) {
-    if(delegateLogger.isWarnEnabled()) {
+    if(isWarnEnabled()) {
       String msg = formatMessageTemplate(id, messageTemplate);
-      delegateLogger.warn(msg, parameters);
+      delegateLogger.warn(msg, sanitizeParameters(parameters));
     }
   }
 
@@ -210,10 +209,17 @@ public abstract class BaseLogger {
    * @param parameters a list of optional parameters
    */
   protected void logError(String id, String messageTemplate, Object... parameters) {
-    if(delegateLogger.isErrorEnabled()) {
+    if(isErrorEnabled()) {
       String msg = formatMessageTemplate(id, messageTemplate);
-      delegateLogger.error(msg, parameters);
+      delegateLogger.error(msg, sanitizeParameters(parameters));
     }
+  }
+
+  /**
+   * @return true if the logger will log 'TRACE' messages
+   */
+  public boolean isTraceEnabled() {
+    return delegateLogger.isTraceEnabled();
   }
 
   /**
@@ -274,6 +280,28 @@ public abstract class BaseLogger {
       return MessageFormatter.arrayFormat(formattedTemplate, parameters).getMessage();
 
     }
+  }
+
+  /**
+   *  Sanitize parameters to avoid injection attacks
+   */
+  @SuppressWarnings("java:S1168")
+  Object[] sanitizeParameters(Object... parameters) {
+    if (parameters == null) {
+      return null;
+    }
+    Object[] sanitized = new Object[parameters.length];
+    for (int i = 0; i < parameters.length; i++) {
+      sanitized[i] = sanitize(parameters[i]);
+    }
+    return sanitized;
+  }
+
+  private Object sanitize(Object parameter) {
+    if (parameter instanceof String param) {
+      return param.replaceAll("[\n\r\t]", "_");
+    }
+    return parameter;
   }
 
 }
