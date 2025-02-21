@@ -16,13 +16,12 @@
  */
 package org.operaton.bpm.engine.test.api.runtime;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.operaton.bpm.engine.impl.db.entitymanager.DbEntityManager;
 import org.operaton.bpm.engine.impl.db.entitymanager.cache.CachedDbEntity;
 import org.operaton.bpm.engine.impl.db.entitymanager.cache.DbEntityState;
 import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.ByteArrayEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.VariableInstanceEntity;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
@@ -38,26 +37,23 @@ public class VariableInTransactionTest extends PluggableProcessEngineTest {
   @Test
   public void testCreateAndDeleteVariableInTransaction() {
 
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        //create a variable
-        VariableInstanceEntity variable = VariableInstanceEntity.createAndInsert("aVariable", Variables.byteArrayValue(new byte[0]));
-        String byteArrayId = variable.getByteArrayValueId();
+    processEngineConfiguration.getCommandExecutorTxRequired().execute((Command<Void>) commandContext -> {
+      //create a variable
+      VariableInstanceEntity variable = VariableInstanceEntity.createAndInsert("aVariable", Variables.byteArrayValue(new byte[0]));
+      String byteArrayId = variable.getByteArrayValueId();
 
-        //delete the variable
-        variable.delete();
+      //delete the variable
+      variable.delete();
 
-        //check if the variable is deleted transient
-        //-> no insert and delete stmt will be flushed
-        DbEntityManager dbEntityManager = commandContext.getDbEntityManager();
-        CachedDbEntity cachedEntity = dbEntityManager.getDbEntityCache().getCachedEntity(ByteArrayEntity.class, byteArrayId);
+      //check if the variable is deleted transient
+      //-> no insert and delete stmt will be flushed
+      DbEntityManager dbEntityManager = commandContext.getDbEntityManager();
+      CachedDbEntity cachedEntity = dbEntityManager.getDbEntityCache().getCachedEntity(ByteArrayEntity.class, byteArrayId);
 
-        DbEntityState entityState = cachedEntity.getEntityState();
-        assertEquals(DbEntityState.DELETED_TRANSIENT, entityState);
+      DbEntityState entityState = cachedEntity.getEntityState();
+      assertThat(entityState).isEqualTo(DbEntityState.DELETED_TRANSIENT);
 
-        return null;
-      }
+      return null;
     });
 
   }

@@ -22,9 +22,9 @@ import static org.operaton.bpm.engine.authorization.Resources.TENANT;
 
 import java.net.URI;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.identity.Tenant;
@@ -55,8 +55,7 @@ public class TenantResourceImpl extends AbstractIdentityResource implements Tena
       throw new InvalidRequestException(Status.NOT_FOUND, "Tenant with id " + resourceId + " does not exist");
     }
 
-    TenantDto dto = TenantDto.fromTenant(tenant);
-    return dto;
+    return TenantDto.fromTenant(tenant);
   }
 
   @Override

@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.management.JobDefinition;
 import org.operaton.bpm.engine.management.JobDefinitionQuery;
@@ -487,7 +487,7 @@ public class JobDefinitionRestServiceQueryTest extends AbstractRestServiceTest {
     assertThat(jobs).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -516,7 +516,7 @@ public class JobDefinitionRestServiceQueryTest extends AbstractRestServiceTest {
     String returnedTenantId1 = from(content).getString("[0].tenantId");
     String returnedTenantId2 = from(content).getString("[1].tenantId");
 
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
     assertThat(returnedTenantId2).isEqualTo(MockProvider.EXAMPLE_TENANT_ID);
   }
 
@@ -570,7 +570,7 @@ public class JobDefinitionRestServiceQueryTest extends AbstractRestServiceTest {
     assertThat(jobs).hasSize(1);
 
     String returnedTenantId = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -603,7 +603,7 @@ public class JobDefinitionRestServiceQueryTest extends AbstractRestServiceTest {
     String returnedTenantId1 = from(content).getString("[0].tenantId");
     String returnedTenantId2 = from(content).getString("[1].tenantId");
 
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
     assertThat(returnedTenantId2).isEqualTo(MockProvider.EXAMPLE_TENANT_ID);
   }
 

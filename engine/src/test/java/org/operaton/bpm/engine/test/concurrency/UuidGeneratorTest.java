@@ -21,9 +21,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import com.fasterxml.uuid.EthernetAddress;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedGenerator;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -44,16 +45,13 @@ public class UuidGeneratorTest {
     final ConcurrentSkipListSet<String> duplicatedIds = new ConcurrentSkipListSet<>();
 
     for (int i = 0; i < THREAD_COUNT; i++) {
-      Thread thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < LOOP_COUNT; j++) {
+      Thread thread = new Thread(() -> {
+        for (int j = 0;j < LOOP_COUNT;j++) {
 
-            String id = timeBasedGenerator.generate().toString();
-            boolean wasAdded = generatedIds.add(id);
-            if (!wasAdded) {
-              duplicatedIds.add(id);
-            }
+          String id = timeBasedGenerator.generate().toString();
+          boolean wasAdded = generatedIds.add(id);
+          if (!wasAdded) {
+            duplicatedIds.add(id);
           }
         }
       });
@@ -65,7 +63,7 @@ public class UuidGeneratorTest {
       thread.join();
     }
 
-    Assert.assertEquals(THREAD_COUNT * LOOP_COUNT, generatedIds.size());
-    Assert.assertTrue(duplicatedIds.isEmpty());
+    assertThat(generatedIds).hasSize(THREAD_COUNT * LOOP_COUNT);
+    assertThat(duplicatedIds).isEmpty();
   }
 }

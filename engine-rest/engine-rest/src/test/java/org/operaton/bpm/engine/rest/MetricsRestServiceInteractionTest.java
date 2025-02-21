@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.ManagementService;
@@ -269,7 +269,7 @@ public class MetricsRestServiceInteractionTest extends AbstractRestServiceTest {
   @Test
   public void testGetSum() {
 
-    when(meterQueryMock.sum()).thenReturn(10l);
+    when(meterQueryMock.sum()).thenReturn(10L);
 
     given()
       .pathParam("name", Metrics.ACTIVTY_INSTANCE_START)
@@ -287,7 +287,7 @@ public class MetricsRestServiceInteractionTest extends AbstractRestServiceTest {
   @Test
   public void testGetSumWithTimestamps() {
 
-    when(meterQueryMock.sum()).thenReturn(10l);
+    when(meterQueryMock.sum()).thenReturn(10L);
 
     given()
       .pathParam("name", Metrics.ACTIVTY_INSTANCE_START)
@@ -309,7 +309,7 @@ public class MetricsRestServiceInteractionTest extends AbstractRestServiceTest {
   @Test
   public void testGetSumWithInvalidTimestamp() {
 
-    when(meterQueryMock.sum()).thenReturn(10l);
+    when(meterQueryMock.sum()).thenReturn(10L);
 
     given()
       .pathParam("name", Metrics.ACTIVTY_INSTANCE_START)

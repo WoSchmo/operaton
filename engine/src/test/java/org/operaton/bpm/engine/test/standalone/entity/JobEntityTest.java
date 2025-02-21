@@ -16,17 +16,16 @@
  */
 package org.operaton.bpm.engine.test.standalone.entity;
 
-import static org.junit.Assert.assertEquals;
-
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.JobEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.MessageEntity;
 import org.operaton.bpm.engine.impl.util.StringUtil;
 import org.operaton.bpm.engine.runtime.Job;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
+
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -60,28 +59,20 @@ public class JobEntityTest extends PluggableProcessEngineTest {
 
     String message = repeatCharacter("a", StringUtil.DB_MAX_STRING_LENGTH * 2);
     threeByteJobEntity.setExceptionMessage(message);
-    assertEquals(StringUtil.DB_MAX_STRING_LENGTH, threeByteJobEntity.getExceptionMessage().length());
+    assertThat(threeByteJobEntity.getExceptionMessage()).hasSize(StringUtil.DB_MAX_STRING_LENGTH);
   }
 
   protected void insertJob(final JobEntity jobEntity) {
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-
-      @Override
-      public Void execute(CommandContext commandContext) {
-        commandContext.getJobManager().insert(jobEntity);
-        return null;
-      }
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      commandContext.getJobManager().insert(jobEntity);
+      return null;
     });
   }
 
   protected void deleteJob(final JobEntity jobEntity) {
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-
-      @Override
-      public Void execute(CommandContext commandContext) {
-        commandContext.getJobManager().delete(jobEntity);
-        return null;
-      }
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      commandContext.getJobManager().delete(jobEntity);
+      return null;
     });
   }
 
@@ -104,7 +95,7 @@ public class JobEntityTest extends PluggableProcessEngineTest {
 
     Job job = managementService.createJobQuery().processInstanceId(processInstanceId).singleResult();
 
-    assertEquals(key, job.getProcessDefinitionKey());
+     assertThat(job.getProcessDefinitionKey()).isEqualTo(key);
   }
 
 }

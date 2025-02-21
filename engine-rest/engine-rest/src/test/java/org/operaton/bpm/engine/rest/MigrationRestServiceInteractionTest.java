@@ -57,7 +57,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.BadUserRequestException;
 import org.operaton.bpm.engine.RuntimeService;
@@ -126,7 +126,7 @@ public class MigrationRestServiceInteractionTest extends AbstractRestServiceTest
       .instruction(ANOTHER_EXAMPLE_ACTIVITY_ID, EXAMPLE_ACTIVITY_ID)
       .builder();
 
-    when(runtimeServiceMock.createMigrationPlan(eq(EXAMPLE_PROCESS_DEFINITION_ID), eq(ANOTHER_EXAMPLE_PROCESS_DEFINITION_ID)))
+    when(runtimeServiceMock.createMigrationPlan(EXAMPLE_PROCESS_DEFINITION_ID, ANOTHER_EXAMPLE_PROCESS_DEFINITION_ID))
       .thenReturn(migrationPlanBuilderMock);
 
     migrationPlanExecutionBuilderMock = mock(MigrationPlanExecutionBuilder.class);
@@ -325,7 +325,7 @@ public class MigrationRestServiceInteractionTest extends AbstractRestServiceTest
     .when()
       .post(GENERATE_MIGRATION_URL);
 
-    verify(runtimeServiceMock).createMigrationPlan(eq(EXAMPLE_PROCESS_DEFINITION_ID), eq(ANOTHER_EXAMPLE_PROCESS_DEFINITION_ID));
+    verify(runtimeServiceMock).createMigrationPlan(EXAMPLE_PROCESS_DEFINITION_ID, ANOTHER_EXAMPLE_PROCESS_DEFINITION_ID);
 
     InOrder inOrder = Mockito.inOrder(migrationPlanBuilderMock);
 
@@ -401,7 +401,7 @@ public class MigrationRestServiceInteractionTest extends AbstractRestServiceTest
     .when()
       .post(GENERATE_MIGRATION_URL);
 
-    verify(runtimeServiceMock).createMigrationPlan(eq(EXAMPLE_PROCESS_DEFINITION_ID), eq(ANOTHER_EXAMPLE_PROCESS_DEFINITION_ID));
+    verify(runtimeServiceMock).createMigrationPlan(EXAMPLE_PROCESS_DEFINITION_ID, ANOTHER_EXAMPLE_PROCESS_DEFINITION_ID);
 
     InOrder inOrder = Mockito.inOrder(migrationPlanBuilderMock);
 
@@ -1519,8 +1519,8 @@ public class MigrationRestServiceInteractionTest extends AbstractRestServiceTest
   }
 
   protected void verifyGenerateMigrationPlanInteraction(MigrationPlanBuilder migrationPlanBuilderMock, Map<String, Object> initialMigrationPlan) {
-    verify(runtimeServiceMock).createMigrationPlan(eq(initialMigrationPlan.get(MigrationPlanDtoBuilder.PROP_SOURCE_PROCESS_DEFINITION_ID).toString()),
-                                                   eq(initialMigrationPlan.get(MigrationPlanDtoBuilder.PROP_TARGET_PROCESS_DEFINITION_ID).toString()));
+    verify(runtimeServiceMock).createMigrationPlan(initialMigrationPlan.get(MigrationPlanDtoBuilder.PROP_SOURCE_PROCESS_DEFINITION_ID).toString(),
+                                                   initialMigrationPlan.get(MigrationPlanDtoBuilder.PROP_TARGET_PROCESS_DEFINITION_ID).toString());
     // the map equal activities method should be called
     verify(migrationPlanBuilderMock).mapEqualActivities();
     // other instructions are ignored
@@ -1540,7 +1540,7 @@ public class MigrationRestServiceInteractionTest extends AbstractRestServiceTest
         InOrder inOrder = Mockito.inOrder(migrationPlanBuilderMock);
         String sourceActivityId = ((List<String>) migrationInstructionDto.get(MigrationInstructionDtoBuilder.PROP_SOURCE_ACTIVITY_IDS)).get(0);
         String targetActivityId = ((List<String>) migrationInstructionDto.get(MigrationInstructionDtoBuilder.PROP_TARGET_ACTIVITY_IDS)).get(0);
-        inOrder.verify(migrationPlanBuilderMock).mapActivities(eq(sourceActivityId), eq(targetActivityId));
+        inOrder.verify(migrationPlanBuilderMock).mapActivities(sourceActivityId, targetActivityId);
         Boolean updateEventTrigger = (Boolean) migrationInstructionDto.get(MigrationInstructionDtoBuilder.PROP_UPDATE_EVENT_TRIGGER);
         if (Boolean.TRUE.equals(updateEventTrigger)) {
           inOrder.verify(migrationPlanBuilderMock, immediatelyAfter()).updateEventTrigger();
@@ -1574,7 +1574,7 @@ public class MigrationRestServiceInteractionTest extends AbstractRestServiceTest
   protected void verifyMigrationExecutionBuilderInteraction(InOrder inOrder, Map<String, Object> migrationExecution) {
     List<String> processInstanceIds = ((List<String>) migrationExecution.get(MigrationExecutionDtoBuilder.PROP_PROCESS_INSTANCE_IDS));
 
-    inOrder.verify(migrationPlanExecutionBuilderMock).processInstanceIds(eq(processInstanceIds));
+    inOrder.verify(migrationPlanExecutionBuilderMock).processInstanceIds(processInstanceIds);
     ProcessInstanceQueryDto processInstanceQuery = (ProcessInstanceQueryDto) migrationExecution.get(MigrationExecutionDtoBuilder.PROP_PROCESS_INSTANCE_QUERY);
     if (processInstanceQuery != null) {
       verifyMigrationPlanExecutionProcessInstanceQuery(inOrder);

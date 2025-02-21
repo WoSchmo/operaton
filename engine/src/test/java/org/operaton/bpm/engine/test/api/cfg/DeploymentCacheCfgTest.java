@@ -17,9 +17,7 @@
 package org.operaton.bpm.engine.test.api.cfg;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,7 +131,7 @@ public class DeploymentCacheCfgTest {
     numberOfProcessesInCache +=
         deploymentCache.getProcessDefinitionCache().get(processDefinitionIdTwo) == null ? 0 : 1;
 
-    assertEquals(2, numberOfProcessesInCache);
+    assertThat(numberOfProcessesInCache).isEqualTo(2);
   }
 
   @Test
@@ -152,7 +150,7 @@ public class DeploymentCacheCfgTest {
     // then
     DeploymentCache deploymentCache = processEngineConfiguration.getDeploymentCache();
     BpmnModelInstance modelInstance = deploymentCache.getBpmnModelInstanceCache().get(pi.getProcessDefinitionId());
-    assertNull(modelInstance);
+    assertThat(modelInstance).isNull();
   }
 
   @Test
@@ -172,7 +170,7 @@ public class DeploymentCacheCfgTest {
     // then
     DeploymentCache deploymentCache = processEngineConfiguration.getDeploymentCache();
     BpmnModelInstance modelInstance = deploymentCache.getBpmnModelInstanceCache().get(pi.getProcessDefinitionId());
-    assertNotNull(modelInstance);
+    assertThat(modelInstance).isNotNull();
   }
 
   @Test
@@ -188,7 +186,7 @@ public class DeploymentCacheCfgTest {
         .singleResult();
 
     // then
-    assertNull(processDefinition.getDescription());
+    assertThat(processDefinition.getDescription()).isNull();
   }
 
   @Test
@@ -205,8 +203,8 @@ public class DeploymentCacheCfgTest {
         .singleResult();
 
     // then
-    assertNotNull(processDefinition.getDescription());
-    assertEquals("This is a documentation!", processDefinition.getDescription());
+    assertThat(processDefinition.getDescription()).isNotNull();
+    assertThat(processDefinition.getDescription()).isEqualTo("This is a documentation!");
   }
 
   @Test
@@ -218,7 +216,7 @@ public class DeploymentCacheCfgTest {
     deploy(modelInstances);
 
     // when we start a process that was already removed from the cache
-    assertNotNull(repositoryService.createProcessDefinitionQuery().processDefinitionKey("Process0").singleResult());
+    assertThat(repositoryService.createProcessDefinitionQuery().processDefinitionKey("Process0").singleResult()).isNotNull();
     runtimeService.startProcessInstanceByKey("Process0");
 
     // then we should be able to complete the process
@@ -242,7 +240,10 @@ public class DeploymentCacheCfgTest {
 
     // then we should be able to complete the task in process 4
     Task task = taskService.createTaskQuery().singleResult();
-    taskService.complete(task.getId());
+    String taskId = task.getId();
+
+    assertThatCode(() -> taskService.complete(taskId))
+      .doesNotThrowAnyException();
   }
 
   @Test
@@ -266,7 +267,9 @@ public class DeploymentCacheCfgTest {
 
     // then we should be able to complete the task in process 4
     Task task = taskService.createTaskQuery().singleResult();
-    taskService.complete(task.getId());
+    String taskId = task.getId();
+    assertThatCode(() -> taskService.complete(taskId))
+      .doesNotThrowAnyException();
   }
 
   @Test
@@ -285,7 +288,9 @@ public class DeploymentCacheCfgTest {
     managementService.executeJob(job.getId());
 
     // then deleting the deployment should still be possible
-    repositoryService.deleteDeployment(deployment.getId(), true);
+    String deploymentId = deployment.getId();
+    assertThatCode(() -> repositoryService.deleteDeployment(deploymentId, true))
+      .doesNotThrowAnyException();
   }
 
   @Test

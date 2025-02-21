@@ -16,7 +16,7 @@
  */
 package org.operaton.bpm.engine.test.concurrency;
 
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,11 +77,11 @@ public abstract class ConcurrencyTestHelper {
 
     protected final ThreadControl monitor;
 
-    public ControllableCommand() {
+    protected ControllableCommand() {
       this.monitor = new ThreadControl();
     }
 
-    public ControllableCommand(ThreadControl threadControl) {
+    protected ControllableCommand(ThreadControl threadControl) {
       this.monitor = threadControl;
     }
 
@@ -118,7 +118,7 @@ public abstract class ConcurrencyTestHelper {
           if (reportFailure) {
             return;
           } else {
-            fail();
+            fail("");
           }
         }
         try {

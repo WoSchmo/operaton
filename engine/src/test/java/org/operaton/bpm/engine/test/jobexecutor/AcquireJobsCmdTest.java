@@ -16,14 +16,7 @@
  */
 package org.operaton.bpm.engine.test.jobexecutor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Date;
-
 import org.operaton.bpm.engine.impl.cmd.AcquireJobsCmd;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.jobexecutor.AcquiredJobs;
 import org.operaton.bpm.engine.impl.util.ClockUtil;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
@@ -31,7 +24,12 @@ import org.operaton.bpm.engine.runtime.Job;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
+
+import java.util.Date;
+
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -49,20 +47,20 @@ public class AcquireJobsCmdTest extends PluggableProcessEngineTest {
     // now there is one job:
     Job job = managementService.createJobQuery()
       .singleResult();
-    assertNotNull(job);
+    assertThat(job).isNotNull();
 
     makeSureJobDue(job);
 
     // the acquirejobs command sees the job:
     AcquiredJobs acquiredJobs = executeAcquireJobsCommand();
-    assertEquals(1, acquiredJobs.size());
+    assertThat(acquiredJobs.size()).isEqualTo(1);
 
     // suspend the process instance:
     runtimeService.suspendProcessInstanceById(pi.getId());
 
     // now, the acquirejobs command does not see the job:
     acquiredJobs = executeAcquireJobsCommand();
-    assertEquals(0, acquiredJobs.size());
+    assertThat(acquiredJobs.size()).isZero();
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/standalone/jobexecutor/oneJobProcess.bpmn20.xml"})
@@ -74,35 +72,31 @@ public class AcquireJobsCmdTest extends PluggableProcessEngineTest {
     // now there is one job:
     Job job = managementService.createJobQuery()
       .singleResult();
-    assertNotNull(job);
+    assertThat(job).isNotNull();
 
     makeSureJobDue(job);
 
     // the acquirejobs command sees the job:
     AcquiredJobs acquiredJobs = executeAcquireJobsCommand();
-    assertEquals(1, acquiredJobs.size());
+    assertThat(acquiredJobs.size()).isEqualTo(1);
 
     // suspend the process instance:
     repositoryService.suspendProcessDefinitionById(pd.getId());
 
     // now, the acquirejobs command does not see the job:
     acquiredJobs = executeAcquireJobsCommand();
-    assertEquals(0, acquiredJobs.size());
+    assertThat(acquiredJobs.size()).isZero();
   }
 
   protected void makeSureJobDue(final Job job) {
     processEngineConfiguration.getCommandExecutorTxRequired()
-      .execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-          Date currentTime = ClockUtil.getCurrentTime();
-          commandContext.getJobManager()
-            .findJobById(job.getId())
-            .setDuedate(new Date(currentTime.getTime() - 10000));
-          return null;
-        }
-
-      });
+      .execute(commandContext -> {
+      Date currentTime = ClockUtil.getCurrentTime();
+      commandContext.getJobManager()
+          .findJobById(job.getId())
+          .setDuedate(new Date(currentTime.getTime() - 10000));
+      return null;
+    });
   }
 
   private AcquiredJobs executeAcquireJobsCommand() {

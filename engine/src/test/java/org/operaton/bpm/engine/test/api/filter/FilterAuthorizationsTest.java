@@ -16,11 +16,6 @@
  */
 package org.operaton.bpm.engine.test.api.filter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.util.List;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.EntityTypes;
@@ -35,10 +30,14 @@ import org.operaton.bpm.engine.impl.persistence.entity.AuthorizationEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.FilterEntity;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Sebastian Menski
@@ -81,32 +80,22 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
 
   @Test
   public void testCreateFilterNotPermitted() {
-    try {
-      filterService.newTaskFilter();
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    assertThatThrownBy(() -> filterService.newTaskFilter())
+      .isInstanceOf(AuthorizationException.class);
   }
 
   @Test
   public void testCreateFilterPermitted() {
     grantCreateFilter();
     Filter filter = filterService.newTaskFilter();
-    assertNotNull(filter);
+    assertThat(filter).isNotNull();
   }
 
   @Test
   public void testSaveFilterNotPermitted() {
     Filter filter = new FilterEntity(EntityTypes.TASK);
-    try {
-      filterService.saveFilter(filter);
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    assertThatThrownBy(() -> filterService.saveFilter(filter))
+      .isInstanceOf(AuthorizationException.class);
   }
 
   @Test
@@ -118,7 +107,7 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
 
     filterService.saveFilter(filter);
 
-    assertNotNull(filter.getId());
+    assertThat(filter.getId()).isNotNull();
   }
 
   @Test
@@ -127,13 +116,8 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
 
     filter.setName("anotherName");
 
-    try {
-      filterService.saveFilter(filter);
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    assertThatThrownBy(() -> filterService.saveFilter(filter))
+      .isInstanceOf(AuthorizationException.class);
   }
 
   @Test
@@ -145,20 +129,15 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     grantUpdateFilter(filter.getId());
 
     filter = filterService.saveFilter(filter);
-    assertEquals("anotherName", filter.getName());
+    assertThat(filter.getName()).isEqualTo("anotherName");
   }
 
   @Test
   public void testDeleteFilterNotPermitted() {
-    Filter filter = createTestFilter();
+    String filterId = createTestFilter().getId();
 
-    try {
-      filterService.deleteFilter(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    assertThatThrownBy(() -> filterService.deleteFilter(filterId))
+      .isInstanceOf(AuthorizationException.class);
   }
 
   @Test
@@ -170,7 +149,7 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     filterService.deleteFilter(filter.getId());
 
     long count = filterService.createFilterQuery().count();
-    assertEquals(0, count);
+    assertThat(count).isZero();
   }
 
   @Test
@@ -178,50 +157,30 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     Filter filter = createTestFilter();
 
     long count = filterService.createFilterQuery().count();
-    assertEquals(0, count);
+    assertThat(count).isZero();
 
     Filter returnedFilter = filterService.createFilterQuery().filterId(filter.getId()).singleResult();
-    assertNull(returnedFilter);
+    assertThat(returnedFilter).isNull();
 
-    try {
-      filterService.getFilter(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId = filter.getId();
+    assertThatThrownBy(() -> filterService.getFilter(filterId))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.singleResult(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId1 = filter.getId();
+    assertThatThrownBy(() -> filterService.singleResult(filterId1))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.list(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId2 = filter.getId();
+    assertThatThrownBy(() -> filterService.list(filterId2))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.listPage(filter.getId(), 1, 2);
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId3 = filter.getId();
+    assertThatThrownBy(() -> filterService.listPage(filterId3, 1, 2))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.count(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId4 = filter.getId();
+    assertThatThrownBy(() -> filterService.count(filterId4))
+      .isInstanceOf(AuthorizationException.class);
   }
 
   @Test
@@ -231,34 +190,36 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     grantReadFilter(filter.getId());
 
     long count = filterService.createFilterQuery().count();
-    assertEquals(1, count);
+    assertThat(count).isEqualTo(1);
 
     Filter returnedFilter = filterService.createFilterQuery().filterId(filter.getId()).singleResult();
-    assertNotNull(returnedFilter);
+    assertThat(returnedFilter).isNotNull();
 
     returnedFilter = filterService.getFilter(filter.getId());
-    assertNotNull(returnedFilter);
+    assertThat(returnedFilter).isNotNull();
 
     // create test Task
     Task task = taskService.newTask("test");
     taskService.saveTask(task);
 
     Task result = filterService.singleResult(filter.getId());
-    assertNotNull(result);
-    assertEquals(task.getId(), result.getId());
+    assertThat(result).isNotNull();
+    assertThat(result.getId()).isEqualTo(task.getId());
 
     List<Task> resultList = filterService.list(filter.getId());
-    assertNotNull(resultList);
-    assertEquals(1, resultList.size());
-    assertEquals(task.getId(), resultList.get(0).getId());
+    assertThat(resultList)
+            .isNotNull()
+            .hasSize(1);
+    assertThat(resultList.get(0).getId()).isEqualTo(task.getId());
 
     resultList = filterService.listPage(filter.getId(), 0, 2);
-    assertNotNull(resultList);
-    assertEquals(1, resultList.size());
-    assertEquals(task.getId(), resultList.get(0).getId());
+    assertThat(resultList)
+            .isNotNull()
+            .hasSize(1);
+    assertThat(resultList.get(0).getId()).isEqualTo(task.getId());
 
     count = filterService.count(filter.getId());
-    assertEquals(1, count);
+    assertThat(count).isEqualTo(1);
 
     // remove Task
     taskService.deleteTask(task.getId(), true);
@@ -272,50 +233,30 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     revokeReadFilter(filter.getId());
 
     long count = filterService.createFilterQuery().count();
-    assertEquals(0, count);
+    assertThat(count).isZero();
 
     Filter returnedFilter = filterService.createFilterQuery().filterId(filter.getId()).singleResult();
-    assertNull(returnedFilter);
+    assertThat(returnedFilter).isNull();
 
-    try {
-      filterService.getFilter(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId1 = filter.getId();
+    assertThatThrownBy(() -> filterService.getFilter(filterId1))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.singleResult(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId2 = filter.getId();
+    assertThatThrownBy(() -> filterService.singleResult(filterId2))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.list(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId3 = filter.getId();
+    assertThatThrownBy(() -> filterService.list(filterId3))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.listPage(filter.getId(), 1, 2);
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId4 = filter.getId();
+    assertThatThrownBy(() -> filterService.listPage(filterId4, 1, 2))
+      .isInstanceOf(AuthorizationException.class);
 
-    try {
-      filterService.count(filter.getId());
-      fail("Exception expected");
-    }
-    catch (AuthorizationException e) {
-      // expected
-    }
+    String filterId5 = filter.getId();
+    assertThatThrownBy(() -> filterService.count(filterId5))
+      .isInstanceOf(AuthorizationException.class);
   }
 
   @Test
@@ -331,13 +272,13 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     processEngine.getAuthorizationService().saveAuthorization(authorization);
 
     long count = filterService.createFilterQuery().count();
-    assertEquals(1, count);
+    assertThat(count).isEqualTo(1);
 
     Filter returnedFilter = filterService.createFilterQuery().filterId(filter.getId()).singleResult();
-    assertNotNull(returnedFilter);
+    assertThat(returnedFilter).isNotNull();
 
     returnedFilter = filterService.getFilter(filter.getId());
-    assertNotNull(returnedFilter);
+    assertThat(returnedFilter).isNotNull();
 
     processEngine.getAuthorizationService().deleteAuthorization(authorization.getId());
   }
@@ -380,13 +321,9 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     Filter filter = filterService.newTaskFilter("someName");
     filter.setOwner("*");
 
-    try {
-      filterService.saveFilter(filter);
-      fail("exception expected");
-    } catch (ProcessEngineException e) {
-      testRule.assertTextPresent("Cannot create default authorization for filter owner *: "
-          + "id cannot be *. * is a reserved identifier.", e.getMessage());
-    }
+    assertThatThrownBy(() -> filterService.saveFilter(filter))
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("Cannot create default authorization for filter owner *: id cannot be *. * is a reserved identifier.");
   }
 
   @Ignore("CAM-4889")
@@ -400,12 +337,10 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     grantUpdateFilter(filter.getId());
     filter.setOwner("*");
 
-    try {
-      filterService.saveFilter(filter);
-      fail("it should not be possible to save a filter with the generic owner id");
-    } catch (ProcessEngineException e) {
-      testRule.assertTextPresent("foo", e.getMessage());
-    }
+    assertThatThrownBy(() -> filterService.saveFilter(filter))
+      .withFailMessage("it should not be possible to save a filter with the generic owner id")
+      .isInstanceOf(AuthorizationException.class)
+      .hasMessageContaining("foo");
   }
 
   protected User createTestUser(String userId) {
@@ -503,7 +438,7 @@ public class FilterAuthorizationsTest extends PluggableProcessEngineTest {
     else {
       result = authorizationService.isUserAuthorized(user.getId(), null, permission, Resources.FILTER);
     }
-    assertEquals(expected, result);
+    assertThat(result).isEqualTo(expected);
   }
 
 }

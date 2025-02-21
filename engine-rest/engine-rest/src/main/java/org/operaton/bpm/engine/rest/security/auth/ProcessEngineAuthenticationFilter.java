@@ -17,21 +17,22 @@
 package org.operaton.bpm.engine.rest.security.auth;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.identity.Group;
@@ -92,10 +93,10 @@ public class ProcessEngineAuthenticationFilter implements Filter {
 
     try {
       Class<?> authenticationProviderClass = Class.forName(authenticationProviderClassName);
-      authenticationProvider = (AuthenticationProvider) authenticationProviderClass.newInstance();
+      authenticationProvider = (AuthenticationProvider) authenticationProviderClass.getDeclaredConstructor().newInstance();
     } catch (ClassNotFoundException e) {
       throw new ServletException("Cannot instantiate authentication filter: authentication provider not found", e);
-    } catch (InstantiationException e) {
+    } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
       throw new ServletException("Cannot instantiate authentication filter: cannot instantiate authentication provider", e);
     } catch (IllegalAccessException e) {
       throw new ServletException("Cannot instantiate authentication filter: constructor not accessible", e);

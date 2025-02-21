@@ -18,7 +18,6 @@ package org.operaton.bpm.engine.test.concurrency;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.junit.Assert.assertNull;
 
 import java.sql.Connection;
 
@@ -71,13 +70,14 @@ public class ConcurrentInstallationIdInitializationTest extends ConcurrencyTestC
     thread2.waitForSync();
     thread2.waitUntilDone();
 
-    assertNull(thread1.getException());
+    assertThat(thread1.getException()).isNull();
     Throwable thread2Exception = thread2.getException();
-    assertNull(thread2Exception);
+    assertThat(thread2Exception).isNull();
 
     String id = processEngineConfiguration.getInstallationId();
-    assertThat(id).isNotEmpty();
-    assertThat(id).matches("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}");
+    assertThat(id)
+      .isNotEmpty()
+      .matches("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}");
   }
 
   protected static class ControllableInstallationIdInitializationCommand extends ControllableCommand<Void> {

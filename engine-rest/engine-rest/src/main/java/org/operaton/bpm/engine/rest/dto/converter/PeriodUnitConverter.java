@@ -19,7 +19,7 @@ package org.operaton.bpm.engine.rest.dto.converter;
 import org.operaton.bpm.engine.query.PeriodUnit;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * @author Roman Smirnov
@@ -36,13 +36,9 @@ public class PeriodUnitConverter extends JacksonAwareStringToTypeConverter<Perio
     try {
       return Enum.valueOf(type, value.toUpperCase());
     }
-    catch (IllegalArgumentException e) {
+    catch (IllegalArgumentException | NullPointerException e) {
       throw new InvalidRequestException(Status.BAD_REQUEST, e, String.format("Cannot convert value %s to java enum type %s",
-          value, type.getName()));
-    }
-    catch (NullPointerException e) {
-      throw new InvalidRequestException(Status.BAD_REQUEST, e, String.format("Cannot convert value %s to java enum type %s",
-          value, type.getName()));
+        value, type.getName()));
     }
   }
 

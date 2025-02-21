@@ -19,13 +19,12 @@ package org.operaton.bpm.engine.rest.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Variant;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Variant;
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.TaskService;
 import org.operaton.bpm.engine.exception.NotValidException;
@@ -99,10 +98,10 @@ public class TaskRestServiceImpl extends AbstractRestProcessEngineAware implemen
 
     List<TaskDto> tasks = new ArrayList<>();
     if (Boolean.TRUE.equals(queryDto.getWithCommentAttachmentInfo())) {
-      tasks = matchingTasks.stream().map(TaskWithAttachmentAndCommentDto::fromEntity).collect(Collectors.toList());
+      tasks = matchingTasks.stream().map(TaskWithAttachmentAndCommentDto::fromEntity).toList();
     }
     else {
-      tasks = matchingTasks.stream().map(TaskDto::fromEntity).collect(Collectors.toList());
+      tasks = matchingTasks.stream().map(TaskDto::fromEntity).toList();
     }
     return tasks;
   }

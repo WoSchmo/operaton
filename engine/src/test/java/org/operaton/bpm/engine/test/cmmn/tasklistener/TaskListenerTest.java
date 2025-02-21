@@ -16,14 +16,11 @@
  */
 package org.operaton.bpm.engine.test.cmmn.tasklistener;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.operaton.bpm.engine.delegate.TaskListener;
 import org.operaton.bpm.engine.impl.cmmn.execution.CmmnExecution;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.runtime.VariableInstanceQuery;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.cmmn.tasklistener.util.FieldInjectionTaskListener;
@@ -60,11 +57,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(3, query.count());
+    assertThat(query.count()).isEqualTo(3);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -83,11 +80,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -114,11 +111,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -136,10 +133,10 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(2, query.count());
+    assertThat(query.count()).isEqualTo(2);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -168,11 +165,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(3, query.count());
+    assertThat(query.count()).isEqualTo(3);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -202,11 +199,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -236,11 +233,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -269,10 +266,10 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(2, query.count());
+    assertThat(query.count()).isEqualTo(2);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -299,11 +296,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(3, query.count());
+    assertThat(query.count()).isEqualTo(3);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -331,11 +328,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -363,11 +360,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -394,10 +391,10 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(2, query.count());
+    assertThat(query.count()).isEqualTo(2);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -421,20 +418,15 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
     // when
     processEngineConfiguration
       .getCommandExecutorTxRequired()
-      .execute(new Command<Void>() {
-
-        @Override
-        public Void execute(CommandContext commandContext) {
-          commandContext
-            .getCaseExecutionManager()
-            .deleteCaseInstance(caseInstanceId, null);
-          return null;
-        }
-
-      });
+      .execute(commandContext -> {
+      commandContext
+          .getCaseExecutionManager()
+          .deleteCaseInstance(caseInstanceId, null);
+      return null;
+    });
 
     // then
-    assertEquals(1, TaskDeleteListener.eventCounter);
+    assertThat(TaskDeleteListener.eventCounter).isEqualTo(1);
 
   }
 
@@ -467,11 +459,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(3, query.count());
+    assertThat(query.count()).isEqualTo(3);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -505,11 +497,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -543,11 +535,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -580,10 +572,10 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(2, query.count());
+    assertThat(query.count()).isEqualTo(2);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -607,11 +599,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(3, query.count());
+    assertThat(query.count()).isEqualTo(3);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -644,11 +636,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(3, query.count());
+    assertThat(query.count()).isEqualTo(3);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -682,11 +674,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -720,11 +712,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
-    assertEquals(1, query.variableName("eventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
   @Deployment(resources = {"org/operaton/bpm/engine/test/cmmn/tasklistener/TaskListenerTest.testUpdateListenerByScript.cmmn"})
@@ -756,10 +748,10 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(2, query.count());
+    assertThat(query.count()).isEqualTo(2);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
   }
 
@@ -783,7 +775,7 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(0, query.count());
+    assertThat(query.count()).isZero();
   }
 
   @Deployment(resources = {"org/operaton/bpm/engine/test/cmmn/tasklistener/TaskListenerTest.testAllListenerByClass.cmmn"})
@@ -819,21 +811,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(9, query.count());
+    assertThat(query.count()).isEqualTo(9);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -869,21 +861,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(9, query.count());
+    assertThat(query.count()).isEqualTo(9);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -922,21 +914,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(10, query.count());
+    assertThat(query.count()).isEqualTo(10);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -973,21 +965,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(10, query.count());
+    assertThat(query.count()).isEqualTo(10);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -1026,21 +1018,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(10, query.count());
+    assertThat(query.count()).isEqualTo(10);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -1076,21 +1068,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(10, query.count());
+    assertThat(query.count()).isEqualTo(10);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -1127,21 +1119,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(9, query.count());
+    assertThat(query.count()).isEqualTo(9);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -1176,21 +1168,21 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(9, query.count());
+    assertThat(query.count()).isEqualTo(9);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("update").singleResult().getValue());
-    assertEquals(1, query.variableName("updateEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("update").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("updateEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("delete").singleResult().getValue());
-    assertEquals(1, query.variableName("deleteEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("delete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("deleteEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(4, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(4);
 
   }
 
@@ -1214,12 +1206,12 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(4, query.count());
+    assertThat(query.count()).isEqualTo(4);
 
-    assertEquals("Hello from The Case", query.variableName("greeting").singleResult().getValue());
-    assertEquals("Hello World", query.variableName("helloWorld").singleResult().getValue());
-    assertEquals("ope", query.variableName("prefix").singleResult().getValue());
-    assertEquals("rato", query.variableName("suffix").singleResult().getValue());
+    assertThat(query.variableName("greeting").singleResult().getValue()).isEqualTo("Hello from The Case");
+    assertThat(query.variableName("helloWorld").singleResult().getValue()).isEqualTo("Hello World");
+    assertThat(query.variableName("prefix").singleResult().getValue()).isEqualTo("ope");
+    assertThat(query.variableName("suffix").singleResult().getValue()).isEqualTo("rato");
 
   }
 
@@ -1244,12 +1236,12 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(5, query.count());
+    assertThat(query.count()).isEqualTo(5);
 
-    assertEquals("Hello from The Case", query.variableName("greeting").singleResult().getValue());
-    assertEquals("Hello World", query.variableName("helloWorld").singleResult().getValue());
-    assertEquals("ope", query.variableName("prefix").singleResult().getValue());
-    assertEquals("rato", query.variableName("suffix").singleResult().getValue());
+    assertThat(query.variableName("greeting").singleResult().getValue()).isEqualTo("Hello from The Case");
+    assertThat(query.variableName("helloWorld").singleResult().getValue()).isEqualTo("Hello World");
+    assertThat(query.variableName("prefix").singleResult().getValue()).isEqualTo("ope");
+    assertThat(query.variableName("suffix").singleResult().getValue()).isEqualTo("rato");
 
   }
 
@@ -1289,28 +1281,26 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .caseInstanceIdIn(caseInstanceId);
 
-    assertEquals(7, query.count());
+    assertThat(query.count()).isEqualTo(7);
 
-    assertTrue((Boolean) query.variableName("create").singleResult().getValue());
-    assertEquals(1, query.variableName("createEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("create").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("createEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("assignment").singleResult().getValue());
-    assertEquals(1, query.variableName("assignmentEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("assignment").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("assignmentEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertTrue((Boolean) query.variableName("complete").singleResult().getValue());
-    assertEquals(1, query.variableName("completeEventCounter").singleResult().getValue());
+    assertThat((Boolean) query.variableName("complete").singleResult().getValue()).isTrue();
+    assertThat(query.variableName("completeEventCounter").singleResult().getValue()).isEqualTo(1);
 
-    assertEquals(3, query.variableName("eventCounter").singleResult().getValue());
+    assertThat(query.variableName("eventCounter").singleResult().getValue()).isEqualTo(3);
   }
 
   @Deployment(resources = {"org/operaton/bpm/engine/test/cmmn/tasklistener/TaskListenerTest.testDoesNotImplementTaskListenerInterfaceByClass.cmmn"})
   @Test
   public void testDoesNotImplementTaskListenerInterfaceByClass() {
+    var caseInstanceBuilder = caseService.withCaseDefinitionByKey("case");
     try {
-      caseService
-          .withCaseDefinitionByKey("case")
-          .create()
-          .getId();
+      caseInstanceBuilder.create();
       fail("exception expected");
     } catch (Exception e) {
       // then
@@ -1324,12 +1314,11 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
   @Deployment(resources = {"org/operaton/bpm/engine/test/cmmn/tasklistener/TaskListenerTest.testDoesNotImplementTaskListenerInterfaceByDelegateExpression.cmmn"})
   @Test
   public void testDoesNotImplementTaskListenerInterfaceByDelegateExpression() {
-    try {
-      caseService
+    var caseInstanceBuilder = caseService
           .withCaseDefinitionByKey("case")
-          .setVariable("myTaskListener", new NotTaskListener())
-          .create()
-          .getId();
+          .setVariable("myTaskListener", new NotTaskListener());
+    try {
+      caseInstanceBuilder.create();
       fail("exception expected");
     } catch (Exception e) {
       // then
@@ -1343,12 +1332,10 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
   @Deployment(resources = {"org/operaton/bpm/engine/test/cmmn/tasklistener/TaskListenerTest.testTaskListenerDoesNotExist.cmmn"})
   @Test
   public void testTaskListenerDoesNotExist() {
+    var caseInstanceBuilder = caseService.withCaseDefinitionByKey("case");
 
     try {
-      caseService
-          .withCaseDefinitionByKey("case")
-          .create()
-          .getId();
+      caseInstanceBuilder.create();
       fail("exception expected");
     } catch (Exception e) {
       // then
@@ -1362,19 +1349,14 @@ public class TaskListenerTest extends PluggableProcessEngineTest {
   protected void terminate(final String caseExecutionId) {
     processEngineConfiguration
       .getCommandExecutorTxRequired()
-      .execute(new Command<Void>() {
-
-        @Override
-        public Void execute(CommandContext commandContext) {
-          CmmnExecution caseTask = (CmmnExecution) caseService
-              .createCaseExecutionQuery()
-              .caseExecutionId(caseExecutionId)
-              .singleResult();
-          caseTask.terminate();
-          return null;
-        }
-
-      });
+      .execute(commandContext -> {
+      CmmnExecution caseTask = (CmmnExecution) caseService
+          .createCaseExecutionQuery()
+          .caseExecutionId(caseExecutionId)
+          .singleResult();
+      caseTask.terminate();
+      return null;
+    });
   }
 
 }

@@ -16,8 +16,7 @@
  */
 package org.operaton.bpm.engine.test.concurrency;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.operaton.bpm.engine.CaseService;
 import org.operaton.bpm.engine.OptimisticLockingException;
@@ -68,7 +67,7 @@ public class CompetingParentCompletionTest {
     OptimisticLockingException exception;
     protected StateTransitionCaseExecutionCmd cmd;
 
-    public SingleThread(String caseExecutionId, StateTransitionCaseExecutionCmd cmd) {
+    protected SingleThread(String caseExecutionId, StateTransitionCaseExecutionCmd cmd) {
       this.caseExecutionId = caseExecutionId;
       this.cmd = cmd;
     }
@@ -158,11 +157,11 @@ public class CompetingParentCompletionTest {
 
     LOG.debug("test thread notifies thread 1");
     threadOne.proceedAndWaitTillDone();
-    assertNull(threadOne.exception);
+    assertThat(threadOne.exception).isNull();
 
     LOG.debug("test thread notifies thread 2");
     threadTwo.proceedAndWaitTillDone();
-    assertNotNull(threadTwo.exception);
+    assertThat(threadTwo.exception).isNotNull();
     testRule.assertTextPresent("was updated by another transaction concurrently", threadTwo.exception.getMessage());
 
   }
@@ -199,11 +198,11 @@ public class CompetingParentCompletionTest {
 
     LOG.debug("test thread notifies thread 1");
     threadOne.proceedAndWaitTillDone();
-    assertNull(threadOne.exception);
+    assertThat(threadOne.exception).isNull();
 
     LOG.debug("test thread notifies thread 2");
     threadTwo.proceedAndWaitTillDone();
-    assertNotNull(threadTwo.exception);
+    assertThat(threadTwo.exception).isNotNull();
     testRule.assertTextPresent("was updated by another transaction concurrently", threadTwo.exception.getMessage());
 
   }
@@ -240,11 +239,11 @@ public class CompetingParentCompletionTest {
 
     LOG.debug("test thread notifies thread 1");
     threadOne.proceedAndWaitTillDone();
-    assertNull(threadOne.exception);
+    assertThat(threadOne.exception).isNull();
 
     LOG.debug("test thread notifies thread 2");
     threadTwo.proceedAndWaitTillDone();
-    assertNotNull(threadTwo.exception);
+    assertThat(threadTwo.exception).isNotNull();
     testRule.assertTextPresent("was updated by another transaction concurrently", threadTwo.exception.getMessage());
 
   }

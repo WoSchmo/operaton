@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.operaton.bpm.engine.test.jobexecutor;
 
-'use strict';
+import org.operaton.bpm.engine.delegate.DelegateExecution;
+import org.operaton.bpm.engine.delegate.JavaDelegate;
 
-var Page = require('./system-base');
+public class DelayDelegate implements JavaDelegate {
 
-var groupsSection = element(by.id('groups'));
+  @Override
+  public void execute(DelegateExecution execution) throws Exception {
+    Thread.sleep(2000L);
+  }
 
-module.exports = Page.extend({
-  url: '/operaton/app/admin/default/#/system?section=system-settings-license'
-});
+}

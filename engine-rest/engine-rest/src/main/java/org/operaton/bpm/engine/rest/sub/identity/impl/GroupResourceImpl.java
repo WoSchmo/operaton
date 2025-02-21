@@ -26,9 +26,9 @@ import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.sub.identity.GroupMembersResource;
 import org.operaton.bpm.engine.rest.sub.identity.GroupResource;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import static org.operaton.bpm.engine.authorization.Permissions.DELETE;
@@ -56,9 +56,7 @@ public class GroupResourceImpl extends AbstractIdentityResource implements Group
       throw new InvalidRequestException(Status.NOT_FOUND, "Group with id " + resourceId + " does not exist");
     }
 
-    GroupDto group = GroupDto.fromGroup(dbGroup);
-
-    return group;
+    return GroupDto.fromGroup(dbGroup);
   }
 
   @Override

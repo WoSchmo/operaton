@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.operaton.bpm</groupId>
     <artifactId>operaton-root</artifactId>
-    <version>1.0.0-beta-3-SNAPSHOT</version>
+    <version>1.0.0-beta-4-SNAPSHOT</version>
   </parent>
 
   <artifactId>operaton-parent</artifactId>
@@ -17,11 +17,12 @@
   </description>
 
   <properties>
+    <version.operaton.dbscheme>7.23.0</version.operaton.dbscheme>
     <version.spring.framework>5.3.39</version.spring.framework>
     <version.spring.framework6>6.1.15</version.spring.framework6>
     <version.spring-boot>3.4.1</version.spring-boot>
     <version.resteasy>3.15.6.Final</version.resteasy>
-    <version.jersey2>2.34</version.jersey2>
+    <version.jersey3>3.1.9</version.jersey3>
     <version.ejb>3.1</version.ejb>
     <!-- use minimum version of resteasy and jersey -->
     <version.jaxrs.api>2.0.1.Final</version.jaxrs.api>
@@ -41,11 +42,10 @@
     <version.xml.jaxb-impl>2.3.6</version.xml.jaxb-impl>
     <version.xml.jaxb-impl4>4.0.5</version.xml.jaxb-impl4>
     <version.jakarta.xml.bind-api>4.0.2</version.jakarta.xml.bind-api>
+    <version.jakarta.servlet-api>6.1.0</version.jakarta.servlet-api>
     <version.httpclient>4.5.14</version.httpclient>
     <version.httpclient5>5.4.1</version.httpclient5>
 
-    <version.slf4j>1.7.26</version.slf4j>
-    <version.logback>1.2.11</version.logback>
     <version.junit>5.11.3</version.junit>
     <version.junit>4.13.1</version.junit>
     <version.assertj>3.26.3</version.assertj>
@@ -67,21 +67,21 @@
     <version.tomcat>10.1.30</version.tomcat>
 
     <version.arquillian>1.1.10.Final</version.arquillian>
-    <version.shrinkwrap.resolvers>2.2.2</version.shrinkwrap.resolvers>
+    <version.shrinkwrap.resolvers>3.3.3</version.shrinkwrap.resolvers>
     <version.selenium>4.10.0</version.selenium>
     <version.freemarker>2.3.31</version.freemarker>
 
     <version.jboss-javaee-spec>3.0.2.Final</version.jboss-javaee-spec>
     <version.jakarta-ee-spec>10.0.0</version.jakarta-ee-spec>
 
-    <version.nodejs>20.14.0</version.nodejs>
-    <version.npm>10.7.0</version.npm>
+    <version.nodejs>22.13.0</version.nodejs>
+    <version.npm>11.0.0</version.npm>
     <version.junit5>5.11.3</version.junit5>
 
     <jacoco.argLine/>
     <surefire.memArgs>-Xmx1024m -XX:MetaspaceSize=128m</surefire.memArgs>
     <surefire.argLine>${jacoco.argLine} ${surefire.memArgs} -Duser.language=en -Duser.region=US -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${project.build.directory}/heap_dump.hprof</surefire.argLine>
-    <surefire.forkCount>0.5C</surefire.forkCount>
+    <surefire.forkCount>1</surefire.forkCount>
 
     <!-- profile activation properties -->
     <with-sources>false</with-sources>
@@ -127,15 +127,13 @@
 
   <dependencyManagement>
     <dependencies>
-
       <dependency>
         <groupId>org.operaton.bpm</groupId>
         <artifactId>operaton-bom</artifactId>
-        <version>${project.version}</version>
+        <version>${project.parent.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
     </dependencies>
   </dependencyManagement>
 
@@ -388,7 +386,7 @@
               </execution>
             </executions>
             <configuration>
-              <propertyName>jacoco.argLine</propertyName>
+              <propertyName>${jacoco.argLine}</propertyName>
             </configuration>
           </plugin>
         </plugins>

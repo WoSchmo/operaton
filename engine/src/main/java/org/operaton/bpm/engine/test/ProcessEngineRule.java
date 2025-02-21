@@ -75,7 +75,7 @@ import java.util.List;
  * the process engine}. This can be handy to control the exact time that is used
  * by the engine in order to verify e.g., due dates of timers. Or start, end
  * and duration times in the history service. In the tearDown, the internal
- * clock will automatically be reset to use the current system time rather then
+ * clock will automatically be reset to use the current system time rather than
  * the time that was set during a test method. In other words, you don't have to
  * clean up your own time messing mess ;-)
  * </p>
@@ -185,7 +185,7 @@ public class ProcessEngineRule extends TestWatcher implements ProcessEngineServi
     try {
       processEngine = TestHelper.getProcessEngine(configurationResource);
     } catch (RuntimeException ex) {
-      if (ex.getCause() != null && ex.getCause() instanceof FileNotFoundException) {
+      if (ex.getCause() instanceof FileNotFoundException) {
         processEngine = TestHelper.getProcessEngine(configurationResourceCompat);
       } else {
         throw ex;

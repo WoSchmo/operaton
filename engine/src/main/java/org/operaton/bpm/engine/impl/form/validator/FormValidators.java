@@ -16,6 +16,7 @@
  */
 package org.operaton.bpm.engine.impl.form.validator;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,8 +76,7 @@ public class FormValidators {
 
       Class<? extends FormFieldValidator> validator = validators.get(name);
       if(validator != null) {
-        FormFieldValidator validatorInstance = createValidatorInstance(validator);
-        return validatorInstance;
+        return createValidatorInstance(validator);
 
       } else {
         bpmnParse.addError("Cannot find validator implementation for name '"+name+"'.", constraint);
@@ -92,14 +92,9 @@ public class FormValidators {
 
   protected FormFieldValidator createValidatorInstance(Class<? extends FormFieldValidator> validator) {
     try {
-      return validator.newInstance();
-
-    } catch (InstantiationException e) {
+      return validator.getDeclaredConstructor().newInstance();
+    } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       throw new ProcessEngineException("Could not instantiate validator", e);
-
-    } catch (IllegalAccessException e) {
-      throw new ProcessEngineException("Could not instantiate validator", e);
-
     }
   }
 

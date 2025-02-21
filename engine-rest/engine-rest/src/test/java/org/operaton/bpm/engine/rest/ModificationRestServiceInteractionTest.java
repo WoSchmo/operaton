@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.BadUserRequestException;
@@ -110,7 +110,7 @@ public class ModificationRestServiceInteractionTest extends AbstractRestServiceT
       .post(EXECUTE_MODIFICATION_SYNC_URL);
 
     verify(runtimeServiceMock).createModification("processDefinitionId");
-    verify(modificationBuilderMock).processInstanceIds(eq(Arrays.asList("100", "20")));
+    verify(modificationBuilderMock).processInstanceIds(Arrays.asList("100", "20"));
     verify(modificationBuilderMock).cancelAllForActivity("activityId");
     verify(modificationBuilderMock).startBeforeActivity("activityId");
     verify(modificationBuilderMock).startAfterActivity("activityId");
@@ -148,7 +148,7 @@ public class ModificationRestServiceInteractionTest extends AbstractRestServiceT
       .post(EXECUTE_MODIFICATION_ASYNC_URL);
 
     verify(runtimeServiceMock).createModification(null);
-    verify(modificationBuilderMock).processInstanceIds(eq(Arrays.asList("100", "20")));
+    verify(modificationBuilderMock).processInstanceIds(Arrays.asList("100", "20"));
     verify(modificationBuilderMock).cancelAllForActivity("activityId");
     verify(modificationBuilderMock).startBeforeActivity("activityId");
     verify(modificationBuilderMock).startAfterActivity("activityId");
@@ -186,7 +186,7 @@ public class ModificationRestServiceInteractionTest extends AbstractRestServiceT
       .post(EXECUTE_MODIFICATION_SYNC_URL);
 
     verify(runtimeServiceMock).createModification(null);
-    verify(modificationBuilderMock).processInstanceIds(eq(Arrays.asList("100", "20")));
+    verify(modificationBuilderMock).processInstanceIds(Arrays.asList("100", "20"));
     verify(modificationBuilderMock).cancelAllForActivity("activityId");
     verify(modificationBuilderMock).startBeforeActivity("activityId");
     verify(modificationBuilderMock).startAfterActivity("activityId");
@@ -242,7 +242,7 @@ public class ModificationRestServiceInteractionTest extends AbstractRestServiceT
       .post(EXECUTE_MODIFICATION_ASYNC_URL);
 
     verify(runtimeServiceMock).createModification("processDefinitionId");
-    verify(modificationBuilderMock).processInstanceIds(eq(Arrays.asList("100", "20")));
+    verify(modificationBuilderMock).processInstanceIds(Arrays.asList("100", "20"));
     verify(modificationBuilderMock).cancelAllForActivity("activityId");
     verify(modificationBuilderMock).startBeforeActivity("activityId");
     verify(modificationBuilderMock).startAfterActivity("activityId");

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.history.CleanableHistoricBatchReport;
@@ -81,8 +81,8 @@ public class CleanableHistoricBatchReportServiceTest extends AbstractRestService
 
     when(anotherReportResult.getBatchType()).thenReturn("batchId2");
     when(anotherReportResult.getHistoryTimeToLive()).thenReturn(null);
-    when(anotherReportResult.getFinishedBatchesCount()).thenReturn(13l);
-    when(anotherReportResult.getCleanableBatchesCount()).thenReturn(0l);
+    when(anotherReportResult.getFinishedBatchesCount()).thenReturn(13L);
+    when(anotherReportResult.getCleanableBatchesCount()).thenReturn(0L);
 
     List<CleanableHistoricBatchReportResult> mocks = new ArrayList<>();
     mocks.add(reportResult);

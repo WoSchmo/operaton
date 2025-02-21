@@ -17,7 +17,7 @@
 package org.operaton.bpm.engine.rest.util.container;
 
 import java.net.BindException;
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 public abstract class EmbeddedServerBootstrap extends AbstractServerBootstrap {
 
@@ -26,7 +26,7 @@ public abstract class EmbeddedServerBootstrap extends AbstractServerBootstrap {
   protected abstract void setupServer(Application application);
   protected abstract void startServerInternal() throws Exception;
 
-  public EmbeddedServerBootstrap(Application application) {
+  protected EmbeddedServerBootstrap(Application application) {
     this.application = application;
     setupServer(application);
   }

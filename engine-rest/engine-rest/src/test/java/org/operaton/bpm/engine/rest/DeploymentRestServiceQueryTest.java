@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.repository.Deployment;
 import org.operaton.bpm.engine.repository.DeploymentQuery;
@@ -276,7 +276,7 @@ public class DeploymentRestServiceQueryTest extends AbstractRestServiceTest {
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId1 = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
   }
 
   @Test
@@ -305,7 +305,7 @@ public class DeploymentRestServiceQueryTest extends AbstractRestServiceTest {
     String returnedTenantId1 = from(content).getString("[0].tenantId");
     String returnedTenantId2 = from(content).getString("[1].tenantId");
 
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
     assertThat(returnedTenantId2).isEqualTo(MockProvider.EXAMPLE_TENANT_ID);
   }
 

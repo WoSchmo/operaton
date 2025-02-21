@@ -16,19 +16,8 @@
  */
 package org.operaton.bpm.engine.test.api.multitenancy.suspensionstate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.jobexecutor.TimerActivateProcessDefinitionHandler;
 import org.operaton.bpm.engine.impl.jobexecutor.TimerSuspendProcessDefinitionHandler;
@@ -42,11 +31,19 @@ import org.operaton.bpm.engine.test.util.ProcessEngineTestRule;
 import org.operaton.bpm.engine.test.util.ProvidedProcessEngineRule;
 import org.operaton.bpm.model.bpmn.Bpmn;
 import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class MultiTenancyProcessDefinitionSuspensionStateTest {
 
@@ -322,7 +319,7 @@ public class MultiTenancyProcessDefinitionSuspensionStateTest {
     // when execute the job to suspend the process definitions
     Job job = engineRule.getManagementService().createJobQuery().timers().singleResult();
     assertThat(job).isNotNull();
-    List<String> expectedDeploymentIds = query.active().list().stream().map(ProcessDefinition::getDeploymentId).collect(Collectors.toList());
+    List<String> expectedDeploymentIds = query.active().list().stream().map(ProcessDefinition::getDeploymentId).toList();
     assertThat(expectedDeploymentIds).contains(job.getDeploymentId());
 
     engineRule.getManagementService().executeJob(job.getId());
@@ -410,7 +407,7 @@ public class MultiTenancyProcessDefinitionSuspensionStateTest {
     // when execute the job to activate the process definitions
     Job job = engineRule.getManagementService().createJobQuery().timers().singleResult();
     assertThat(job).isNotNull();
-    List<String> expectedDeploymentIds = query.suspended().list().stream().map(ProcessDefinition::getDeploymentId).collect(Collectors.toList());
+    List<String> expectedDeploymentIds = query.suspended().list().stream().map(ProcessDefinition::getDeploymentId).toList();
     assertThat(expectedDeploymentIds).contains(job.getDeploymentId());
 
     engineRule.getManagementService().executeJob(job.getId());
@@ -631,12 +628,12 @@ public class MultiTenancyProcessDefinitionSuspensionStateTest {
         .processDefinitionKey(PROCESS_DEFINITION_KEY).tenantIdIn(TENANT_ONE).singleResult();
 
     engineRule.getIdentityService().setAuthentication("user", null, null);
+    var updateProcessDefinitionSuspensionStateBuilder = engineRule.getRepositoryService()
+      .updateProcessDefinitionSuspensionState()
+      .byProcessDefinitionId(processDefinition.getId());
 
     // when/then
-    assertThatThrownBy(() -> engineRule.getRepositoryService()
-        .updateProcessDefinitionSuspensionState()
-        .byProcessDefinitionId(processDefinition.getId())
-        .suspend())
+    assertThatThrownBy(updateProcessDefinitionSuspensionStateBuilder::suspend)
       .isInstanceOf(ProcessEngineException.class)
       .hasMessageContaining("Cannot update the process definition '"+ processDefinition.getId()
       + "' because it belongs to no authenticated tenant");
@@ -649,7 +646,7 @@ public class MultiTenancyProcessDefinitionSuspensionStateTest {
     assertThat(query.active().count()).isEqualTo(3L);
     assertThat(query.suspended().count()).isZero();
 
-    engineRule.getIdentityService().setAuthentication("user", null, Arrays.asList(TENANT_ONE));
+    engineRule.getIdentityService().setAuthentication("user", null, List.of(TENANT_ONE));
 
     engineRule.getRepositoryService()
       .updateProcessDefinitionSuspensionState()
@@ -695,13 +692,10 @@ public class MultiTenancyProcessDefinitionSuspensionStateTest {
   @After
   public void tearDown() {
     CommandExecutor commandExecutor = engineRule.getProcessEngineConfiguration().getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-        commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerActivateProcessDefinitionHandler.TYPE);
-        commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerSuspendProcessDefinitionHandler.TYPE);
-        return null;
-      }
+    commandExecutor.execute(commandContext -> {
+      commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerActivateProcessDefinitionHandler.TYPE);
+      commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerSuspendProcessDefinitionHandler.TYPE);
+      return null;
     });
   }
 

@@ -16,12 +16,7 @@
  */
 package org.operaton.bpm.engine.test.api.cmmn;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +24,9 @@ import java.util.Map;
 
 import org.operaton.bpm.engine.exception.NotAllowedException;
 import org.operaton.bpm.engine.runtime.CaseExecution;
+import org.operaton.bpm.engine.runtime.CaseExecutionCommandBuilder;
 import org.operaton.bpm.engine.runtime.CaseInstance;
 import org.operaton.bpm.engine.runtime.VariableInstance;
-import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
 import org.operaton.bpm.engine.variable.Variables;
@@ -43,9 +38,9 @@ import org.junit.Test;
  */
 public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
-  protected final String DEFINITION_KEY = "oneCaseTaskCase";
-  protected final String DEFINITION_KEY_2 = "oneTaskCase";
-  protected final String CASE_TASK_KEY = "PI_CaseTask_1";
+  protected static final String DEFINITION_KEY = "oneCaseTaskCase";
+  protected static final String DEFINITION_KEY_2 = "oneTaskCase";
+  protected static final String CASE_TASK_KEY = "PI_CaseTask_1";
 
 
   @Deployment(resources={
@@ -59,7 +54,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     // when
     caseService
@@ -68,11 +63,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
   }
 
   @Deployment(resources={
@@ -86,7 +81,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     // when
     caseService
@@ -97,11 +92,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
 
     // the case instance has two variables:
     // - aVariableName
@@ -110,8 +105,9 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .list();
 
-    assertFalse(result.isEmpty());
-    assertEquals(2, result.size());
+    assertThat(result)
+            .isNotEmpty()
+            .hasSize(2);
 
     verifyVariables(superCaseInstanceId, result);
 
@@ -128,7 +124,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     // variables
     Map<String, Object> variables = new HashMap<>();
@@ -143,11 +139,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
 
     // the case instance has two variables:
     // - aVariableName
@@ -156,8 +152,9 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .list();
 
-    assertFalse(result.isEmpty());
-    assertEquals(2, result.size());
+    assertThat(result)
+            .isNotEmpty()
+            .hasSize(2);
 
     verifyVariables(superCaseInstanceId, result);
 
@@ -177,11 +174,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
   }
 
   @Deployment(resources={
@@ -200,11 +197,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
 
     // the case instance has two variables:
     // - aVariableName
@@ -213,8 +210,9 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .list();
 
-    assertFalse(result.isEmpty());
-    assertEquals(2, result.size());
+    assertThat(result)
+            .isNotEmpty()
+            .hasSize(2);
 
     verifyVariables(superCaseInstanceId, result);
 
@@ -238,11 +236,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
 
     // the case instance has two variables:
     // - aVariableName
@@ -251,8 +249,9 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .list();
 
-    assertFalse(result.isEmpty());
-    assertEquals(2, result.size());
+    assertThat(result)
+            .isNotEmpty()
+            .hasSize(2);
 
     verifyVariables(superCaseInstanceId, result);
 
@@ -261,15 +260,15 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
   protected void verifyVariables(String superCaseInstanceId, List<VariableInstance> result) {
     for (VariableInstance variable : result) {
 
-      assertEquals(superCaseInstanceId, variable.getCaseExecutionId());
-      assertEquals(superCaseInstanceId, variable.getCaseInstanceId());
+      assertThat(variable.getCaseExecutionId()).isEqualTo(superCaseInstanceId);
+      assertThat(variable.getCaseInstanceId()).isEqualTo(superCaseInstanceId);
 
       if (variable.getName().equals("aVariableName")) {
-        assertEquals("aVariableName", variable.getName());
-        assertEquals("abc", variable.getValue());
+        assertThat(variable.getName()).isEqualTo("aVariableName");
+        assertThat(variable.getValue()).isEqualTo("abc");
       } else if (variable.getName().equals("anotherVariableName")) {
-        assertEquals("anotherVariableName", variable.getName());
-        assertEquals(999, variable.getValue());
+        assertThat(variable.getName()).isEqualTo("anotherVariableName");
+        assertThat(variable.getValue()).isEqualTo(999);
       } else {
         fail("Unexpected variable: " + variable.getName());
       }
@@ -287,7 +286,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     // when
     caseService
@@ -298,11 +297,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
 
     // the case instance has two variables:
     // - aVariableName
@@ -311,20 +310,21 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .list();
 
-    assertFalse(result.isEmpty());
-    assertEquals(2, result.size());
+    assertThat(result)
+            .isNotEmpty()
+            .hasSize(2);
 
     for (VariableInstance variable : result) {
 
-      assertEquals(caseTaskId, variable.getCaseExecutionId());
-      assertEquals(superCaseInstanceId, variable.getCaseInstanceId());
+      assertThat(variable.getCaseExecutionId()).isEqualTo(caseTaskId);
+      assertThat(variable.getCaseInstanceId()).isEqualTo(superCaseInstanceId);
 
       if (variable.getName().equals("aVariableName")) {
-        assertEquals("aVariableName", variable.getName());
-        assertEquals("abc", variable.getValue());
+        assertThat(variable.getName()).isEqualTo("aVariableName");
+        assertThat(variable.getValue()).isEqualTo("abc");
       } else if (variable.getName().equals("anotherVariableName")) {
-        assertEquals("anotherVariableName", variable.getName());
-        assertEquals(999, variable.getValue());
+        assertThat(variable.getName()).isEqualTo("anotherVariableName");
+        assertThat(variable.getValue()).isEqualTo(999);
       } else {
         fail("Unexpected variable: " + variable.getName());
       }
@@ -343,7 +343,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     // variables
     Map<String, Object> variables = new HashMap<>();
@@ -359,11 +359,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNotNull(subCaseInstance);
-    assertTrue(subCaseInstance.isActive());
+    assertThat(subCaseInstance).isNotNull();
+    assertThat(subCaseInstance.isActive()).isTrue();
 
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isActive());
+    assertThat(caseTask.isActive()).isTrue();
 
     // the case instance has two variables:
     // - aVariableName
@@ -372,20 +372,21 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
         .createVariableInstanceQuery()
         .list();
 
-    assertFalse(result.isEmpty());
-    assertEquals(2, result.size());
+    assertThat(result)
+            .isNotEmpty()
+            .hasSize(2);
 
     for (VariableInstance variable : result) {
 
-      assertEquals(caseTaskId, variable.getCaseExecutionId());
-      assertEquals(superCaseInstanceId, variable.getCaseInstanceId());
+      assertThat(variable.getCaseExecutionId()).isEqualTo(caseTaskId);
+      assertThat(variable.getCaseInstanceId()).isEqualTo(superCaseInstanceId);
 
       if (variable.getName().equals("aVariableName")) {
-        assertEquals("aVariableName", variable.getName());
-        assertEquals("abc", variable.getValue());
+        assertThat(variable.getName()).isEqualTo("aVariableName");
+        assertThat(variable.getValue()).isEqualTo("abc");
       } else if (variable.getName().equals("anotherVariableName")) {
-        assertEquals("anotherVariableName", variable.getName());
-        assertEquals(999, variable.getValue());
+        assertThat(variable.getName()).isEqualTo("anotherVariableName");
+        assertThat(variable.getValue()).isEqualTo(999);
       } else {
         fail("Unexpected variable: " + variable.getName());
       }
@@ -403,16 +404,14 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .reenable();
-      fail("It should not be possible to re-enable an enabled case task.");
-    } catch (NotAllowedException e) {
-    }
+    // when
+    assertThatThrownBy(commandBuilder::reenable)
+      // then
+      .withFailMessage("It should not be possible to re-enable an enabled case task.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={
@@ -426,7 +425,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     caseService
       .withCaseExecution(caseTaskId)
@@ -439,7 +438,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isEnabled());
+    assertThat(caseTask.isEnabled()).isTrue();
   }
 
   @Deployment(resources={
@@ -451,15 +450,13 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .reenable();
-      fail("It should not be possible to re-enable an active case task.");
-    } catch (NotAllowedException e) {
-    }
+    // when
+    assertThatThrownBy(commandBuilder::reenable)
+      // then
+      .withFailMessage("It should not be possible to re-enable an active case task.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneCaseTaskAndOneHumanTaskCaseWithManualActivation.cmmn"})
@@ -470,7 +467,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertNull(subCaseInstance);
+    assertThat(subCaseInstance).isNull();
 
     // when
     caseService
@@ -479,7 +476,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertTrue(caseTask.isDisabled());
+    assertThat(caseTask.isDisabled()).isTrue();
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneCaseTaskAndOneHumanTaskCaseWithManualActivation.cmmn"})
@@ -489,18 +486,14 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
-    caseService
-      .withCaseExecution(caseTaskId)
-      .disable();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
+    commandBuilder.disable();
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .disable();
-      fail("It should not be possible to disable a already disabled case task.");
-    } catch (NotAllowedException e) {
-    }
+    // when
+    assertThatThrownBy(commandBuilder::disable)
+      // then
+      .withFailMessage("It should not be possible to disable a already disabled case task.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={
@@ -512,15 +505,13 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
     // when
-    try {
-      caseService
-        .withCaseExecution(caseTaskId)
-        .disable();
-      fail("It should not be possible to disable an active case task.");
-    } catch (NotAllowedException e) {
-    }
+    assertThatThrownBy(commandBuilder::disable)
+      // then
+      .withFailMessage("It should not be possible to disable an active case task.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneCaseTaskAndOneHumanTaskCaseWithManualActivation.cmmn"})
@@ -530,18 +521,14 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
-    caseService
-      .withCaseExecution(caseTaskId)
-      .disable();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
+    commandBuilder.disable();
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .manualStart();
-      fail("It should not be possible to start a disabled case task manually.");
-    } catch (NotAllowedException e) {
-    }
+    // when
+    assertThatThrownBy(commandBuilder::manualStart)
+      // then
+      .withFailMessage("It should not be possible to start a disabled case task manually.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={
@@ -553,15 +540,13 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .manualStart();
-      fail("It should not be possible to start an already active case task manually.");
-    } catch (NotAllowedException e) {
-    }
+    // when
+    assertThatThrownBy(commandBuilder::manualStart)
+      // then
+      .withFailMessage("It should not be possible to start an already active case task manually.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={
@@ -573,15 +558,13 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .complete();
-      fail("It should not be possible to complete a case task, while the process instance is still running.");
-    } catch (NotAllowedException e) {}
-
+    // when
+    assertThatThrownBy(commandBuilder::complete)
+      // then
+      .withFailMessage("It should not be possible to complete a case task, while the process instance is still running.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={
@@ -592,8 +575,6 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
   public void testCloseCaseInstanceShouldCompleteCaseTask() {
     // given
     createCaseInstance(DEFINITION_KEY);
-    String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
-
     String humanTaskId = queryCaseExecutionByActivityId("PI_HumanTask_1").getId();
 
     caseService
@@ -601,7 +582,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
       .complete();
 
     CaseInstance subCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY_2);
-    assertTrue(subCaseInstance.isCompleted());
+    assertThat(subCaseInstance.isCompleted()).isTrue();
 
     // when
     caseService
@@ -610,11 +591,11 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
 
     // then
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertNull(caseTask);
+    assertThat(caseTask).isNull();
 
     CaseInstance superCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY);
-    assertNotNull(superCaseInstance);
-    assertTrue(superCaseInstance.isCompleted());
+    assertThat(superCaseInstance).isNotNull();
+    assertThat(superCaseInstance.isCompleted()).isTrue();
 
   }
 
@@ -626,18 +607,17 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
     // when
-
     caseService
       .withCaseExecution(caseTaskId)
       .disable();
 
     // then
     CaseExecution caseTask = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-
+    assertThat(caseTask).isNull();
     // the case instance has been completed
     CaseInstance superCaseInstance = queryCaseInstanceByKey(DEFINITION_KEY);
-    assertNotNull(superCaseInstance);
-    assertTrue(superCaseInstance.isCompleted());
+    assertThat(superCaseInstance).isNotNull();
+    assertThat(superCaseInstance.isCompleted()).isTrue();
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneCaseTaskCaseWithManualActivation.cmmn"})
@@ -646,14 +626,13 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .complete();
-      fail("Should not be able to complete an enabled case task.");
-    } catch (NotAllowedException e) {}
+    // when
+    assertThatThrownBy(commandBuilder::complete)
+      // then
+      .withFailMessage("Should not be able to complete an enabled case task.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneCaseTaskAndOneHumanTaskCaseWithManualActivation.cmmn"})
@@ -663,17 +642,14 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
 
-    caseService
-      .withCaseExecution(caseTaskId)
-      .disable();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
+    commandBuilder.disable();
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .complete();
-      fail("Should not be able to complete a disabled case task.");
-    } catch (NotAllowedException e) {}
+    // when
+    assertThatThrownBy(commandBuilder::complete)
+      // then
+      .withFailMessage("Should not be able to complete a disabled case task.")
+      .isInstanceOf(NotAllowedException.class);
   }
 
   @Deployment(resources={"org/operaton/bpm/engine/test/api/cmmn/oneCaseTaskCaseWithManualActivation.cmmn"})
@@ -682,16 +658,13 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     String caseTaskId = queryCaseExecutionByActivityId(CASE_TASK_KEY).getId();
+    CaseExecutionCommandBuilder commandBuilder = caseService.withCaseExecution(caseTaskId);
 
-    try {
-      // when
-      caseService
-        .withCaseExecution(caseTaskId)
-        .close();
-      fail("It should not be possible to close a case task.");
-    } catch (NotAllowedException e) {
-
-    }
+    // when
+    assertThatThrownBy(commandBuilder::close)
+      // then
+      .withFailMessage("It should not be possible to close a case task.")
+      .isInstanceOf(NotAllowedException.class);
 
   }
 
@@ -710,7 +683,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
       .terminate();
 
     caseTaskExecution = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertNull(caseTaskExecution);
+    assertThat(caseTaskExecution).isNull();
   }
 
   @Deployment(resources={
@@ -728,7 +701,7 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
       .terminateCaseExecution(caseTaskExecution.getId());
 
     caseTaskExecution = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    assertNull(caseTaskExecution);
+    assertThat(caseTaskExecution).isNull();
   }
 
   @Deployment(resources={
@@ -740,16 +713,14 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     // given
     createCaseInstance(DEFINITION_KEY);
     CaseExecution caseTaskExecution = queryCaseExecutionByActivityId(CASE_TASK_KEY);
-    
-    try {
-      // when
-      caseService 
-        .terminateCaseExecution(caseTaskExecution.getId());
-      fail("It should not be possible to terminate a case task.");
-    } catch (NotAllowedException e) {
-      boolean result = e.getMessage().contains("The case execution must be in state 'active' to terminate");
-      assertTrue(result);   
-    }
+    String caseTaskExecutionId = caseTaskExecution.getId();
+
+    // when
+    assertThatThrownBy(() -> caseService.terminateCaseExecution(caseTaskExecutionId))
+      // then
+      .withFailMessage("It should not be possible to terminate a case task.")
+      .isInstanceOf(NotAllowedException.class)
+      .hasMessageContaining("The case execution must be in state 'active' to terminate");
   }
   
   protected CaseInstance createCaseInstance(String caseDefinitionKey) {
@@ -776,12 +747,6 @@ public class CaseServiceCaseTaskTest extends PluggableProcessEngineTest {
     return caseService
         .createCaseInstanceQuery()
         .caseDefinitionKey(caseDefinitionKey)
-        .singleResult();
-  }
-
-  protected Task queryTask() {
-    return taskService
-        .createTaskQuery()
         .singleResult();
   }
 

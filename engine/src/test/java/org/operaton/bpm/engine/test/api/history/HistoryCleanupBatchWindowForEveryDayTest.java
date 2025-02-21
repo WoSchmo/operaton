@@ -16,9 +16,7 @@
  */
 package org.operaton.bpm.engine.test.api.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,8 +29,6 @@ import org.operaton.bpm.engine.HistoryService;
 import org.operaton.bpm.engine.ManagementService;
 import org.operaton.bpm.engine.ProcessEngineConfiguration;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.persistence.entity.JobEntity;
 import org.operaton.bpm.engine.impl.util.ClockUtil;
 import org.operaton.bpm.engine.runtime.Job;
@@ -133,20 +129,17 @@ public class HistoryCleanupBatchWindowForEveryDayTest {
     processEngineConfiguration.setHistoryCleanupBatchWindowEndTime(defaultEndTime);
     processEngineConfiguration.setHistoryCleanupBatchSize(defaultBatchSize);
 
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
 
-        List<Job> jobs = managementService.createJobQuery().list();
-        if (!jobs.isEmpty()) {
-          assertEquals(1, jobs.size());
-          String jobId = jobs.get(0).getId();
-          commandContext.getJobManager().deleteJob((JobEntity) jobs.get(0));
-          commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(jobId);
-        }
-
-        return null;
+      List<Job> jobs = managementService.createJobQuery().list();
+      if (!jobs.isEmpty()) {
+        assertThat(jobs).hasSize(1);
+        String jobId = jobs.get(0).getId();
+        commandContext.getJobManager().deleteJob((JobEntity) jobs.get(0));
+        commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(jobId);
       }
+
+      return null;
     });
   }
 
@@ -161,7 +154,7 @@ public class HistoryCleanupBatchWindowForEveryDayTest {
 
     Job job = historyService.cleanUpHistoryAsync();
 
-    assertFalse(startDateForCheck.after(job.getDuedate())); // job due date is not before start date
-    assertTrue(endDateForCheck.after(job.getDuedate()));
+    assertThat(startDateForCheck.after(job.getDuedate())).isFalse(); // job due date is not before start date
+    assertThat(endDateForCheck.after(job.getDuedate())).isTrue();
   }
 }

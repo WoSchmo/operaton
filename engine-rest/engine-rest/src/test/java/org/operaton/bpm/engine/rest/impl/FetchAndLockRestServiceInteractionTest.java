@@ -39,9 +39,9 @@ import io.restassured.http.ContentType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import javax.servlet.ServletContextEvent;
-import javax.ws.rs.core.Response.Status;
+
+import jakarta.servlet.ServletContextEvent;
+import jakarta.ws.rs.core.Response.Status;
 import org.operaton.bpm.engine.ExternalTaskService;
 import org.operaton.bpm.engine.IdentityService;
 import org.operaton.bpm.engine.ProcessEngineException;
@@ -124,10 +124,10 @@ public class FetchAndLockRestServiceInteractionTest extends AbstractRestServiceT
     when(processEngine.getIdentityService()).thenReturn(identityServiceMock);
 
     List<Group> groupMocks = MockProvider.createMockGroups();
-    groupIds = groupMocks.stream().map(Group::getId).collect(Collectors.toList());
+    groupIds = groupMocks.stream().map(Group::getId).toList();
 
     List<Tenant> tenantMocks = Collections.singletonList(MockProvider.createMockTenant());
-    tenantIds = tenantMocks.stream().map(Tenant::getId).collect(Collectors.toList());
+    tenantIds = tenantMocks.stream().map(Tenant::getId).toList();
 
     new FetchAndLockContextListener().contextInitialized(mock(ServletContextEvent.class, RETURNS_DEEP_STUBS));
   }

@@ -17,7 +17,7 @@
 package org.operaton.bpm.engine.test.bpmn.event.compensate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,15 +84,15 @@ public class CompensationEventParseInvalidProcessTest {
 
   @Test
   public void testParseInvalidProcessDefinition() {
+    var deploymentBuilder = repositoryService.createDeployment()
+        .addClasspathResource(PROCESS_DEFINITION_DIRECTORY + processDefinitionResource);
     try {
-      repositoryService.createDeployment()
-        .addClasspathResource(PROCESS_DEFINITION_DIRECTORY + processDefinitionResource)
-        .deploy();
+      deploymentBuilder.deploy();
 
       fail("exception expected: " + expectedErrorMessage);
     } catch (ParseException e) {
       assertExceptionMessageContainsText(e, expectedErrorMessage);
-      List<Problem> errors = e.getResorceReports().get(0).getErrors();
+      List<Problem> errors = e.getResourceReports().get(0).getErrors();
       assertThat(errors).hasSize(1);
       assertThat(errors.get(0).getMainElementId()).isEqualTo(bpmnElementIds[0]);
       if (bpmnElementIds.length == 2) {

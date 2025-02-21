@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.operaton.bpm.engine.rest.util;
+package org.operaton.bpm.run;
 
-/**
- * @author Daniel Meyer
- *
- */
-public class QueryParamUtils {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-  public static String arrayAsCommaSeperatedList(String... items) {
-    String result = items[0];
-    for (int i = 1; i < items.length; i++) {
-      result += ","+items[i];
-    }
-    return result;
+@SpringBootApplication
+public class OperatonApp {
+  public static void main(String... args) {
+    SpringApplication.run(OperatonApp.class, args);
   }
-
 }

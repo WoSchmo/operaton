@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.repository.CaseDefinition;
 import org.operaton.bpm.engine.repository.CaseDefinitionQuery;
@@ -323,7 +323,7 @@ public class CaseDefinitionRestServiceQueryTest extends AbstractRestServiceTest 
     assertThat(returnedVersion).isEqualTo(MockProvider.EXAMPLE_CASE_DEFINITION_VERSION);
     assertThat(returnedResource).isEqualTo(MockProvider.EXAMPLE_CASE_DEFINITION_RESOURCE_NAME);
     assertThat(returnedDeploymentId).isEqualTo(MockProvider.EXAMPLE_DEPLOYMENT_ID);
-    assertThat(returnedTenantId).isEqualTo(null);
+    assertThat(returnedTenantId).isNull();
   }
 
   @Test
@@ -440,7 +440,7 @@ public class CaseDefinitionRestServiceQueryTest extends AbstractRestServiceTest 
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId1 = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
   }
 
   @Test
@@ -469,7 +469,7 @@ public class CaseDefinitionRestServiceQueryTest extends AbstractRestServiceTest 
     String returnedTenantId1 = from(content).getString("[0].tenantId");
     String returnedTenantId2 = from(content).getString("[1].tenantId");
 
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
     assertThat(returnedTenantId2).isEqualTo(MockProvider.EXAMPLE_TENANT_ID);
   }
 

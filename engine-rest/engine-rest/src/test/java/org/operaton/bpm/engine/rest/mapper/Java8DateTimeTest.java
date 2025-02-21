@@ -18,13 +18,12 @@ package org.operaton.bpm.engine.rest.mapper;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.impl.RuntimeServiceImpl;
 import org.operaton.bpm.engine.rest.AbstractRestServiceTest;
@@ -50,7 +49,7 @@ public class Java8DateTimeTest extends AbstractRestServiceTest {
   public void setUpRuntimeData() {
     runtimeServiceMock = mock(RuntimeServiceImpl.class);
 
-    when(runtimeServiceMock.getVariableTyped(eq(EXAMPLE_PROCESS_INSTANCE_ID), eq(EXAMPLE_VARIABLE_KEY), eq(true)))
+    when(runtimeServiceMock.getVariableTyped(EXAMPLE_PROCESS_INSTANCE_ID, EXAMPLE_VARIABLE_KEY, true))
       .thenReturn(Variables.objectValue(new Java8DateTimePojo()).create());
 
     when(processEngine.getRuntimeService()).thenReturn(runtimeServiceMock);

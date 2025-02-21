@@ -16,7 +16,7 @@
  */
 package org.operaton.bpm.engine.rest.sub.runtime.impl;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.ManagementService;
 import org.operaton.bpm.engine.ProcessEngine;
@@ -60,8 +60,7 @@ public class JobResourceImpl implements JobResource {
   public String getStacktrace() {
     try {
       ManagementService managementService = engine.getManagementService();
-      String stacktrace = managementService.getJobExceptionStacktrace(jobId);
-      return stacktrace;
+      return managementService.getJobExceptionStacktrace(jobId);
     } catch (AuthorizationException e) {
       throw e;
     } catch (ProcessEngineException e) {

@@ -29,8 +29,8 @@ import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.runtime.ProcessInstanceQuery;
 import static org.operaton.bpm.engine.rest.util.DateTimeUtils.withTimezone;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response.Status;
 import java.util.*;
 
 import io.restassured.http.ContentType;
@@ -947,7 +947,7 @@ public class ProcessInstanceRestServiceQueryTest extends
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId1 = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
   }
 
   @Test
@@ -1002,7 +1002,7 @@ public class ProcessInstanceRestServiceQueryTest extends
     assertThat(definitions).hasSize(1);
 
     String returnedTenantId1 = from(content).getString("[0].tenantId");
-    assertThat(returnedTenantId1).isEqualTo(null);
+    assertThat(returnedTenantId1).isNull();
   }
 
   private List<ProcessInstance> createMockProcessInstancesTwoTenants() {

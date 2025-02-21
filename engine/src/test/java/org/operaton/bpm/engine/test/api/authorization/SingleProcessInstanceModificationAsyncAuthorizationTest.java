@@ -29,10 +29,6 @@ import static org.operaton.bpm.engine.test.util.ActivityInstanceAssert.assertTha
 import static org.operaton.bpm.engine.test.util.ActivityInstanceAssert.describeActivityInstanceTree;
 import static org.operaton.bpm.engine.test.util.ExecutionAssert.assertThat;
 import static org.operaton.bpm.engine.test.util.ExecutionAssert.describeExecutionTree;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -45,8 +41,13 @@ import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.ExecutionTree;
+
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SingleProcessInstanceModificationAsyncAuthorizationTest extends AuthorizationTest {
 
@@ -90,7 +91,7 @@ public class SingleProcessInstanceModificationAsyncAuthorizationTest extends Aut
         .createProcessInstanceModification(processInstance.getId())
         .cancelActivityInstance(getInstanceIdForActivity(tree, "task1"))
         .executeAsync();
-    assertNotNull(modificationBatch);
+    assertThat(modificationBatch).isNotNull();
     Job job = managementService.createJobQuery().jobDefinitionId(modificationBatch.getSeedJobDefinitionId()).singleResult();
     // seed job
     managementService.executeJob(job.getId());
@@ -98,12 +99,12 @@ public class SingleProcessInstanceModificationAsyncAuthorizationTest extends Aut
     // then
     for (Job pending : managementService.createJobQuery().jobDefinitionId(modificationBatch.getBatchJobDefinitionId()).list()) {
       managementService.executeJob(pending.getId());
-      assertEquals(processDefinition.getDeploymentId(), pending.getDeploymentId());
+      assertThat(pending.getDeploymentId()).isEqualTo(processDefinition.getDeploymentId());
     }
 
     ActivityInstance updatedTree = runtimeService.getActivityInstance(processInstanceId);
-    assertNotNull(updatedTree);
-    assertEquals(processInstanceId, updatedTree.getProcessInstanceId());
+    Assertions.assertThat(updatedTree).isNotNull();
+    assertThat(updatedTree.getProcessInstanceId()).isEqualTo(processInstanceId);
 
     assertThat(updatedTree).hasStructure(describeActivityInstanceTree(processInstance.getProcessDefinitionId()).activity("task2").done());
 
@@ -128,19 +129,17 @@ public class SingleProcessInstanceModificationAsyncAuthorizationTest extends Aut
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("parallelGateway");
 
     ActivityInstance tree = runtimeService.getActivityInstance(processInstance.getId());
-    try {
-      // when
-      runtimeService
-        .createProcessInstanceModification(processInstance.getId())
-        .cancelActivityInstance(getInstanceIdForActivity(tree, "task1"))
-        .executeAsync();
-      fail("expected exception");
-    } catch (ProcessEngineException e) {
+    var processInstanceModificationBuilder = runtimeService
+      .createProcessInstanceModification(processInstance.getId())
+      .cancelActivityInstance(getInstanceIdForActivity(tree, "task1"));
+
+    // when
+    assertThatThrownBy(processInstanceModificationBuilder::executeAsync)
       // then
-      assertTrue(e.getMessage().contains("The user with id 'test' does not have"));
-      assertTrue(e.getMessage().contains("'CREATE' permission on resource 'Batch'"));
-      assertTrue(e.getMessage().contains("'CREATE_BATCH_MODIFY_PROCESS_INSTANCES' permission on resource 'Batch'"));
-    }
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The user with id 'test' does not have")
+      .hasMessageContaining("'CREATE' permission on resource 'Batch'")
+      .hasMessageContaining("'CREATE_BATCH_MODIFY_PROCESS_INSTANCES' permission on resource 'Batch'");
   }
 
   @Deployment(resources = PARALLEL_GATEWAY_PROCESS)
@@ -155,19 +154,17 @@ public class SingleProcessInstanceModificationAsyncAuthorizationTest extends Aut
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("parallelGateway");
 
     ActivityInstance tree = runtimeService.getActivityInstance(processInstance.getId());
-    try {
-      // when
-      runtimeService
-        .createProcessInstanceModification(processInstance.getId())
-        .cancelActivityInstance(getInstanceIdForActivity(tree, "task1"))
-        .executeAsync();
-      fail("expected exception");
-    } catch (ProcessEngineException e) {
+    var processInstanceModificationBuilder = runtimeService
+      .createProcessInstanceModification(processInstance.getId())
+      .cancelActivityInstance(getInstanceIdForActivity(tree, "task1"));
+
+    // when
+    assertThatThrownBy(processInstanceModificationBuilder::executeAsync)
       // then
-      assertTrue(e.getMessage().contains("The user with id 'test' does not have"));
-      assertTrue(e.getMessage().contains("'CREATE' permission on resource 'Batch'"));
-      assertTrue(e.getMessage().contains("'CREATE_BATCH_MODIFY_PROCESS_INSTANCES' permission on resource 'Batch'"));
-    }
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("The user with id 'test' does not have")
+      .hasMessageContaining("'CREATE' permission on resource 'Batch'")
+      .hasMessageContaining("'CREATE_BATCH_MODIFY_PROCESS_INSTANCES' permission on resource 'Batch'");
   }
 
   protected String getInstanceIdForActivity(ActivityInstance activityInstance, String activityId) {
@@ -198,7 +195,7 @@ public class SingleProcessInstanceModificationAsyncAuthorizationTest extends Aut
     for (String taskName : taskNames) {
       // complete any task with that name
       List<Task> tasks = taskService.createTaskQuery().taskDefinitionKey(taskName).listPage(0, 1);
-      assertTrue("task for activity " + taskName + " does not exist", !tasks.isEmpty());
+      assertThat(!tasks.isEmpty()).as("task for activity " + taskName + " does not exist").isTrue();
       taskService.complete(tasks.get(0).getId());
     }
   }

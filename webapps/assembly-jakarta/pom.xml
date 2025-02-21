@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.operaton.bpm.webapp</groupId>
     <artifactId>operaton-webapp-root</artifactId>
-    <version>1.0.0-beta-3-SNAPSHOT</version>
+    <version>1.0.0-beta-4-SNAPSHOT</version>
   </parent>
 
   <artifactId>operaton-webapp-jakarta</artifactId>
@@ -18,8 +18,7 @@
     <jakarta.runtime>${project.build.directory}/generated-resources/jakarta-runtime</jakarta.runtime>
 
     <version.resteasy>6.2.8.Final</version.resteasy>
-    <version.jetty>11.0.14</version.jetty>
-    <version.jersey2>3.1.1</version.jersey2>
+    <version.jersey3>3.1.1</version.jersey3>
     <version.spring.framework>${version.spring.framework6}</version.spring.framework>
 
     <web.resources.override>${jakarta.runtime}/default/webapp</web.resources.override>

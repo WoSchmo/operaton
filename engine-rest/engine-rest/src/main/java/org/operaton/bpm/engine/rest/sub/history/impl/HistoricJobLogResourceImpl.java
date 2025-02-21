@@ -16,7 +16,7 @@
  */
 package org.operaton.bpm.engine.rest.sub.history.impl;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.HistoryService;
@@ -60,8 +60,7 @@ public class HistoricJobLogResourceImpl implements HistoricJobLogResource {
   public String getStacktrace() {
     try {
       HistoryService historyService = engine.getHistoryService();
-      String stacktrace = historyService.getHistoricJobLogExceptionStacktrace(id);
-      return stacktrace;
+      return historyService.getHistoricJobLogExceptionStacktrace(id);
     } catch (AuthorizationException e) {
       throw e;
     } catch (ProcessEngineException e) {

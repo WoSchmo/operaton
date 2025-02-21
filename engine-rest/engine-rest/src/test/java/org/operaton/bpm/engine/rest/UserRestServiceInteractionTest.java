@@ -33,8 +33,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response.Status;
 
 import java.util.List;
 
@@ -113,7 +113,7 @@ public class UserRestServiceInteractionTest extends AbstractRestServiceTest {
     when(sampleUserQuery.userId(MockProvider.EXAMPLE_USER_ID)).thenReturn(sampleUserQuery);
     when(sampleUserQuery.singleResult()).thenReturn(sampleUser);
 
-    given()
+    var response = given()
         .pathParam("id", MockProvider.EXAMPLE_USER_ID)
     .then()
         .statusCode(Status.OK.getStatusCode())
@@ -123,6 +123,8 @@ public class UserRestServiceInteractionTest extends AbstractRestServiceTest {
         .body("email", equalTo(MockProvider.EXAMPLE_USER_EMAIL))
     .when()
         .get(USER_PROFILE_URL);
+
+    assertThat(response.contentType()).isEqualTo(ContentType.JSON.toString());
   }
 
   @Test

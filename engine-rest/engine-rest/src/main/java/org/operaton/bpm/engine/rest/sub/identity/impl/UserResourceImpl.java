@@ -27,10 +27,10 @@ import org.operaton.bpm.engine.rest.dto.identity.UserProfileDto;
 import org.operaton.bpm.engine.rest.exception.InvalidRequestException;
 import org.operaton.bpm.engine.rest.sub.identity.UserResource;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import static org.operaton.bpm.engine.authorization.Permissions.DELETE;
@@ -58,9 +58,7 @@ public class UserResourceImpl extends AbstractIdentityResource implements UserRe
       throw new InvalidRequestException(Status.NOT_FOUND, "User with id " + resourceId + " does not exist");
     }
 
-    UserProfileDto user = UserProfileDto.fromUser(dbUser);
-
-    return user;
+    return UserProfileDto.fromUser(dbUser);
   }
 
   @Override
@@ -104,10 +102,9 @@ public class UserResourceImpl extends AbstractIdentityResource implements UserRe
     ensureNotReadOnly();
 
     Authentication currentAuthentication = identityService.getCurrentAuthentication();
-    if(currentAuthentication != null && currentAuthentication.getUserId() != null) {
-      if(!identityService.checkPassword(currentAuthentication.getUserId(), account.getAuthenticatedUserPassword())) {
-        throw new InvalidRequestException(Status.BAD_REQUEST, "The given authenticated user password is not valid.");
-      }
+    if((currentAuthentication != null && currentAuthentication.getUserId() != null)
+            && !identityService.checkPassword(currentAuthentication.getUserId(), account.getAuthenticatedUserPassword())) {
+      throw new InvalidRequestException(Status.BAD_REQUEST, "The given authenticated user password is not valid.");
     }
 
     User dbUser = findUserObject();

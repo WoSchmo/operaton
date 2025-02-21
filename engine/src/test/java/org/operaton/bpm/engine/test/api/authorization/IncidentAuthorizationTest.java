@@ -16,25 +16,10 @@
  */
 package org.operaton.bpm.engine.test.api.authorization;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.operaton.bpm.engine.authorization.Authorization.ANY;
-import static org.operaton.bpm.engine.authorization.Permissions.READ;
-import static org.operaton.bpm.engine.authorization.Permissions.READ_INSTANCE;
-import static org.operaton.bpm.engine.authorization.Permissions.UPDATE;
-import static org.operaton.bpm.engine.authorization.Permissions.UPDATE_INSTANCE;
-import static org.operaton.bpm.engine.authorization.Resources.PROCESS_DEFINITION;
-import static org.operaton.bpm.engine.authorization.Resources.PROCESS_INSTANCE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Date;
-import java.util.List;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.history.HistoricIncident;
 import org.operaton.bpm.engine.impl.context.Context;
 import org.operaton.bpm.engine.impl.history.HistoryLevel;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.jobexecutor.TimerSuspendProcessDefinitionHandler;
 import org.operaton.bpm.engine.impl.persistence.entity.HistoricIncidentEntity;
@@ -42,8 +27,20 @@ import org.operaton.bpm.engine.runtime.Incident;
 import org.operaton.bpm.engine.runtime.IncidentQuery;
 import org.operaton.bpm.engine.runtime.Job;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
+import static org.operaton.bpm.engine.authorization.Authorization.ANY;
+import static org.operaton.bpm.engine.authorization.Permissions.*;
+import static org.operaton.bpm.engine.authorization.Resources.PROCESS_DEFINITION;
+import static org.operaton.bpm.engine.authorization.Resources.PROCESS_INSTANCE;
+
+import java.util.Date;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Test.None;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Roman Smirnov
@@ -171,8 +168,8 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     verifyQueryResults(query, 1);
 
     Incident incident = query.singleResult();
-    assertNotNull(incident);
-    assertEquals(processInstanceId, incident.getProcessInstanceId());
+    assertThat(incident).isNotNull();
+    assertThat(incident.getProcessInstanceId()).isEqualTo(processInstanceId);
   }
 
   @Test
@@ -188,8 +185,8 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     verifyQueryResults(query, 1);
 
     Incident incident = query.singleResult();
-    assertNotNull(incident);
-    assertEquals(processInstanceId, incident.getProcessInstanceId());
+    assertThat(incident).isNotNull();
+    assertThat(incident.getProcessInstanceId()).isEqualTo(processInstanceId);
   }
 
   @Test
@@ -206,8 +203,8 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     verifyQueryResults(query, 1);
 
     Incident incident = query.singleResult();
-    assertNotNull(incident);
-    assertEquals(processInstanceId, incident.getProcessInstanceId());
+    assertThat(incident).isNotNull();
+    assertThat(incident.getProcessInstanceId()).isEqualTo(processInstanceId);
   }
 
   @Test
@@ -223,8 +220,8 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     verifyQueryResults(query, 1);
 
     Incident incident = query.singleResult();
-    assertNotNull(incident);
-    assertEquals(processInstanceId, incident.getProcessInstanceId());
+    assertThat(incident).isNotNull();
+    assertThat(incident.getProcessInstanceId()).isEqualTo(processInstanceId);
   }
 
   @Test
@@ -240,8 +237,8 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     verifyQueryResults(query, 1);
 
     Incident incident = query.singleResult();
-    assertNotNull(incident);
-    assertEquals(processInstanceId, incident.getProcessInstanceId());
+    assertThat(incident).isNotNull();
+    assertThat(incident.getProcessInstanceId()).isEqualTo(processInstanceId);
   }
 
   @Test
@@ -298,8 +295,8 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     verifyQueryResults(query, 1);
 
     Incident incident = query.singleResult();
-    assertNotNull(incident);
-    assertEquals(processInstanceId, incident.getProcessInstanceId());
+    assertThat(incident).isNotNull();
+    assertThat(incident.getProcessInstanceId()).isEqualTo(processInstanceId);
   }
 
   @Test
@@ -375,13 +372,14 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     enableAuthorization();
 
     // when & then
-    assertThatThrownBy(() -> runtimeService.setAnnotationForIncidentById(incident.getId(), "my annotation"))
+    String incidentId = incident.getId();
+    assertThatThrownBy(() -> runtimeService.setAnnotationForIncidentById(incidentId, "my annotation"))
       .isInstanceOf(AuthorizationException.class)
       .hasMessageMatching(getMissingPermissionMessageRegex(UPDATE, PROCESS_INSTANCE))
       .hasMessageMatching(getMissingPermissionMessageRegex(UPDATE_INSTANCE, PROCESS_DEFINITION));
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowSetAnnotationWithUpdatePermissionOnAnyInstance() {
     // given
     startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -397,7 +395,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     // then no error is thrown
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowSetAnnotationWithUpdatePermissionOnInstance() {
     // given
     ProcessInstance instance = startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -413,7 +411,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     // then no error is thrown
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowSetAnnotationWithUpdateInstancePermissionOnAnyDefinition() {
     // given
     startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -429,7 +427,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     // then no error is thrown
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowSetAnnotationWithUpdateInstancePermissionOnOneTaskDefinition() {
     // given
     startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -454,13 +452,14 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     enableAuthorization();
 
     // when & then
-    assertThatThrownBy(() -> runtimeService.clearAnnotationForIncidentById(incident.getId()))
+    String incidentId = incident.getId();
+    assertThatThrownBy(() -> runtimeService.clearAnnotationForIncidentById(incidentId))
       .isInstanceOf(AuthorizationException.class)
       .hasMessageMatching(getMissingPermissionMessageRegex(UPDATE, PROCESS_INSTANCE))
       .hasMessageMatching(getMissingPermissionMessageRegex(UPDATE_INSTANCE, PROCESS_DEFINITION));
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowClearAnnotationWithUpdatePermissionOnAnyInstance() {
     // given
     startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -476,7 +475,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     // then no error is thrown
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowClearAnnotationWithUpdatePermissionOnInstance() {
     // given
     ProcessInstance instance = startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -492,7 +491,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     // then no error is thrown
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowClearAnnotationWithUpdateInstancePermissionOnAnyDefinition() {
     // given
     startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -508,7 +507,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     // then no error is thrown
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowClearAnnotationWithUpdateInstancePermissionOnOneTaskDefinition() {
     // given
     startProcessAndExecuteJob(ONE_INCIDENT_PROCESS_KEY);
@@ -541,7 +540,7 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
     cleanupStandalonIncident(jobId);
   }
 
-  @Test
+  @Test(expected = None.class)
   public void shouldAllowClearAnnotationOnStandaloneIncidentWithoutAuthorization() {
     // given
     String jobId = createStandaloneIncident();
@@ -583,20 +582,17 @@ public class IncidentAuthorizationTest extends AuthorizationTest {
 
   protected void clearDatabase() {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-        HistoryLevel historyLevel = Context.getProcessEngineConfiguration().getHistoryLevel();
-        if (historyLevel.equals(HistoryLevel.HISTORY_LEVEL_FULL)) {
-          commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerSuspendProcessDefinitionHandler.TYPE);
-          List<HistoricIncident> incidents = Context.getProcessEngineConfiguration().getHistoryService().createHistoricIncidentQuery().list();
-          for (HistoricIncident incident : incidents) {
-            commandContext.getHistoricIncidentManager().delete((HistoricIncidentEntity) incident);
-          }
+    commandExecutor.execute(commandContext -> {
+      HistoryLevel historyLevel = Context.getProcessEngineConfiguration().getHistoryLevel();
+      if (historyLevel.equals(HistoryLevel.HISTORY_LEVEL_FULL)) {
+        commandContext.getHistoricJobLogManager().deleteHistoricJobLogsByHandlerType(TimerSuspendProcessDefinitionHandler.TYPE);
+        List<HistoricIncident> incidents = Context.getProcessEngineConfiguration().getHistoryService().createHistoricIncidentQuery().list();
+        for (HistoricIncident incident : incidents) {
+          commandContext.getHistoricIncidentManager().delete((HistoricIncidentEntity) incident);
         }
-
-        return null;
       }
+
+      return null;
     });
   }
 

@@ -16,18 +16,10 @@
  */
 package org.operaton.bpm.engine.test.bpmn.scripttask;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+import org.junit.Test;
 import org.operaton.bpm.engine.ProcessEngineException;
 import org.operaton.bpm.engine.ScriptCompilationException;
 import org.operaton.bpm.engine.ScriptEvaluationException;
@@ -37,7 +29,8 @@ import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.task.Task;
 import org.operaton.bpm.model.bpmn.Bpmn;
-import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.*;
 
 /**
  *
@@ -58,34 +51,33 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testJavascriptProcessVarVisibility() {
 
-    deployProcess(JAVASCRIPT,
-
-        // GIVEN
-        // an execution variable 'foo'
-        "execution.setVariable('foo', 'a');"
-
-        // THEN
-        // there should be a script variable defined
-      + "if (typeof foo !== 'undefined') { "
-      + "  throw 'Variable foo should be defined as script variable.';"
-      + "}"
-
-        // GIVEN
-        // a script variable with the same name
-      + "var foo = 'b';"
-
-        // THEN
-        // it should not change the value of the execution variable
-      + "if(execution.getVariable('foo') != 'a') {"
-      + "  throw 'Execution should contain variable foo';"
-      + "}"
-
-        // AND
-        // it should override the visibility of the execution variable
-      + "if(foo != 'b') {"
-      + "  throw 'Script variable must override the visibiltity of the execution variable.';"
-      + "}"
-
+    deployProcess(JAVASCRIPT, """
+		// GIVEN
+		// an execution variable 'foo'
+		execution.setVariable('foo', 'a');
+		
+		// THEN
+		// there should be a script variable defined
+		if (typeof foo !== 'undefined') {
+		  throw 'Variable foo should be defined as script variable.';
+		}
+		
+		// GIVEN
+		// a script variable with the same name
+		var foo = 'b';
+		
+		// THEN
+		// it should not change the value of the execution variable
+		if(execution.getVariable('foo') != 'a') {
+		  throw 'Execution should contain variable foo';
+		}
+		
+		// AND
+		// it should override the visibility of the execution variable
+		if(foo != 'b') {
+		  throw 'Script variable must override the visibiltity of the execution variable.';
+		}
+      """
     );
 
     // GIVEN
@@ -96,38 +88,37 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     // the script task can be executed without exceptions
     // the execution variable is stored and has the correct value
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("a", variableValue);
+    assertThat(variableValue).isEqualTo("a");
 
   }
 
   @Test
   public void testPythonProcessVarAssignment() {
 
-    deployProcess(PYTHON,
-
-        // GIVEN
-        // an execution variable 'foo'
-        "execution.setVariable('foo', 'a')\n"
-
-        // THEN
-        // there should be a script variable defined
-      + "if not foo:\n"
-      + "    raise Exception('Variable foo should be defined as script variable.')\n"
-
-        // GIVEN
-        // a script variable with the same name
-      + "foo = 'b'\n"
-
-        // THEN
-        // it should not change the value of the execution variable
-      + "if execution.getVariable('foo') != 'a':\n"
-      + "    raise Exception('Execution should contain variable foo')\n"
-
-        // AND
-        // it should override the visibility of the execution variable
-      + "if foo != 'b':\n"
-      + "    raise Exception('Script variable must override the visibiltity of the execution variable.')\n"
-
+    deployProcess(PYTHON, """
+		# GIVEN
+		# an execution variable 'foo'
+		execution.setVariable('foo', 'a')
+		
+		# THEN
+		# there should be a script variable defined
+		if not foo:
+		    raise Exception('Variable foo should be defined as script variable.')
+		
+		# GIVEN
+		# a script variable with the same name
+		foo = 'b'
+		
+		# THEN
+		# it should not change the value of the execution variable
+		if execution.getVariable('foo') != 'a':
+		    raise Exception('Execution should contain variable foo')
+		
+		# AND
+		# it should override the visibility of the execution variable
+		if foo != 'b':
+		    raise Exception('Script variable must override the visibiltity of the execution variable.')
+      """
     );
 
     // GIVEN
@@ -138,39 +129,38 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     // the script task can be executed without exceptions
     // the execution variable is stored and has the correct value
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("a", variableValue);
+    assertThat(variableValue).isEqualTo("a");
 
   }
 
   @Test
   public void testRubyProcessVarVisibility() {
 
-    deployProcess(RUBY,
-
-        // GIVEN
-        // an execution variable 'foo'
-        "$execution.setVariable('foo', 'a')\n"
-
-        // THEN
-        // there should NOT be a script variable defined (this is unsupported in Ruby binding)
-      + "raise 'Variable foo should be defined as script variable.' if !$foo.nil?\n"
-
-        // GIVEN
-        // a script variable with the same name
-      + "$foo = 'b'\n"
-
-        // THEN
-        // it should not change the value of the execution variable
-      + "if $execution.getVariable('foo') != 'a'\n"
-      + "  raise 'Execution should contain variable foo'\n"
-      + "end\n"
-
-        // AND
-        // it should override the visibility of the execution variable
-      + "if $foo != 'b'\n"
-      + "  raise 'Script variable must override the visibiltity of the execution variable.'\n"
-      + "end"
-
+    deployProcess(RUBY, """
+	      # GIVEN
+	      # an execution variable 'foo'
+	      $execution.setVariable('foo', 'a')
+	
+	      # THEN
+	      # there should NOT be a script variable defined (this is unsupported in Ruby binding)
+	      raise 'Variable foo should be defined as script variable.' if !$foo.nil?
+	
+	      # GIVEN
+	      # a script variable with the same name
+	      $foo = 'b'
+	
+	      # THEN
+	      # it should not change the value of the execution variable
+	      if $execution.getVariable('foo') != 'a'
+	        raise 'Execution should contain variable foo'
+	      end
+	
+	      # AND
+	      # it should override the visibility of the execution variable
+	      if $foo != 'b'
+	        raise 'Script variable must override the visibiltity of the execution variable.'
+	      end
+      """
     );
 
     // GIVEN
@@ -181,40 +171,40 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     // the script task can be executed without exceptions
     // the execution variable is stored and has the correct value
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("a", variableValue);
+    assertThat(variableValue).isEqualTo("a");
 
   }
 
   @Test
   public void testGroovyProcessVarVisibility() {
 
-    deployProcess(GROOVY,
-
+    deployProcess(GROOVY, """
         // GIVEN
         // an execution variable 'foo'
-        "execution.setVariable('foo', 'a')\n"
+        execution.setVariable('foo', 'a')
 
         // THEN
         // there should be a script variable defined
-      + "if ( !foo ) {\n"
-      + "  throw new Exception('Variable foo should be defined as script variable.')\n"
-      + "}\n"
+        if ( !foo ) {
+          throw new Exception('Variable foo should be defined as script variable.')
+        }
 
         // GIVEN
         // a script variable with the same name
-      + "foo = 'b'\n"
+        foo = 'b'
 
         // THEN
         // it should not change the value of the execution variable
-      + "if (execution.getVariable('foo') != 'a') {\n"
-      + "  throw new Exception('Execution should contain variable foo')\n"
-      + "}\n"
+        if (execution.getVariable('foo') != 'a') {
+          throw new Exception('Execution should contain variable foo')
+        }
 
         // AND
         // it should override the visibility of the execution variable
-      + "if (foo != 'b') {\n"
-      + "  throw new Exception('Script variable must override the visibiltity of the execution variable.')\n"
-      + "}"
+        if (foo != 'b') {
+          throw new Exception('Script variable must override the visibiltity of the execution variable.')
+        }
+      """
 
     );
 
@@ -226,27 +216,26 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     // the script task can be executed without exceptions
     // the execution variable is stored and has the correct value
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("a", variableValue);
+    assertThat(variableValue).isEqualTo("a");
 
   }
 
   @Test
   public void testJavascriptFunctionInvocation() {
 
-    deployProcess(JAVASCRIPT,
-
-        // GIVEN
-        // a function named sum
-        "function sum(a,b){"
-      + "  return a+b;"
-      + "};"
-
-        // THEN
-        // i can call the function
-      + "var result = sum(1,2);"
-
-      + "execution.setVariable('foo', result);"
-
+    deployProcess(JAVASCRIPT, """
+	      // GIVEN
+	      // a function named sum
+	      function sum(a,b){
+	        return a+b;
+	      };
+	      
+	      // THEN
+	      // i can call the function
+	      var result = sum(1,2);
+	      
+	      execution.setVariable('foo', result);
+      """
     );
 
     // GIVEN
@@ -263,18 +252,17 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testPythonFunctionInvocation() {
 
-    deployProcess(PYTHON,
-
-        // GIVEN
-        // a function named sum
-        "def sum(a, b):\n"
-      + "    return a + b\n"
-
-        // THEN
-        // i can call the function
-      + "result = sum(1,2)\n"
-      + "execution.setVariable('foo', result)"
-
+    deployProcess(PYTHON, """
+		# GIVEN
+		# a function named sum
+		def sum(a, b):
+		    return a + b
+		
+		# THEN
+		# i can call the function
+		result = sum(1,2)
+		execution.setVariable('foo', result)
+      """
     );
 
     // GIVEN
@@ -291,20 +279,19 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   @Test
   public void testRubyFunctionInvocation() {
 
-    deployProcess(RUBY,
-
-        // GIVEN
-        // a function named sum
-        "def sum(a, b)\n"
-      + "    return a + b\n"
-      + "end\n"
-
-        // THEN
-        // i can call the function
-      + "result = sum(1,2)\n"
-
-      + "$execution.setVariable('foo', result)\n"
-
+    deployProcess(RUBY, """
+		# GIVEN
+		# a function named sum
+		def sum(a, b)
+		  return a + b
+		end
+		
+		# THEN
+		# i can call the function
+		result = sum(1,2)
+		
+		$execution.setVariable('foo', result)
+      """
     );
 
     // GIVEN
@@ -314,27 +301,26 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     // THEN
     // the variable is defined
     Object variable = runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals(3l, variable);
+    assertThat(variable).isEqualTo(3l);
 
   }
 
   @Test
   public void testGroovyFunctionInvocation() {
 
-    deployProcess(GROOVY,
-
-        // GIVEN
-        // a function named sum
-        "def sum(a, b) {\n"
-      + "    return a + b\n"
-      + "}\n"
-
-        // THEN
-        // i can call the function
-      + "result = sum(1,2)\n"
-
-      + "execution.setVariable('foo', result)\n"
-
+    deployProcess(GROOVY, """
+		// GIVEN
+		// a function named sum
+		def sum(a, b) {
+		  return a + b
+		}
+		
+		// THEN
+		// i can call the function
+		result = sum(1,2)
+		
+		execution.setVariable('foo', result)
+      """
     );
 
     // GIVEN
@@ -344,7 +330,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     // THEN
     // the variable is defined
     Object variable = runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals(3, variable);
+    assertThat(variable).isEqualTo(3);
 
   }
 
@@ -357,7 +343,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertNull(variableValue);
+    assertThat(variableValue).isNull();
 
   }
 
@@ -370,7 +356,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertNull(variableValue);
+    assertThat(variableValue).isNull();
 
   }
 
@@ -383,7 +369,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertNull(variableValue);
+    assertThat(variableValue).isNull();
 
   }
 
@@ -396,7 +382,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
     Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-    assertNull(variableValue);
+    assertThat(variableValue).isNull();
 
   }
 
@@ -407,7 +393,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     String variableValue = (String) runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("bar", variableValue);
+    assertThat(variableValue).isEqualTo("bar");
   }
 
   @Test
@@ -417,7 +403,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     String variableValue = (String) runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("bar", variableValue);
+    assertThat(variableValue).isEqualTo("bar");
   }
 
   @Test
@@ -429,7 +415,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess", variables);
 
     String variableValue = (String) runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("bar", variableValue);
+    assertThat(variableValue).isEqualTo("bar");
   }
 
   @Test
@@ -454,7 +440,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess", variables);
 
     String variableValue = (String) runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("bar", variableValue);
+    assertThat(variableValue).isEqualTo("bar");
   }
 
   @Test
@@ -466,7 +452,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess", variables);
 
     String variableValue = (String) runtimeService.getVariable(pi.getId(), "foo");
-    assertEquals("bar", variableValue);
+    assertThat(variableValue).isEqualTo("bar");
   }
 
   @Test
@@ -476,14 +462,14 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     Date date = (Date) runtimeService.getVariable(pi.getId(), "date");
-    assertEquals(0, date.getTime());
+    assertThat(date.getTime()).isZero();
 
     deployProcess(JAVASCRIPT, "execution.setVariable('myVar', new org.operaton.bpm.engine.test.bpmn.scripttask.MySerializable('test'));");
 
     pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     MySerializable myVar = (MySerializable) runtimeService.getVariable(pi.getId(), "myVar");
-    assertEquals("test", myVar.getName());
+    assertThat(myVar.getName()).isEqualTo("test");
   }
 
   @Test
@@ -493,7 +479,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     Date date = (Date) runtimeService.getVariable(pi.getId(), "date");
-    assertEquals(0, date.getTime());
+    assertThat(date.getTime()).isZero();
 
     deployProcess(PYTHON, "import org.operaton.bpm.engine.test.bpmn.scripttask.MySerializable\n" +
       "execution.setVariable('myVar', org.operaton.bpm.engine.test.bpmn.scripttask.MySerializable('test'));");
@@ -501,7 +487,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     MySerializable myVar = (MySerializable) runtimeService.getVariable(pi.getId(), "myVar");
-    assertEquals("test", myVar.getName());
+    assertThat(myVar.getName()).isEqualTo("test");
   }
 
   @Test
@@ -511,14 +497,14 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     Date date = (Date) runtimeService.getVariable(pi.getId(), "date");
-    assertEquals(0, date.getTime());
+    assertThat(date.getTime()).isZero();
 
     deployProcess(RUBY, "$execution.setVariable('myVar', org.operaton.bpm.engine.test.bpmn.scripttask.MySerializable.new('test'));");
 
     pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     MySerializable myVar = (MySerializable) runtimeService.getVariable(pi.getId(), "myVar");
-    assertEquals("test", myVar.getName());
+    assertThat(myVar.getName()).isEqualTo("test");
   }
 
   @Test
@@ -528,14 +514,14 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     Date date = (Date) runtimeService.getVariable(pi.getId(), "date");
-    assertEquals(0, date.getTime());
+    assertThat(date.getTime()).isZero();
 
     deployProcess(GROOVY, "execution.setVariable('myVar', new org.operaton.bpm.engine.test.bpmn.scripttask.MySerializable('test'));");
 
     pi = runtimeService.startProcessInstanceByKey("testProcess");
 
     MySerializable myVar = (MySerializable) runtimeService.getVariable(pi.getId(), "myVar");
-    assertEquals("test", myVar.getName());
+    assertThat(myVar.getName()).isEqualTo("test");
   }
 
   @Test
@@ -573,14 +559,15 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
   @Test
   public void testShouldNotDeployProcessWithMissingScriptElementAndResource() {
-    try {
-      deployProcess(Bpmn.createExecutableProcess("testProcess")
+    var processBuilder = Bpmn.createExecutableProcess("testProcess")
         .startEvent()
         .scriptTask()
           .scriptFormat(RUBY)
         .userTask()
         .endEvent()
-      .done());
+      .done();
+    try {
+      deployProcess(processBuilder);
 
       fail("this process should not be deployable");
     } catch (ProcessEngineException e) {
@@ -601,12 +588,12 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
     runtimeService.startProcessInstanceByKey("testProcess");
 
     Task task = taskService.createTaskQuery().singleResult();
-    assertNotNull(task);
+    assertThat(task).isNotNull();
   }
 
   @Test
   public void testAutoStoreScriptVarsOff() {
-    assertFalse(processEngineConfiguration.isAutoStoreScriptVariables());
+    assertThat(processEngineConfiguration.isAutoStoreScriptVariables()).isFalse();
   }
 
   @org.operaton.bpm.engine.test.Deployment
@@ -614,7 +601,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
   public void testPreviousTaskShouldNotHandleException(){
     try {
       runtimeService.startProcessInstanceByKey("process");
-      fail();
+      fail("");
     }
     // since the NVE extends the ProcessEngineException we have to handle it
     // separately
@@ -634,8 +621,8 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
     ProcessInstance pi = runtimeService.startProcessInstanceByKey("setScriptResultToProcessVariable", variables);
 
-    assertEquals("hello", runtimeService.getVariable(pi.getId(), "existingProcessVariableName"));
-    assertEquals(pi.getId(), runtimeService.getVariable(pi.getId(), "newProcessVariableName"));
+    assertThat(runtimeService.getVariable(pi.getId(), "existingProcessVariableName")).isEqualTo("hello");
+    assertThat(runtimeService.getVariable(pi.getId(), "newProcessVariableName")).isEqualTo(pi.getId());
   }
 
   @org.operaton.bpm.engine.test.Deployment
@@ -648,7 +635,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
       ProcessInstance pi = runtimeService.startProcessInstanceByKey("scriptExecution", CollectionUtil.singletonMap("inputArray", inputArray));
 
       Integer result = (Integer) runtimeService.getVariable(pi.getId(), "sum");
-      assertEquals(15, result.intValue());
+      assertThat(result.intValue()).isEqualTo(15);
 
     } finally {
       processEngineConfiguration.setAutoStoreScriptVariables(false);
@@ -662,8 +649,8 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
 
     // Since 'def' is used, the 'scriptVar' will be script local
     // and not automatically stored as a process variable.
-    assertNull(runtimeService.getVariable(pi.getId(), "scriptVar"));
-    assertEquals("test123", runtimeService.getVariable(pi.getId(), "myVar"));
+    assertThat(runtimeService.getVariable(pi.getId(), "scriptVar")).isNull();
+    assertThat(runtimeService.getVariable(pi.getId(), "myVar")).isEqualTo("test123");
   }
 
   @org.operaton.bpm.engine.test.Deployment
@@ -702,7 +689,7 @@ public class ScriptTaskTest extends AbstractScriptTaskTest {
       // the script task can be executed without exceptions
       // the execution variable is stored and has the correct value
       Object variableValue = runtimeService.getVariable(pi.getId(), "foo");
-      assertEquals(7, variableValue);
+      assertThat(variableValue).isEqualTo(7);
     } finally {
       processEngineConfiguration.setEnableScriptEngineLoadExternalResources(false);
     }

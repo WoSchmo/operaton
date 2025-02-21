@@ -47,13 +47,13 @@ import org.operaton.bpm.engine.rest.sub.runtime.FilterResource;
 import org.operaton.bpm.engine.runtime.VariableInstance;
 import org.operaton.bpm.engine.task.Task;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Variant;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Variant;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -82,13 +82,12 @@ public class FilterResourceImpl extends AbstractAuthorizedRestResource implement
   public static final String PROPERTIES_VARIABLES_NAME_KEY = "name";
   public static final List<Variant> VARIANTS = Variant.mediaTypes(MediaType.APPLICATION_JSON_TYPE, Hal.APPLICATION_HAL_JSON_TYPE).add().build();
 
-  protected String relativeRootResourcePath;
   protected FilterService filterService;
   protected Filter dbFilter;
 
   public FilterResourceImpl(String processEngineName, ObjectMapper objectMapper, String filterId, String relativeRootResourcePath) {
     super(processEngineName, FILTER, filterId, objectMapper);
-    this.relativeRootResourcePath = relativeRootResourcePath;
+    setRelativeRootResourceUri(relativeRootResourcePath);
     filterService = getProcessEngine().getFilterService();
   }
 
@@ -534,10 +533,9 @@ public class FilterResourceImpl extends AbstractAuthorizedRestResource implement
     Map<String, List<VariableInstance>> sortedVariableInstances = new HashMap<>();
     for (VariableInstance variableInstance : variableInstances) {
       String variableScopeId = ((VariableInstanceEntity) variableInstance).getVariableScopeId();
-      if (!sortedVariableInstances.containsKey(variableScopeId)) {
-        sortedVariableInstances.put(variableScopeId, new ArrayList<VariableInstance>());
-      }
-      sortedVariableInstances.get(variableScopeId).add(variableInstance);
+      sortedVariableInstances
+        .computeIfAbsent(variableScopeId, key -> new ArrayList<>())
+        .add(variableInstance);
     }
     return sortedVariableInstances;
   }

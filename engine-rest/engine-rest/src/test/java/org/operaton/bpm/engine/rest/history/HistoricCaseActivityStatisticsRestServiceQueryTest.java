@@ -20,13 +20,12 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.path.json.JsonPath.from;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.history.HistoricCaseActivityStatistics;
 import org.operaton.bpm.engine.history.HistoricCaseActivityStatisticsQuery;
@@ -60,7 +59,7 @@ public class HistoricCaseActivityStatisticsRestServiceQueryTest extends Abstract
     List<HistoricCaseActivityStatistics> mocks = MockProvider.createMockHistoricCaseActivityStatistics();
 
     historicCaseActivityStatisticsQuery = mock(HistoricCaseActivityStatisticsQueryImpl.class);
-    when(processEngine.getHistoryService().createHistoricCaseActivityStatisticsQuery(eq(MockProvider.EXAMPLE_CASE_DEFINITION_ID))).thenReturn(historicCaseActivityStatisticsQuery);
+    when(processEngine.getHistoryService().createHistoricCaseActivityStatisticsQuery(MockProvider.EXAMPLE_CASE_DEFINITION_ID)).thenReturn(historicCaseActivityStatisticsQuery);
     when(historicCaseActivityStatisticsQuery.unlimitedList()).thenReturn(mocks);
   }
 

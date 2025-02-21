@@ -16,13 +16,8 @@
  */
 package org.operaton.bpm.engine.test.standalone.scripting;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.scripting.ExecutableScript;
 import org.operaton.bpm.engine.impl.scripting.ScriptFactory;
 import org.operaton.bpm.engine.impl.scripting.SourceExecutableScript;
@@ -54,18 +49,18 @@ public class ScriptCompilationTest extends PluggableProcessEngineTest {
   public void testScriptShouldBeCompiledByDefault() {
     // when a script is created
     SourceExecutableScript script = createScript(SCRIPT_LANGUAGE, EXAMPLE_SCRIPT);
-    assertNotNull(script);
+    assertThat(script).isNotNull();
 
     // then it should not be compiled on creation
-    assertTrue(script.isShouldBeCompiled());
-    assertNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isTrue();
+    assertThat(script.getCompiledScript()).isNull();
 
     // but after first execution
     executeScript(script);
 
     // it was compiled
-    assertFalse(script.isShouldBeCompiled());
-    assertNotNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isFalse();
+    assertThat(script.getCompiledScript()).isNotNull();
   }
 
   @Test
@@ -73,18 +68,18 @@ public class ScriptCompilationTest extends PluggableProcessEngineTest {
     // when script compilation is disabled and a script is created
     processEngineConfiguration.setEnableScriptCompilation(false);
     SourceExecutableScript script = createScript(SCRIPT_LANGUAGE, EXAMPLE_SCRIPT);
-    assertNotNull(script);
+    assertThat(script).isNotNull();
 
     // then it should not be compiled on creation
-    assertTrue(script.isShouldBeCompiled());
-    assertNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isTrue();
+    assertThat(script.getCompiledScript()).isNull();
 
     // and after first execution
     executeScript(script);
 
     // it was also not compiled
-    assertFalse(script.isShouldBeCompiled());
-    assertNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isFalse();
+    assertThat(script.getCompiledScript()).isNull();
 
     // re-enable script compilation
     processEngineConfiguration.setEnableScriptCompilation(true);
@@ -95,18 +90,18 @@ public class ScriptCompilationTest extends PluggableProcessEngineTest {
     // when script engine caching is disabled and a script is created
     processEngineConfiguration.setEnableScriptEngineCaching(false);
     SourceExecutableScript script = createScript(SCRIPT_LANGUAGE, EXAMPLE_SCRIPT);
-    assertNotNull(script);
+    assertThat(script).isNotNull();
 
     // then it should not be compiled on creation
-    assertTrue(script.isShouldBeCompiled());
-    assertNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isTrue();
+    assertThat(script.getCompiledScript()).isNull();
 
     // and after first execution
     executeScript(script);
 
     // it was also not compiled
-    assertFalse(script.isShouldBeCompiled());
-    assertNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isFalse();
+    assertThat(script.getCompiledScript()).isNull();
 
     // re-enable script engine caching
     processEngineConfiguration.setEnableScriptEngineCaching(true);
@@ -116,37 +111,32 @@ public class ScriptCompilationTest extends PluggableProcessEngineTest {
   public void testOverrideScriptSource() {
     // when a script is created and executed
     SourceExecutableScript script = createScript(SCRIPT_LANGUAGE, EXAMPLE_SCRIPT);
-    assertNotNull(script);
+    assertThat(script).isNotNull();
     executeScript(script);
 
     // it was compiled
-    assertFalse(script.isShouldBeCompiled());
-    assertNotNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isFalse();
+    assertThat(script.getCompiledScript()).isNotNull();
 
     // if the script source changes
     script.setScriptSource(EXAMPLE_SCRIPT);
 
     // then it should not be compiled after change
-    assertTrue(script.isShouldBeCompiled());
-    assertNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isTrue();
+    assertThat(script.getCompiledScript()).isNull();
 
     // but after next execution
     executeScript(script);
 
     // it is compiled again
-    assertFalse(script.isShouldBeCompiled());
-    assertNotNull(script.getCompiledScript());
+    assertThat(script.isShouldBeCompiled()).isFalse();
+    assertThat(script.getCompiledScript()).isNotNull();
   }
 
   protected Object executeScript(final ExecutableScript script) {
     final ScriptingEnvironment scriptingEnvironment = processEngineConfiguration.getScriptingEnvironment();
     return processEngineConfiguration.getCommandExecutorTxRequired()
-      .execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-          return scriptingEnvironment.execute(script, null);
-        }
-      });
+      .execute(commandContext -> scriptingEnvironment.execute(script, null));
   }
 
 }

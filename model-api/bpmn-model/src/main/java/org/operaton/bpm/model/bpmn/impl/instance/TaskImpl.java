@@ -27,7 +27,6 @@ import org.operaton.bpm.model.xml.type.ModelElementTypeBuilder;
 import org.operaton.bpm.model.xml.type.attribute.Attribute;
 
 import static org.operaton.bpm.model.bpmn.impl.BpmnModelConstants.*;
-import static org.operaton.bpm.model.xml.type.ModelElementTypeBuilder.ModelTypeInstanceProvider;
 
 /**
  * The BPMN task element
@@ -45,12 +44,7 @@ public class TaskImpl extends ActivityImpl implements Task {
     ModelElementTypeBuilder typeBuilder = modelBuilder.defineType(Task.class, BPMN_ELEMENT_TASK)
       .namespaceUri(BPMN20_NS)
       .extendsType(Activity.class)
-      .instanceProvider(new ModelTypeInstanceProvider<Task>() {
-      @Override
-      public Task newInstance(ModelTypeInstanceContext instanceContext) {
-          return new TaskImpl(instanceContext);
-        }
-      });
+      .instanceProvider(TaskImpl::new);
 
     /** operaton extensions */
 
@@ -77,7 +71,7 @@ public class TaskImpl extends ActivityImpl implements Task {
   /**
    * @deprecated use isOperatonAsyncBefore() instead.
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   @Override
   public boolean isOperatonAsync() {
     return operatonAsyncAttribute.getValue(this);
@@ -86,7 +80,7 @@ public class TaskImpl extends ActivityImpl implements Task {
   /**
    * @deprecated use setOperatonAsyncBefore(isOperatonAsyncBefore) instead.
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   @Override
   public void setOperatonAsync(boolean isOperatonAsync) {
     operatonAsyncAttribute.setValue(this, isOperatonAsync);

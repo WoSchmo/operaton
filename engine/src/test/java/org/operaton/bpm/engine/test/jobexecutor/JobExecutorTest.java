@@ -16,26 +16,17 @@
  */
 package org.operaton.bpm.engine.test.jobexecutor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.operaton.bpm.engine.ProcessEngineConfiguration;
 import org.operaton.bpm.engine.history.HistoricJobLog;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.jobexecutor.AcquiredJobs;
 import org.operaton.bpm.engine.impl.persistence.entity.JobManager;
+
+import java.util.*;
+
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Tom Baeyens
@@ -45,19 +36,16 @@ public class JobExecutorTest extends JobExecutorTestCase {
   @Test
   public void testBasicJobExecutorOperation() {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        JobManager jobManager = commandContext.getJobManager();
-        jobManager.send(createTweetMessage("message-one"));
-        jobManager.send(createTweetMessage("message-two"));
-        jobManager.send(createTweetMessage("message-three"));
-        jobManager.send(createTweetMessage("message-four"));
+    commandExecutor.execute(commandContext -> {
+      JobManager jobManager = commandContext.getJobManager();
+      jobManager.send(createTweetMessage("message-one"));
+      jobManager.send(createTweetMessage("message-two"));
+      jobManager.send(createTweetMessage("message-three"));
+      jobManager.send(createTweetMessage("message-four"));
 
-        jobManager.schedule(createTweetTimer("timer-one", new Date()));
-        jobManager.schedule(createTweetTimer("timer-two", new Date()));
-        return null;
-      }
+      jobManager.schedule(createTweetTimer("timer-one", new Date()));
+      jobManager.schedule(createTweetTimer("timer-two", new Date()));
+      return null;
     });
 
     testRule.executeAvailableJobs();
@@ -71,26 +59,22 @@ public class JobExecutorTest extends JobExecutorTestCase {
     expectedMessages.add("timer-one");
     expectedMessages.add("timer-two");
 
-    assertEquals(new TreeSet<String>(expectedMessages), new TreeSet<String>(messages));
+    assertThat(new TreeSet<String>(messages)).isEqualTo(new TreeSet<String>(expectedMessages));
 
-    commandExecutor.execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-        List<HistoricJobLog> historicJobLogs = processEngineConfiguration
-            .getHistoryService()
-            .createHistoricJobLogQuery()
-            .list();
+    commandExecutor.execute(commandContext -> {
+      List<HistoricJobLog> historicJobLogs = processEngineConfiguration
+          .getHistoryService()
+          .createHistoricJobLogQuery()
+          .list();
 
-        for (HistoricJobLog historicJobLog : historicJobLogs) {
-          commandContext
+      for (HistoricJobLog historicJobLog : historicJobLogs) {
+        commandContext
             .getHistoricJobLogManager()
             .deleteHistoricJobLogById(historicJobLog.getId());
 
 
-
-        }
-        return null;
       }
+      return null;
     });
   }
 
@@ -99,17 +83,17 @@ public class JobExecutorTest extends JobExecutorTestCase {
     ProcessEngineConfiguration engineConfig1 =
         ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration();
 
-    assertTrue("default setting is true", engineConfig1.isHintJobExecutor());
+    assertThat(engineConfig1.isHintJobExecutor()).as("default setting is true").isTrue();
 
     ProcessEngineConfiguration engineConfig2 =
         ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration().setHintJobExecutor(false);
 
-    assertFalse(engineConfig2.isHintJobExecutor());
+    assertThat(engineConfig2.isHintJobExecutor()).isFalse();
 
     ProcessEngineConfiguration engineConfig3 =
         ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration().setHintJobExecutor(true);
 
-    assertTrue(engineConfig3.isHintJobExecutor());
+    assertThat(engineConfig3.isHintJobExecutor()).isTrue();
   }
 
   @Test
@@ -123,17 +107,17 @@ public class JobExecutorTest extends JobExecutorTestCase {
     acquiredJobs.addJobIdBatch(secondBatch);
     acquiredJobs.addJobIdBatch(thirdBatch);
 
-    assertEquals(firstBatch, acquiredJobs.getJobIdBatches().get(0));
-    assertEquals(secondBatch, acquiredJobs.getJobIdBatches().get(1));
-    assertEquals(thirdBatch, acquiredJobs.getJobIdBatches().get(2));
+    assertThat(acquiredJobs.getJobIdBatches().get(0)).isEqualTo(firstBatch);
+    assertThat(acquiredJobs.getJobIdBatches().get(1)).isEqualTo(secondBatch);
+    assertThat(acquiredJobs.getJobIdBatches().get(2)).isEqualTo(thirdBatch);
 
     acquiredJobs.removeJobId("a");
-    assertEquals(Arrays.asList("b", "c"), acquiredJobs.getJobIdBatches().get(0));
-    assertEquals(secondBatch, acquiredJobs.getJobIdBatches().get(1));
-    assertEquals(thirdBatch, acquiredJobs.getJobIdBatches().get(2));
+    assertThat(acquiredJobs.getJobIdBatches().get(0)).isEqualTo(Arrays.asList("b", "c"));
+    assertThat(acquiredJobs.getJobIdBatches().get(1)).isEqualTo(secondBatch);
+    assertThat(acquiredJobs.getJobIdBatches().get(2)).isEqualTo(thirdBatch);
 
-    assertEquals(3, acquiredJobs.getJobIdBatches().size());
+    assertThat(acquiredJobs.getJobIdBatches()).hasSize(3);
     acquiredJobs.removeJobId("g");
-    assertEquals(2, acquiredJobs.getJobIdBatches().size());
+    assertThat(acquiredJobs.getJobIdBatches()).hasSize(2);
   }
 }

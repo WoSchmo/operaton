@@ -16,17 +16,7 @@
  */
 package org.operaton.bpm.engine.test.bpmn.event.timer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.operaton.bpm.engine.ProcessEngineException;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.jobexecutor.AsyncContinuationJobHandler;
 import org.operaton.bpm.engine.impl.jobexecutor.historycleanup.HistoryCleanupJobHandler;
@@ -36,8 +26,17 @@ import org.operaton.bpm.engine.runtime.JobQuery;
 import org.operaton.bpm.engine.runtime.ProcessInstance;
 import org.operaton.bpm.engine.test.Deployment;
 import org.operaton.bpm.engine.test.util.PluggableProcessEngineTest;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 
 /**
@@ -106,17 +105,17 @@ public class TimerRecalculationTest extends PluggableProcessEngineTest {
     variables1.put("dueDate", new Date());
 
     ProcessInstance pi1 = runtimeService.startProcessInstanceByKey("intermediateTimerEventExample", variables1);
-    assertEquals(1, managementService.createJobQuery().processInstanceId(pi1.getId()).count());
+    assertThat(managementService.createJobQuery().processInstanceId(pi1.getId()).count()).isEqualTo(1);
 
     JobQuery jobQuery = managementService.createJobQuery().executable();
-    assertEquals(1L, jobQuery.count());
+    assertThat(jobQuery.count()).isEqualTo(1L);
 
     // job duedate can be recalculated, job still exists in runtime
     String jobId = jobQuery.singleResult().getId();
     managementService.recalculateJobDuedate(jobId, false);
     // run the job, finish the process
     managementService.executeJob(jobId);
-    assertEquals(0L, managementService.createJobQuery().processInstanceId(pi1.getId()).count());
+    assertThat(managementService.createJobQuery().processInstanceId(pi1.getId()).count()).isZero();
     testRule.assertProcessEnded(pi1.getProcessInstanceId());
     
     try {
@@ -155,51 +154,44 @@ public class TimerRecalculationTest extends PluggableProcessEngineTest {
   // helper /////////////////////////////////////////////////////////////////
   
   protected void tryRecalculateUnsupported(Job job, String type) {
+    // given
+    String jobId = job.getId();
     try {
       // when
-      managementService.recalculateJobDuedate(job.getId(), false);
+      managementService.recalculateJobDuedate(jobId, false);
       fail("The recalculation with an unsupported type should not be possible");
     } catch (ProcessEngineException pe) {
       // then
-      testRule.assertTextPresent("Only timer jobs can be recalculated, but the job with id '" + job.getId() + "' is of type '" + type, pe.getMessage());
+      testRule.assertTextPresent("Only timer jobs can be recalculated, but the job with id '" + jobId + "' is of type '" + type, pe.getMessage());
     }
   }
 
   
   protected void clearMeterLog() {
     processEngineConfiguration.getCommandExecutorTxRequired()
-      .execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-          commandContext.getMeterLogManager().deleteAll();
+      .execute(commandContext -> {
+      commandContext.getMeterLogManager().deleteAll();
 
-          return null;
-        }
-      });
+      return null;
+    });
   }
   
   protected void clearJobLog(final String jobId) {
     CommandExecutor commandExecutor = processEngineConfiguration.getCommandExecutorTxRequired();
-    commandExecutor.execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-        commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(jobId);
-        return null;
-      }
+    commandExecutor.execute(commandContext -> {
+      commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(jobId);
+      return null;
     });
   }
   
   protected void clearJob(final String jobId) {
     processEngineConfiguration.getCommandExecutorTxRequired()
-      .execute(new Command<Object>() {
-      @Override
-      public Object execute(CommandContext commandContext) {
-          JobEntity job = commandContext.getJobManager().findJobById(jobId);
-          if (job != null) {
-            commandContext.getJobManager().delete(job);
-          }
-          return null;
-        }
-      });
+      .execute(commandContext -> {
+      JobEntity job = commandContext.getJobManager().findJobById(jobId);
+      if (job != null) {
+        commandContext.getJobManager().delete(job);
+      }
+      return null;
+    });
   }
 }

@@ -16,10 +16,12 @@
  */
 package org.operaton.bpm.engine.test.jobexecutor;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.operaton.bpm.engine.batch.Batch;
 import org.operaton.bpm.engine.impl.ProcessEngineImpl;
 import org.operaton.bpm.engine.impl.batch.BatchConfiguration;
@@ -33,11 +35,8 @@ import org.operaton.bpm.engine.test.ProcessEngineRule;
 import org.operaton.bpm.engine.test.api.runtime.migration.MigrationTestRule;
 import org.operaton.bpm.engine.test.api.runtime.migration.batch.BatchMigrationHelper;
 import org.operaton.bpm.engine.test.util.ProvidedProcessEngineRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JobExecutorBatchTest {
 
@@ -90,7 +89,7 @@ public class JobExecutorBatchTest {
     helper.migrateProcessInstancesAsync(2);
 
     // then the job executor is hinted for the seed job
-    assertEquals(1, jobExecutor.getJobsAdded());
+    assertThat(jobExecutor.getJobsAdded()).isEqualTo(1);
   }
 
   @Test
@@ -106,7 +105,7 @@ public class JobExecutorBatchTest {
     helper.executeSeedJob(batch);
 
     // then the job executor is hinted for the monitor job and 10 execution jobs
-    assertEquals(11, jobExecutor.getJobsAdded());
+    assertThat(jobExecutor.getJobsAdded()).isEqualTo(11);
   }
 
   @Test
@@ -119,7 +118,7 @@ public class JobExecutorBatchTest {
     helper.executeSeedJob(batch);
 
     // then the job executor is hinted for the monitor job and 3 execution jobs
-    assertEquals(4, jobExecutor.getJobsAdded());
+    assertThat(jobExecutor.getJobsAdded()).isEqualTo(4);
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -129,7 +128,7 @@ public class JobExecutorBatchTest {
     Batch batch = helper.migrateProcessInstancesAsync(4);
     // ... and there are more mappings than ids (simulating an intermediate execution of a SeedJob
     // by an older version that only processes ids but does not update the mappings)
-    engineRule.getProcessEngineConfiguration().getCommandExecutorTxRequired().execute((context) -> {
+    engineRule.getProcessEngineConfiguration().getCommandExecutorTxRequired().execute(context -> {
       BatchEntity batchEntity = context.getBatchManager().findBatchById(batch.getId());
       BatchJobHandler batchJobHandler = context.getProcessEngineConfiguration().getBatchHandlers()
           .get(batchEntity.getType());
@@ -148,12 +147,12 @@ public class JobExecutorBatchTest {
     helper.executeSeedJob(batch);
 
     // then the job executor is hinted for the monitor job and 4 execution jobs
-    assertEquals(5, jobExecutor.getJobsAdded());
+    assertThat(jobExecutor.getJobsAdded()).isEqualTo(5);
   }
 
   public class CountingJobExecutor extends JobExecutor {
 
-    public boolean record = false;
+    public boolean recordStarted = false;
     public long jobsAdded = 0;
 
     @Override
@@ -176,12 +175,12 @@ public class JobExecutorBatchTest {
 
     public void startRecord() {
       resetJobsAdded();
-      record = true;
+      recordStarted = true;
     }
 
     @Override
     public void jobWasAdded() {
-      if (record) {
+      if (recordStarted) {
         jobsAdded++;
       }
     }

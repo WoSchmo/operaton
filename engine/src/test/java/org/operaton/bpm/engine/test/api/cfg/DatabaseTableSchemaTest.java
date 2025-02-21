@@ -16,13 +16,6 @@
  */
 package org.operaton.bpm.engine.test.api.cfg;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.operaton.bpm.engine.ProcessEngine;
 import org.operaton.bpm.engine.ProcessEngineConfiguration;
 import org.operaton.bpm.engine.ProcessEngineException;
@@ -30,13 +23,20 @@ import org.operaton.bpm.engine.impl.ProcessEngineImpl;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.operaton.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
 import org.operaton.bpm.engine.impl.db.sql.DbSqlSession;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.interceptor.CommandExecutor;
 import org.operaton.bpm.engine.impl.util.ReflectUtil;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Test.None;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Ronny Bräunlich
@@ -62,7 +62,7 @@ public class DatabaseTableSchemaTest {
     connection.close();
   }
 
-  @Test
+  @Test(expected=None.class)
   public void testPerformDatabaseSchemaOperationCreateTwice() throws Exception {
 
     Connection connection = pooledDataSource.getConnection();
@@ -110,13 +110,10 @@ public class DatabaseTableSchemaTest {
     ProcessEngine engine = config1.buildProcessEngine();
     CommandExecutor commandExecutor = config1.getCommandExecutorTxRequired();
 
-    commandExecutor.execute(new Command<Void>(){
-      @Override
-      public Void execute(CommandContext commandContext) {
-        DbSqlSession sqlSession = commandContext.getSession(DbSqlSession.class);
-        assertTrue(sqlSession.isTablePresent("SOME_TABLE"));
-        return null;
-      }
+    commandExecutor.execute(commandContext -> {
+      DbSqlSession sqlSession = commandContext.getSession(DbSqlSession.class);
+      assertThat(sqlSession.isTablePresent("SOME_TABLE")).isTrue();
+      return null;
     });
 
     engine.close();
@@ -125,30 +122,23 @@ public class DatabaseTableSchemaTest {
 
   @Test
   public void testCreateConfigurationWithMismatchtingSchemaAndPrefix() {
-    try {
-      StandaloneInMemProcessEngineConfiguration configuration = new StandaloneInMemProcessEngineConfiguration();
-      configuration.setDatabaseSchema("foo");
-      configuration.setDatabaseTablePrefix("bar");
-      configuration.buildProcessEngine();
-      fail("Should throw exception");
-    } catch (ProcessEngineException e) {
-      // as expected
-      assertTrue(e.getMessage().contains("When setting a schema the prefix has to be schema + '.'"));
-    }
+    StandaloneInMemProcessEngineConfiguration configuration = new StandaloneInMemProcessEngineConfiguration();
+    configuration.setDatabaseSchema("foo");
+    configuration.setDatabaseTablePrefix("bar");
+
+    assertThatThrownBy(configuration::buildProcessEngine)
+      .isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("When setting a schema the prefix has to be schema + '.'");
   }
 
   @Test
   public void testCreateConfigurationWithMissingDotInSchemaAndPrefix() {
-    try {
-      StandaloneInMemProcessEngineConfiguration configuration = new StandaloneInMemProcessEngineConfiguration();
-      configuration.setDatabaseSchema("foo");
-      configuration.setDatabaseTablePrefix("foo");
-      configuration.buildProcessEngine();
-      fail("Should throw exception");
-    } catch (ProcessEngineException e) {
-      // as expected
-      assertTrue(e.getMessage().contains("When setting a schema the prefix has to be schema + '.'"));
-    }
+    StandaloneInMemProcessEngineConfiguration configuration = new StandaloneInMemProcessEngineConfiguration();
+    configuration.setDatabaseSchema("foo");
+    configuration.setDatabaseTablePrefix("foo");
+
+    assertThatThrownBy(configuration::buildProcessEngine).isInstanceOf(ProcessEngineException.class)
+      .hasMessageContaining("When setting a schema the prefix has to be schema + '.'");
   }
 
   // ----------------------- TEST HELPERS -----------------------
@@ -168,6 +158,7 @@ public class DatabaseTableSchemaTest {
         super(processEngineConfiguration);
       }
 
+      @Override
       protected void executeSchemaOperations() {
         // nop - do not execute create schema operations
       }

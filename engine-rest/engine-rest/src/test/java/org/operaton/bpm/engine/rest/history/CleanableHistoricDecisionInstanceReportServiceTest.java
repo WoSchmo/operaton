@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.history.CleanableHistoricDecisionInstanceReport;
@@ -104,8 +104,8 @@ public class CleanableHistoricDecisionInstanceReportServiceTest extends Abstract
     when(anotherReportResult.getDecisionDefinitionName()).thenReturn("dpName");
     when(anotherReportResult.getDecisionDefinitionVersion()).thenReturn(33);
     when(anotherReportResult.getHistoryTimeToLive()).thenReturn(5);
-    when(anotherReportResult.getFinishedDecisionInstanceCount()).thenReturn(10l);
-    when(anotherReportResult.getCleanableDecisionInstanceCount()).thenReturn(0l);
+    when(anotherReportResult.getFinishedDecisionInstanceCount()).thenReturn(10L);
+    when(anotherReportResult.getCleanableDecisionInstanceCount()).thenReturn(0L);
     when(anotherReportResult.getTenantId()).thenReturn(ANOTHER_EXAMPLE_TENANT_ID);
 
 

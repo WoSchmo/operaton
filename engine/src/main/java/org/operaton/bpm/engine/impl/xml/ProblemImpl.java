@@ -50,7 +50,7 @@ public class ProblemImpl implements Problem {
     this(errorMessage, element);
     this.mainElementId = elementIds[0];
     for (String elementId : elementIds) {
-      if(elementId != null && elementId.length() > 0) {
+      if(elementId != null && !elementId.isEmpty()) {
         this.elementIds.add(elementId);
       }
     }
@@ -64,20 +64,22 @@ public class ProblemImpl implements Problem {
   public ProblemImpl(BpmnParseException exception, String elementId) {
     this(exception);
     this.mainElementId = elementId;
-    if(elementId != null && elementId.length() > 0) {
+    if(elementId != null && !elementId.isEmpty()) {
       this.elementIds.add(elementId);
     }
   }
 
   protected void concatenateErrorMessages(Throwable throwable) {
+    var concatenatedMessage = new StringBuilder();
     while (throwable != null) {
-      if (message == null) {
-        message = throwable.getMessage();
+      if (concatenatedMessage.isEmpty()) {
+        concatenatedMessage.append(throwable.getMessage());
       } else {
-        message += ": " + throwable.getMessage();
+        concatenatedMessage.append(": ").append(throwable.getMessage());
       }
       throwable = throwable.getCause();
     }
+    message = concatenatedMessage.toString();
   }
 
   protected void extractElementDetails(Element element) {
@@ -85,7 +87,7 @@ public class ProblemImpl implements Problem {
       this.line = element.getLine();
       this.column = element.getColumn();
       String id = element.attribute("id");
-      if (id != null && id.length() > 0) {
+      if (id != null && !id.isEmpty()) {
         this.mainElementId = id;
         this.elementIds.add(id);
       }
@@ -123,10 +125,10 @@ public class ProblemImpl implements Problem {
   public String toString() {
     StringBuilder string = new StringBuilder(); 
     if (line > 0) {
-      string.append(" | line " + line);
+      string.append(" | line ").append(line);
     }
     if (column > 0) {
-      string.append(" | column " + column);
+      string.append(" | column ").append(column);
     }
 
     return string.toString();

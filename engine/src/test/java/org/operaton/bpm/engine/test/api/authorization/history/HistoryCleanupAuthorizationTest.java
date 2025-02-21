@@ -16,19 +16,6 @@
  */
 package org.operaton.bpm.engine.test.api.authorization.history;
 
-import static org.operaton.bpm.engine.ProcessEngineConfiguration.HISTORY_CLEANUP_STRATEGY_END_TIME_BASED;
-import static org.operaton.bpm.engine.ProcessEngineConfiguration.HISTORY_CLEANUP_STRATEGY_REMOVAL_TIME_BASED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.time.DateUtils;
 import org.operaton.bpm.engine.AuthorizationException;
 import org.operaton.bpm.engine.ProcessEngineConfiguration;
 import org.operaton.bpm.engine.authorization.Groups;
@@ -36,8 +23,6 @@ import org.operaton.bpm.engine.history.HistoricCaseInstance;
 import org.operaton.bpm.engine.history.HistoricDecisionInstance;
 import org.operaton.bpm.engine.history.HistoricIncident;
 import org.operaton.bpm.engine.history.HistoricProcessInstance;
-import org.operaton.bpm.engine.impl.interceptor.Command;
-import org.operaton.bpm.engine.impl.interceptor.CommandContext;
 import org.operaton.bpm.engine.impl.metrics.Meter;
 import org.operaton.bpm.engine.impl.persistence.entity.HistoricIncidentEntity;
 import org.operaton.bpm.engine.impl.persistence.entity.JobEntity;
@@ -53,9 +38,18 @@ import org.operaton.bpm.engine.test.RequiredHistoryLevel;
 import org.operaton.bpm.engine.test.api.authorization.AuthorizationTest;
 import org.operaton.bpm.engine.test.dmn.businessruletask.TestPojo;
 import org.operaton.bpm.engine.variable.Variables;
+import static org.operaton.bpm.engine.ProcessEngineConfiguration.HISTORY_CLEANUP_STRATEGY_END_TIME_BASED;
+import static org.operaton.bpm.engine.ProcessEngineConfiguration.HISTORY_CLEANUP_STRATEGY_REMOVAL_TIME_BASED;
+
+import java.util.*;
+
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @RequiredHistoryLevel(ProcessEngineConfiguration.HISTORY_FULL)
 public class HistoryCleanupAuthorizationTest extends AuthorizationTest {
@@ -105,30 +99,25 @@ public class HistoryCleanupAuthorizationTest extends AuthorizationTest {
 
     ClockUtil.setCurrentTime(new Date());
 
-    try {
-      // when
-      historyService.cleanUpHistoryAsync(true).getId();
-      fail("Exception expected: It should not be possible to execute the history cleanup");
-    } catch (AuthorizationException e) {
-      // then
-      String message = e.getMessage();
-      testRule.assertTextPresent("ENGINE-03029 Required admin authenticated group or user.", message);
-    }
+    assertThatThrownBy(() -> historyService.cleanUpHistoryAsync(true))
+        .withFailMessage("Exception expected: It should not be possible to execute the history cleanup")
+        .isInstanceOf(AuthorizationException.class)
+        .hasMessageContaining("ENGINE-03029 Required admin authenticated group or user.");
   }
 
   protected void prepareInstances(Integer processInstanceTimeToLive, Integer decisionTimeToLive, Integer caseTimeToLive) {
     // update time to live
     disableAuthorization();
     List<ProcessDefinition> processDefinitions = repositoryService.createProcessDefinitionQuery().processDefinitionKey("testProcess").list();
-    assertEquals(1, processDefinitions.size());
+    assertThat(processDefinitions).hasSize(1);
     repositoryService.updateProcessDefinitionHistoryTimeToLive(processDefinitions.get(0).getId(), processInstanceTimeToLive);
 
     final List<DecisionDefinition> decisionDefinitions = repositoryService.createDecisionDefinitionQuery().decisionDefinitionKey("testDecision").list();
-    assertEquals(1, decisionDefinitions.size());
+    assertThat(decisionDefinitions).hasSize(1);
     repositoryService.updateDecisionDefinitionHistoryTimeToLive(decisionDefinitions.get(0).getId(), decisionTimeToLive);
 
     List<CaseDefinition> caseDefinitions = repositoryService.createCaseDefinitionQuery().caseDefinitionKey("oneTaskCase").list();
-    assertEquals(1, caseDefinitions.size());
+    assertThat(caseDefinitions).hasSize(1);
     repositoryService.updateCaseDefinitionHistoryTimeToLive(caseDefinitions.get(0).getId(), caseTimeToLive);
 
     Date oldCurrentTime = ClockUtil.getCurrentTime();
@@ -164,7 +153,7 @@ public class HistoryCleanupAuthorizationTest extends AuthorizationTest {
   protected void assertResult(long expectedInstanceCount) {
     long count = historyService.createHistoricProcessInstanceQuery().count() + historyService.createHistoricDecisionInstanceQuery().count()
         + historyService.createHistoricCaseInstanceQuery().count();
-    assertEquals(expectedInstanceCount, count);
+    assertThat(count).isEqualTo(expectedInstanceCount);
   }
 
   protected void clearDatabase() {
@@ -177,27 +166,23 @@ public class HistoryCleanupAuthorizationTest extends AuthorizationTest {
     processEngineConfiguration.setHistoryCleanupBatchWindowEndTime(defaultEndTime);
     processEngineConfiguration.setHistoryCleanupBatchSize(defaultBatchSize);
 
-    processEngineConfiguration.getCommandExecutorTxRequired().execute(new Command<Void>() {
-      @Override
-      public Void execute(CommandContext commandContext) {
-
-        List<Job> jobs = managementService.createJobQuery().list();
-        if (!jobs.isEmpty()) {
-          assertEquals(1, jobs.size());
-          String jobId = jobs.get(0).getId();
-          commandContext.getJobManager().deleteJob((JobEntity) jobs.get(0));
-          commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(jobId);
-        }
-
-        List<HistoricIncident> historicIncidents = historyService.createHistoricIncidentQuery().list();
-        for (HistoricIncident historicIncident : historicIncidents) {
-          commandContext.getDbEntityManager().delete((HistoricIncidentEntity) historicIncident);
-        }
-
-        commandContext.getMeterLogManager().deleteAll();
-
-        return null;
+    processEngineConfiguration.getCommandExecutorTxRequired().execute(commandContext -> {
+      List<Job> jobs = managementService.createJobQuery().list();
+      if (!jobs.isEmpty()) {
+        assertThat(jobs).hasSize(1);
+        String jobId = jobs.get(0).getId();
+        commandContext.getJobManager().deleteJob((JobEntity) jobs.get(0));
+        commandContext.getHistoricJobLogManager().deleteHistoricJobLogByJobId(jobId);
       }
+
+      List<HistoricIncident> historicIncidents = historyService.createHistoricIncidentQuery().list();
+      for (HistoricIncident historicIncident : historicIncidents) {
+        commandContext.getDbEntityManager().delete((HistoricIncidentEntity) historicIncident);
+      }
+
+      commandContext.getMeterLogManager().deleteAll();
+
+      return null;
     });
 
     List<HistoricProcessInstance> historicProcessInstances = historyService.createHistoricProcessInstanceQuery().list();
