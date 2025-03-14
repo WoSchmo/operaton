@@ -18,6 +18,8 @@ package org.operaton.bpm.container.impl.jmx.deployment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.operaton.bpm.container.impl.deployment.AbstractParseBpmPlatformXmlStep.BPM_PLATFORM_XML_FILE;
 import static org.operaton.bpm.container.impl.deployment.AbstractParseBpmPlatformXmlStep.BPM_PLATFORM_XML_LOCATION;
 import static org.operaton.bpm.container.impl.deployment.AbstractParseBpmPlatformXmlStep.BPM_PLATFORM_XML_SYSTEM_PROPERTY;
@@ -37,10 +39,8 @@ import javax.naming.spi.InitialContextFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-//import org.junit.Rule;
-//import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.operaton.bpm.container.impl.tomcat.deployment.TomcatParseBpmPlatformXmlStep;
-import org.springframework.mock.jndi.SimpleNamingContext;
 
 /**
  * Checks the correct retrieval of bpm-platform.xml file through JNDI,
@@ -49,7 +49,7 @@ import org.springframework.mock.jndi.SimpleNamingContext;
  * @author Christian Lipphardt
  *
  */
-public class BpmPlatformXmlLocationTest {
+class BpmPlatformXmlLocationTest {
 
   private static final String BPM_PLATFORM_XML_LOCATION_PARENT_DIR = getBpmPlatformXmlLocationParentDir();
   private static final String BPM_PLATFORM_XML_LOCATION_ABSOLUTE_DIR = BPM_PLATFORM_XML_LOCATION_PARENT_DIR + File.separator + "conf";
@@ -65,21 +65,23 @@ public class BpmPlatformXmlLocationTest {
 
   private static final String BPM_PLATFORM_XML_LOCATION_URL_HTTP_PROTOCOL = "http://localhost:8080/operaton/" + BPM_PLATFORM_XML_FILE;
   private static final String BPM_PLATFORM_XML_LOCATION_URL_HTTPS_PROTOCOL = "https://localhost:8080/operaton/" + BPM_PLATFORM_XML_FILE;
+  private Context context;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     System.setProperty(Context.INITIAL_CONTEXT_FACTORY, MockContextFactory.class.getName());
-    MockContextFactory.setCurrentContext(new SimpleNamingContext());
+    context = mock(Context.class);
+    MockContextFactory.setCurrentContext(context);
   }
-  
+
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     System.clearProperty(Context.INITIAL_CONTEXT_FACTORY);
     MockContextFactory.clearCurrentContext();
   }
-  
+
   @Test
-  public void checkValidBpmPlatformXmlResourceLocationForUrl() throws MalformedURLException {
+  void checkValidBpmPlatformXmlResourceLocationForUrl() throws MalformedURLException {
     TomcatParseBpmPlatformXmlStep tomcatParseBpmPlatformXmlStep = new TomcatParseBpmPlatformXmlStep();
 
     assertThat(tomcatParseBpmPlatformXmlStep.checkValidUrlLocation(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION)).isNull();
@@ -95,7 +97,7 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void checkValidBpmPlatformXmlResourceLocationForFile() throws MalformedURLException {
+  void checkValidBpmPlatformXmlResourceLocationForFile() throws MalformedURLException {
     TomcatParseBpmPlatformXmlStep tomcatParseBpmPlatformXmlStep = new TomcatParseBpmPlatformXmlStep();
 
     URL url = tomcatParseBpmPlatformXmlStep.checkValidFileLocation(BPM_PLATFORM_XML_LOCATION_RELATIVE_PATH);
@@ -112,7 +114,7 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void checkUrlAutoCompletion() {
+  void checkUrlAutoCompletion() {
     TomcatParseBpmPlatformXmlStep tomcatParseBpmPlatformXmlStep = new TomcatParseBpmPlatformXmlStep();
 
     String correctedUrl = tomcatParseBpmPlatformXmlStep.autoCompleteUrl(BPM_PLATFORM_XML_LOCATION_VALID_PATH_UNIX);
@@ -126,29 +128,31 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void checkValidBpmPlatformXmlResourceLocation() throws MalformedURLException {
+  void checkValidBpmPlatformXmlResourceLocation() throws MalformedURLException {
     URL url = new TomcatParseBpmPlatformXmlStep().checkValidBpmPlatformXmlResourceLocation(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION);
     assertThat(url).isEqualTo(new File(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION).toURI().toURL());
   }
 
   @Test
-  public void getBpmPlatformXmlLocationFromJndi() throws NamingException, MalformedURLException {
-    Context context = new InitialContext();
-    context.bind("java:comp/env/" + BPM_PLATFORM_XML_LOCATION, BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION);
+  void getBpmPlatformXmlLocationFromJndi() throws NamingException, MalformedURLException {
+    // given
+    when(context.lookup("java:comp/env/" + BPM_PLATFORM_XML_LOCATION)).thenReturn(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION);
 
+    // when
     URL url = new TomcatParseBpmPlatformXmlStep().lookupBpmPlatformXmlLocationFromJndi();
 
+    // then
     assertThat(url).isEqualTo(new File(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION).toURI().toURL());
   }
 
   @Test
-  public void bpmPlatformXmlLocationNotRegisteredInJndi() {
+  void bpmPlatformXmlLocationNotRegisteredInJndi() {
     URL url = new TomcatParseBpmPlatformXmlStep().lookupBpmPlatformXmlLocationFromJndi();
     assertThat(url).isNull();
   }
 
   @Test
-  public void getBpmPlatformXmlFromEnvironmentVariableAsUrlLocation() {
+  void getBpmPlatformXmlFromEnvironmentVariableAsUrlLocation() {
     try {
       System.setProperty(BPM_PLATFORM_XML_SYSTEM_PROPERTY, BPM_PLATFORM_XML_LOCATION_URL_HTTP_PROTOCOL);
 
@@ -161,7 +165,7 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void getBpmPlatformXmlFromSystemPropertyAsFileLocation() throws MalformedURLException {
+  void getBpmPlatformXmlFromSystemPropertyAsFileLocation() throws MalformedURLException {
     try {
       System.setProperty(BPM_PLATFORM_XML_SYSTEM_PROPERTY, BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION);
 
@@ -174,7 +178,7 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void getBpmPlatformXmlFromClasspath() {
+  void getBpmPlatformXmlFromClasspath() {
     String classPathResourceLocation = BpmPlatformXmlLocationTest.class.getPackage().getName().replace(".", "/") + "/conf/" + BPM_PLATFORM_XML_FILE;
 
     URL url = new TomcatParseBpmPlatformXmlStep().lookupBpmPlatformXmlFromClassPath(classPathResourceLocation);
@@ -182,7 +186,7 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void getBpmPlatformXmlFromCatalinaConfDirectory() throws MalformedURLException {
+  void getBpmPlatformXmlFromCatalinaConfDirectory() throws MalformedURLException {
     System.setProperty(CATALINA_HOME, BPM_PLATFORM_XML_LOCATION_PARENT_DIR);
 
     try {
@@ -195,15 +199,17 @@ public class BpmPlatformXmlLocationTest {
   }
 
   @Test
-  public void lookupBpmPlatformXml() throws NamingException, MalformedURLException {
-    Context context = new InitialContext();
-    context.bind("java:comp/env/" + BPM_PLATFORM_XML_LOCATION, BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION);
+  void lookupBpmPlatformXml() throws NamingException, MalformedURLException {
+    // given
+    when(context.lookup("java:comp/env/" + BPM_PLATFORM_XML_LOCATION)).thenReturn(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION);
 
+    // when
     URL url = new TomcatParseBpmPlatformXmlStep().lookupBpmPlatformXml();
 
+    // then
     assertThat(url).isEqualTo(new File(BPM_PLATFORM_XML_FILE_ABSOLUTE_LOCATION).toURI().toURL());
   }
-  
+
   private static String getBpmPlatformXmlLocationParentDir() {
     String baseDir = BpmPlatformXmlLocationTest.class.getProtectionDomain().getCodeSource().getLocation().getFile();
     try {

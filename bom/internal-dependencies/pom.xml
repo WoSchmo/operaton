@@ -13,7 +13,11 @@
   <packaging>pom</packaging>
   <name>Operaton - Core - Internal Dependencies</name>
 
-  <description>Operaton core internal bill of material for dependencies</description>
+  <description>
+    This is a Bill of Materials (BOM) for internal dependencies of Operaton.
+    All modules should import this BOM to ensure consistent versions of dependencies.
+    By using this BOM, you can omit the version tag in dependency declarations.
+  </description>
 
   <properties>
     <version.junit5>5.11.3</version.junit5>
@@ -22,6 +26,27 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-framework-bom</artifactId>
+        <version>${version.spring.framework}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.platform</groupId>
+        <artifactId>jakarta.jakartaee-bom</artifactId>
+        <version>${version.jakarta-ee-spec}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${version.spring-boot}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.camunda.feel</groupId>
         <artifactId>feel-engine</artifactId>
@@ -85,21 +110,36 @@
         <version>2.3.6</version>
       </dependency>
       <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>4.0.5</version>
+      </dependency>
+      <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
         <version>2.5</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.el</groupId>
-        <artifactId>jakarta.el-api</artifactId>
-        <version>4.0.0</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.hibernate.javax.persistence</groupId>
         <artifactId>hibernate-jpa-2.0-api</artifactId>
         <version>1.0.1.Final</version>
       </dependency>
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>${version.hibernate}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>8.0.0.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.frshdn</groupId>
+        <artifactId>subethasmtp-java17</artifactId>
+        <version>3.1.7</version>
+      </dependency>
+
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -204,6 +244,16 @@
         <artifactId>commons-email</artifactId>
         <version>1.5</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-email2-jakarta</artifactId>
+        <version>2.0.0-M1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.angus</groupId>
+        <artifactId>jakarta.mail</artifactId>
+        <version>2.0.3</version>
+      </dependency>
         <!-- Web service -->
       <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
@@ -214,6 +264,29 @@
         <groupId>org.apache.openjpa</groupId>
         <artifactId>openjpa</artifactId>
         <version>${version.openjpa}</version>
+      </dependency>
+
+      <!-- Jetty -->
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-bom</artifactId>
+        <version>${version.jetty}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${version.jetty}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${version.jetty}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-webapp</artifactId>
+        <version>${version.jetty}</version>
       </dependency>
 
       <!-- groovy script engine dependencies -->
@@ -297,12 +370,6 @@
         <artifactId>wsdl4j</artifactId>
         <version>1.6.2</version>
       </dependency>
-      <!-- Camel integration -->
-      <dependency>
-        <groupId>org.apache.camel</groupId>
-        <artifactId>camel-spring</artifactId>
-        <version>2.10.0</version>
-      </dependency>
       <!-- Mule integration -->
       <dependency>
         <groupId>org.safehaus.jug</groupId>
@@ -323,51 +390,6 @@
         <artifactId>jboss-javaee-web-6.0</artifactId>
         <version>${version.jboss-javaee-spec}</version>
         <type>pom</type>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.servlet</groupId>
-        <artifactId>jakarta.servlet-api</artifactId>
-        <version>6.1.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.ws.rs</groupId>
-        <artifactId>jakarta.ws.rs-api</artifactId>
-        <version>4.0.0</version>
-        <scope>provided</scope>
-      </dependency>
-
-      <!--<dependency>
-        <groupId>jakarta.servlet</groupId>
-        <artifactId>jakarta.servlet-api</artifactId>
-        <version>6.1.0</version>
-      </dependency>-->
-
-      <!--<dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>4.0.2</version>
-      </dependency>-->
-
-      <!--<dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
-        <version>6.2.1</version>
-        <scope>test</scope>
-      </dependency>-->
-
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>4.0.2</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
-        <version>6.2.1</version>
-        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -409,6 +431,12 @@
         <groupId>org.apache.tomcat</groupId>
         <artifactId>catalina</artifactId>
         <version>6.0.53</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-client</artifactId>
+        <version>3.1.9</version>
       </dependency>
 
       <dependency>
@@ -472,6 +500,13 @@
         <artifactId>wiremock</artifactId>
         <version>${version.wiremock}</version>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.wiremock</groupId>
+        <artifactId>wiremock-standalone</artifactId>
+        <scope>test</scope>
+        <version>${version.wiremock}</version>
       </dependency>
 
       <dependency>
