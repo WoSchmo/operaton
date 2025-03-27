@@ -134,6 +134,12 @@
                 <drivers>
                     <!-- all drivers needed in QA are listed here -->
                     <!-- datasource definitions are deployed as *-ds.xml files -->
+                    <datasource jndi-name="java:jboss/datasources/ProcessEngine" pool-name="ProcessEngine" enabled="true" use-java-context="true" jta="true" use-ccm="true">
+                        <connection-url>jdbc:tc:operatonpostgresql:13.2:///process-engine/TC_DAEMON=true</connection-url>
+                        <driver>h2</driver>
+                        <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                        <security user-name="sa" password="sa"/>
+                    </datasource>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
                     </driver>
