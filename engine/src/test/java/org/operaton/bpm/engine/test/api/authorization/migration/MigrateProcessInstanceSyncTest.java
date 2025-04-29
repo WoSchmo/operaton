@@ -111,7 +111,7 @@ public class MigrateProcessInstanceSyncTest {
 
   @TestTemplate
   @Deployment(resources = "org/operaton/bpm/engine/test/api/authorization/oneIncidentProcess.bpmn20.xml")
-  public void testMigrate() {
+  void testMigrate() {
 
     // given
     ProcessDefinition sourceDefinition = testHelper.deployAndGetDefinition(ProcessModels.ONE_TASK_PROCESS);
@@ -147,7 +147,7 @@ public class MigrateProcessInstanceSyncTest {
   }
 
   @TestTemplate
-  public void testMigrateWithQuery() {
+  void testMigrateWithQuery() {
     // given
     ProcessDefinition sourceDefinition = testHelper.deployAndGetDefinition(ProcessModels.ONE_TASK_PROCESS);
     ProcessDefinition targetDefinition = testHelper.deployAndGetDefinition(modify(ProcessModels.ONE_TASK_PROCESS)
