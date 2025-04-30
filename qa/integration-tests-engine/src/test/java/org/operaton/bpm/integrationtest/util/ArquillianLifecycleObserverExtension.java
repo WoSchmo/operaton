@@ -1,3 +1,4 @@
+package org.operaton.bpm.integrationtest.util;
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -14,20 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.operaton.bpm.engine.cdi.annotation.event;
+import org.jboss.arquillian.core.spi.LoadableExtension;
 
-import jakarta.enterprise.util.AnnotationLiteral;
-
-public class DeleteTaskLiteral extends AnnotationLiteral<DeleteTask> implements DeleteTask {
-
-  protected final String taskDefinitionKey;
-
-  public DeleteTaskLiteral(String taskDefinitionKey) {
-    this.taskDefinitionKey = taskDefinitionKey;
-  }
-  @Override
-  public String value() {
-    return taskDefinitionKey != null ? taskDefinitionKey : "";
-  }
-
+/**
+ * Arquillian SPI extension. Provides ability to subscribe to and respond to lifecycle events.
+ * Current primary use: ability to start testcontainers before Arquillian containers,
+ * so that platform subsystems can access them at startup time.
+ */
+public class ArquillianLifecycleObserverExtension implements LoadableExtension {
+    @Override
+    public void register(ExtensionBuilder extensionBuilder) {
+        extensionBuilder.observer(ArquillianEventObserver.class);
+    }
 }

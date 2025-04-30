@@ -16,7 +16,9 @@
  */
 package org.operaton.bpm.integrationtest.deployment.cfg;
 
+import java.io.IOException;
 import java.util.List;
+
 import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.repository.ProcessDefinition;
 import org.operaton.bpm.engine.repository.ProcessDefinitionQuery;
@@ -40,15 +42,14 @@ import static org.junit.Assert.assertEquals;
 public class TestAdditionalResourceSuffixes extends AbstractFoxPlatformIntegrationTest {
 
   @Deployment
-  public static WebArchive processArchive() {
-
-    return ShrinkWrap.create(WebArchive.class, "test.war")
+  public static WebArchive processArchive() throws IOException {
+      return ShrinkWrap.create(WebArchive.class)
         .addAsWebInfResource("org/operaton/bpm/integrationtest/beans.xml", "beans.xml")
         .addAsLibraries(DeploymentHelper.getEngineCdi())
         .addAsLibraries(DeploymentHelper.getAssertJ())
-        .addAsResource("org/operaton/bpm/integrationtest/deployment/cfg/processes-additional-resource-suffixes.xml", "META-INF/processes.xml")
         .addClass(AbstractFoxPlatformIntegrationTest.class)
         .addClass(DummyProcessApplication.class)
+        .addAsResource("org/operaton/bpm/integrationtest/deployment/cfg/processes-additional-resource-suffixes.xml", "META-INF/processes.xml")
         .addAsResource("org/operaton/bpm/integrationtest/deployment/cfg/invoice-it.bpmn20.xml")
         .addAsResource("org/operaton/bpm/integrationtest/deployment/cfg/hello.groovy")
         .addAsResource("org/operaton/bpm/integrationtest/deployment/cfg/hello.py");
