@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.operaton.bpm</groupId>
     <artifactId>operaton-database-settings</artifactId>
-    <version>1.0.0-beta-4-SNAPSHOT</version>
+    <version>1.0.0-beta-5-SNAPSHOT</version>
     <relativePath>../../database</relativePath>
   </parent>
 
@@ -25,19 +25,6 @@
         <scope>import</scope>
         <type>pom</type>
       </dependency>
-
-      <dependency>
-        <groupId>org.graalvm.js</groupId>
-        <artifactId>js</artifactId>
-        <version>${version.graal.js}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.graalvm.js</groupId>
-        <artifactId>js-scriptengine</artifactId>
-        <version>${version.graal.js}</version>
-      </dependency>
-
     </dependencies>
   </dependencyManagement>
 

@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.operaton.bpm</groupId>
     <artifactId>operaton-parent</artifactId>
-    <version>1.0.0-beta-4-SNAPSHOT</version>
+    <version>1.0.0-beta-5-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -62,12 +62,6 @@
         <groupId>org.apache.groovy</groupId>
         <artifactId>groovy-xml</artifactId>
         <version>${version.groovy}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.graalvm.js</groupId>
-        <artifactId>js-scriptengine</artifactId>
-        <version>${version.graal.js}</version>
       </dependency>
 
       <dependency>
